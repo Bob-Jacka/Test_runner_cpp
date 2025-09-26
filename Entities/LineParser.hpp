@@ -7,7 +7,7 @@
 #include "../Data/Constants.hpp"
 
 class Line_parser {
-    void import_outer_suits();
+    std::vector<std::string> import_outer_suits() const;
 
 public:
     explicit Line_parser();
@@ -18,9 +18,11 @@ public:
 
     Line_parser &operator=(const Line_parser &) = delete;
 
-    std::vector<std::string> parse_lines_empty(std::vector<std::string>) const; ///delete comments elements from vector
+    ~Line_parser() = default;
 
-    void parse_directives() const; ///method for parsing directives in test suit file.
+    [[nodiscard]] std::vector<std::string> &parse_lines_empty(std::vector<std::string> &) const; ///delete comments elements from vector
+
+    [[nodiscard]] std::vector<std::string> parse_directives(std::vector<std::string> &) const; ///method for parsing directives in test suit file.
 };
 
 #endif

@@ -29,7 +29,7 @@ namespace TA {
 
         //operators
 
-        Test_case operator<=>() const;
+        Test_case operator<=>(Test_case &other) const;
 
         Test_case &operator=(const Test_case &) = delete;
 

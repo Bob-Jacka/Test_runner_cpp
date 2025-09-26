@@ -21,7 +21,7 @@ namespace TA {
 
         Bug() = delete;
 
-        Bug(const Bug&) = default;
+        Bug(const Bug &) = default;
 
         ~Bug() override = default;
 
@@ -31,7 +31,7 @@ namespace TA {
 
         [[nodiscard]] Severity get_severity() const;
 
-        Bug operator<=>() const;
+        Bug operator<=>(Bug &other) const;
 
         void to_string() const override;
     };

@@ -43,13 +43,13 @@ namespace LP {
 
         [[nodiscard]] bool get_is_high_priority() const;
 
-        [[nodiscard]] std::string Load_parameters::get_devices_entry_point() const;
+        [[nodiscard]] std::string get_devices_entry_point() const;
 
         [[nodiscard]] bool get_is_file_write() const;
 
         void set_entry_point(const std::string &);
 
-        void Load_parameters::set_devices_entry_point(std::string devices_entry_point);
+        void set_devices_entry_point(const std::string& devices_entry_point);
 
         void set_check_device_count(int);
 
@@ -113,7 +113,7 @@ namespace LP {
         this->check_device_count = check_device_count;
     }
 
-    inline void Load_parameters::set_devices_entry_point(const std::string devices_entry_point) {
+    inline void Load_parameters::set_devices_entry_point(const std::string& devices_entry_point) {
         this->devices_entry_point = devices_entry_point;
     }
 

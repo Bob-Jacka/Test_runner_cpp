@@ -1,9 +1,11 @@
 #ifndef TESTCASEFABRIC_HPP
 #define TESTCASEFABRIC_HPP
 
+#include "../Data/Constants.hpp"
 #include "../Test_artifacts/declaration/Bug.hpp"
 #include "../Test_artifacts/declaration/CheckList.hpp"
 #include "../Test_artifacts/declaration/Test_case.hpp"
+import UtilFuncs_mod;
 
 /**
  * Styles for decompose test cases
@@ -22,8 +24,6 @@ enum class TS_style {
  * Also support decompose to other formats.
  */
 class TestCaseFabric {
-    [[nodiscard]] TA::Test_case create_test_case() const;
-
 public:
     TestCaseFabric();
 
@@ -33,13 +33,19 @@ public:
 
     TestCaseFabric &operator=(const TestCaseFabric &) = delete;
 
-    //Methods
+    //Methods for creating test artifacts
 
-    [[nodiscard]] std::vector<TA::Test_case> create_test_cases(std::vector<std::string>) const;
+    [[nodiscard]] std::vector<TA::Test_case> create_test_cases(const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Bug create_bug() const;
+    [[nodiscard]] TA::Test_case create_test_case(const std::string &, const std::string &, const TA::Priority &) const;
 
-    [[nodiscard]] TA::CheckList create_check_list() const;
+    [[nodiscard]]
+
+    [[nodiscard]] TA::Bug create_bug(const std::string &, const std::string &) const;
+
+    [[nodiscard]] TA::CheckList create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
+
+    //Other actions
 
     void delete_test_case() const;
 

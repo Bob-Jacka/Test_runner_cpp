@@ -1,13 +1,13 @@
 #ifndef STRAT_HPP
 #define STRAT_HPP
 
-#include "Data/Constants.hpp"
 #include <vector>
+#include <ranges>
 #include "../../Test_artifacts/declaration/Test_case.hpp"
 
 namespace Strategy {
     /**
-     * Abstract class for strategies
+     * Abstract class for strategies in utility execution
      */
     class Strat {
     public:

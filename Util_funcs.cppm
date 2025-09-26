@@ -4,6 +4,7 @@
 
 module;
 
+#include <filesystem>
 #include <regex>
 #include "termcolor.hpp"
 #include <source_location>
@@ -68,7 +69,7 @@ namespace utility {
          * Print given string in red color
          * @param value const string representing value to print
          */
-        void Ansi_utils::prRed(const std::string &value) const {
+        void prRed(const std::string &value) const {
             print(red_start + value + color_end);
         }
 
@@ -76,7 +77,7 @@ namespace utility {
          * Print given string in green color
          * @param value const string representing value to print
          */
-        void Ansi_utils::prGreen(const std::string &value) const {
+        void prGreen(const std::string &value) const {
             print(green_start + value + color_end);
         }
 
@@ -84,7 +85,7 @@ namespace utility {
         * Print given string in yellow color
         * @param value const string representing value to print
         */
-        void Ansi_utils::prYellow(const std::string &value) const {
+        void prYellow(const std::string &value) const {
             print(yellow_start + value + color_end);
         }
 
@@ -92,7 +93,7 @@ namespace utility {
         * Print given string in cyan color
         * @param value const string representing value to print
         */
-        void Ansi_utils::prCyan(const std::string &value) const {
+        void prCyan(const std::string &value) const {
             print(cyan_start + value + color_end);
         }
 
@@ -100,7 +101,7 @@ namespace utility {
         * Print given string in light gray color
         * @param value const string representing value to print
         */
-        void Ansi_utils::prLightGray(const std::string &value) const {
+        void prLightGray(const std::string &value) const {
             print(gray_start + value + color_end);
         }
     };
@@ -121,7 +122,7 @@ namespace utility {
      @param str string for output in console
      @param color color value from Color enum
      */
-    export [[maybe_unused]] inline void colored_txt_output(const std::string &str, const Color color = Color::WHITE) {
+    export [[maybe_unused]] inline void colored_txt_output(const std::string &str, const Color &color = Color::WHITE) {
         switch (color) {
             case Color::WHITE:
                 std::cout << termcolor::white;
@@ -136,8 +137,8 @@ namespace utility {
                 std::cout << termcolor::green;
                 break;
             default:
-                std::cout << "Color do not specified.";
-                break;
+                std::cerr << "Color do not specified";
+                throw std::exception();
         }
         std::cout << str;
         std::cout << termcolor::nocolorize;
@@ -162,7 +163,7 @@ namespace utility {
     /**
     Function for transferring ASCII to bool value.
     Yes, I know that this function is something that smell, but...
-    @param string_to_scan
+    @param string_to_scan string object to "cast" into bool value.
     @return bool value for translate
     */
     export [[maybe_unused]] inline bool atob(const std::string &string_to_scan) {
@@ -189,7 +190,7 @@ namespace utility {
     @param c2 replace source char.
     @return string value with replacing symbols.
     */
-    export [[maybe_unused]] static std::string replace(std::string &s, const char c1, const char c2) {
+    export [[maybe_unused]] std::string replace(std::string &s, const char c1, const char c2) {
         const auto l = s.length();
         for (int i = 0; i < l; i++) {
             if (s[i] == c1) {
@@ -208,7 +209,7 @@ namespace utility {
     @param s2 replace source string.
     @return string value with replacing symbols.
     */
-    export [[maybe_unused]] static std::string replace(const std::string &s, const std::string &s1, const std::string &s2) {
+    export [[maybe_unused]] std::string replace(const std::string &s, const std::string &s1, const std::string &s2) {
         const auto l = s.size();
         for (int i = 0; i < l; i++) {
             //
@@ -222,7 +223,7 @@ namespace utility {
     @param delim separator for splitting
     @return vector object with strings
     */
-    export [[maybe_unused]] static std::vector<std::string> &line_splitter(const std::string &to_split, const char delim = ' ') {
+    export [[maybe_unused]] std::vector<std::string> line_splitter(const std::string &to_split, const char delim = ' ') {
         std::istringstream input{to_split};
         std::vector<std::string> result;
         std::string tmp;
@@ -331,6 +332,8 @@ namespace utility {
     void userInput(T &variableAddress) {
         if (std::cin.good()) {
             std::cin >> variableAddress;
+        } else {
+            throw std::runtime_error("Input stream is not good");
         }
     }
 
@@ -339,7 +342,7 @@ namespace utility {
      * @tparam T generic type for variable.
      * @return variable of generic type.
      */
-    export template<typename T>
+    export template<typename T = std::string>
     T userInput() {
         T variableAddress;
         if (std::cin.good()) {
@@ -356,5 +359,31 @@ namespace utility {
     export void message_with_location(const std::string &message, const std::source_location location = std::source_location::current()) {
         std::cout << location.file_name() << ":" << location.line() << ":" << location.column() << " (" << location.function_name() << "): " <<
                 message << "." << "\n";
+    }
+
+    /**
+    * Platform independent filepath getter.
+    * @deprecated because crashes program.
+    * @return string value of current path
+    */
+    export inline std::string getCwd() {
+        const std::filesystem::path currentPath = std::filesystem::current_path();
+        return currentPath.string();
+    }
+
+    /**
+     * Split string into vector or create another vector and return it.
+     * @param s source string to split
+     * @param delim delimiter to split on
+     * @param elems vector with strings to add split string
+     * @return vector if you want to assign to variable.
+     */
+    export std::vector<std::string> &split(const std::string &s, std::vector<std::string> &elems, const char delim = ' ') {
+        std::stringstream ss(s);
+        std::string item;
+        while (std::getline(ss, item, delim)) {
+            elems.push_back(item);
+        }
+        return elems;
     }
 }

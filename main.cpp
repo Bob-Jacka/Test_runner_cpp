@@ -21,13 +21,18 @@
 import UtilFuncs_mod;
 
 template<typename T>
-using v_string = std::pmr::vector<T>;
+using Vec = std::pmr::vector<T>; ///short type for vector
 
-auto load_parameters = new LP::Load_parameters();
-std::unique_ptr<TestCaseFabric> test_case_fabric;
-std::unique_ptr<Strategy::StratContext> context = {};
-std::unique_ptr<File_controller> file_reader; ///file controller for actions with filesystem
-std::unique_ptr<Line_parser> parser;
+/**
+ * Structure for entities data
+ */
+struct Parameters {
+    static std::unique_ptr<LP::Load_parameters> load_parameters; ///load parameters of the utility
+    static std::unique_ptr<TestCaseFabric> test_case_fabric; ///test artifacts fabric entity
+    static std::unique_ptr<Strategy::StratContext> context; ///context for determining utility strategy
+    static std::unique_ptr<File_controller> file_reader; ///file controller for actions with filesystem
+    static std::unique_ptr<Line_parser> parser; ///entity for text parsing in suit
+};
 
 int arg_count = 0;
 
@@ -39,61 +44,87 @@ namespace Main_utilities {
     consteval auto INPUT_SYM = ">> "; ///symbol for user input
 
     /**
+     * Function for checking if file exists in filesystem.
+     * @param file_name name of the file to check.
+     */
+    bool check_file_existence(const std::string &file_name) {
+        return std::filesystem::exists(file_name);
+    }
+
+    /**
+     * Check for file extension.
+     * @param file_name name of the file to check.
+     * @return bool value of checking.
+     */
+    bool check_file_extension(const std::string &file_name) {
+        return file_name.ends_with(".txt") or file_name.contains(".");
+    }
+
+    /**
      * Write test results to file.
      * @param test_results vector with test results.
      * @throw FileControllerException
      */
-    void write_to_file(const v_string<TA::Test_result> &test_results) {
-        if (auto file_test_results = file_reader->create_test_result_file(); file_test_results.is_open()) {
+    void write_test_results_2file(const Vec<TA::Test_result> &test_results) -> void {
+        if (auto file_test_results = Parameters::file_reader->create_test_result_file(); file_test_results.is_open()) {
             for (auto &test_result: test_results) {
                 file_test_results << test_result.get_name() << "\n";
                 file_test_results << test_result.get_device_name() << "\n";
                 file_test_results << test_result.get_description() << "\n";
-                file_test_results << "Found Bugs:" << "\n";
-                for (auto &bug: test_result.get_bugs()) {
-                    file_test_results << "\t" << bug.get_name() << "\n";
-                    file_test_results << "\t" << bug.get_description() << "\n";
-                    auto test_severity = ""; ///tmp variable for severity
-                    switch (bug.get_severity()) {
-                        case TA::Severity::Low:
-                            test_severity = "Low";
-                            break;
-                        case TA::Severity::Medium:
-                            test_severity = "Medium";
-                            break;
-                        case TA::Severity::High:
-                            test_severity = "High";
-                            break;
-                        case TA::Severity::Critical:
-                            test_severity = "Critical";
-                            break;
-                        case TA::Severity::Blocker:
-                            test_severity = "Blocker";
-                            break;
-                        default:
-                            throw FileControllerException("Error in checking for enum value.");
+                if (const auto bugs = test_result.get_bugs(); !bugs.empty()) {
+                    int counter = 1; //if you are a programmer - you can start from 0 value!
+                    file_test_results << "Found Bugs:" << "\n";
+                    for (auto &bug: bugs) {
+                        file_test_results << counter << ") " << "\n";
+                        file_test_results << "\tBug name: " << bug.get_name() << "\n";
+                        file_test_results << "\tBug description: " << bug.get_description() << "\n";
+                        auto test_severity = ""; ///tmp variable for severity string value
+                        switch (bug.get_severity()) {
+                            case TA::Severity::Low:
+                                test_severity = "Low";
+                                break;
+                            case TA::Severity::Medium:
+                                test_severity = "Medium";
+                                break;
+                            case TA::Severity::High:
+                                test_severity = "High";
+                                break;
+                            case TA::Severity::Critical:
+                                test_severity = "Critical";
+                                break;
+                            case TA::Severity::Blocker:
+                                test_severity = "Blocker";
+                                break;
+                            default:
+                                throw FileControllerException("Error in checking for enum value.");
+                        }
+                        file_test_results << "\tBug severity: " << test_severity << "\n";
+                        counter++;
                     }
-                    file_test_results << "\t" << test_severity << "\n";
+                } else {
+                    //no bug found branch
+                    file_test_results << "No bugs found" << "\n";
                 }
             }
         } else {
             throw FileControllerException("Error in open file for test results.");
         }
-        utility::colored_txt_output("Results written to file");
+        utility::colored_txt_output("Results written to test results file");
     }
 
     /**
     * Get vector with Test results and output information in it.
     * @param vec const reference vector with test results.
     */
-    void print_test_results(const v_string<TA::Test_result> &vec) {
+    void print_test_results_2console(const Vec<TA::Test_result> &vec) {
         int counter = 1;
         for (auto &elem: vec) {
+            //elem = Test result object
             utility::print(counter);
             utility::colored_txt_output(elem.get_name());
             utility::colored_txt_output(elem.get_description());
             if (const auto bugs = elem.get_bugs(); !bugs.empty()) {
-                for (auto &bug: bugs) {
+                for (const auto &bug: bugs) {
                     utility::colored_txt_output("\tBug name: " + bug.get_name());
                     utility::colored_txt_output("\tBug description: " + bug.get_description());
                     utility::colored_txt_output("\tBug severity: " + reinterpret_cast<auto>(bug.get_severity()));
@@ -101,46 +132,52 @@ namespace Main_utilities {
             } else {
                 utility::colored_txt_output("No bugs in this test case");
             }
-            counter++;
+            ++counter;
         }
     }
 
     /**
-    * Get cli arguments.
+    * Get cli arguments and add them to vector entity.
     * @param argv string value to scan
     * @return vector with generic objects.
     */
     template<typename T>
-    v_string<T> resolve_cli_args(char *argv) {
+    Vec<T> resolve_cli_args(char *argv) {
         if (argv != nullptr) {
-            auto vec = v_string();
+            auto vec = Vec(arg_count);
+            auto split_line = std::vector<std::string>(arg_count);
+            utility::split(argv, split_line, ' ');
             for (int i = 1; i < arg_count; ++i) {
-                vec.emplace_back(argv);
+                vec.emplace_back(split_line[i]);
             }
             return vec;
         }
-        return v_string<T>();
+        return Vec<T>();
     }
 
     /**
      * Function for printing help to user.
      */
-    void print_help() {
+    void print_help() -> void {
         utility::println("Test runner C++ edition");
         utility::println("Utility description: - utility is using for test cycles");
+        utility::println(); //just new line in console
         utility::println("Utility parameters:");
-        utility::println("\t1. strategy - used for specifying run strategy");
-        utility::println("\t\t1.1 high_prior - for only high priority test run");
-        utility::println("\t\t1.2 parallel - for parallel random adding test");
-        utility::println("\t\t1.3 random - for pseudo-random strategy mode");
-
-        utility::println("\t2. devices - (optional) for providing devices names to test cycle");
-        utility::println("\t3. time_record - for record time, during test case execution");
-        utility::println("\t4. colored - for color text output");
-        utility::println("\t5. comments - for test case comment output");
-        utility::println();
-        utility::println();
-        utility::println();
+        utility::println("\t1. 'strategy' - used for specifying run strategy");
+        utility::println("\t\t1.1 'high_prior' - for only high priority test run");
+        utility::println("\t\t1.2 'parallel' - for parallel random adding test");
+        utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
+        utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
+        utility::println("\t3. 'time_record' - for record time, during test case execution");
+        utility::println("\t4. 'colored' - for color text output");
+        utility::println("\t5. 'comments' - for test case comment output");
+        utility::println(); //just new line in console
+        utility::println("Available utility directives in files with tests:");
+        utility::println("\t1. 'suit_start' - directive for indication for test suit start,");
+        utility::println("\t2. 'suit_end' - directive for indication for test suit end,");
+        utility::println("\t3. 'if' - usual if operator for branching in many programming languages,");
+        utility::println("\t4. 'else' - additional directive for if");
+        utility::println("\t5. 'end_if' - closes if condition");
     }
 
     /**
@@ -148,42 +185,55 @@ namespace Main_utilities {
     @param cont_to_check constant string to check for flag value.
     @throw unknown_compiler_flag if undefined compiler flag occurred.
     */
-    void check_flags(const v_string<std::string> &cont_to_check) {
+    void check_flags(const Vec<std::string> &cont_to_check) {
         const auto check_func_full = [&](const std::string &str) -> bool {
             return str.contains("=") and str.contains("--");
-        };
-        //lambda for checking if string is a flag or not.
+        }; ///lambda for checking if string is a flag or not.
+        using con_string_ref = const std::string &; ///short version of type
 
-        if (cont_to_check.size() == 1 and cont_to_check[0] == "help") {
-            print_help();
+        if (cont_to_check.empty()) {
+            throw MainException("flags vector is empty");
         } else {
-            //if not help
-            for (auto &elem: cont_to_check) {
-                if (check_func_full(elem)) {
-                    auto split_line = utility::line_splitter(elem, '=');
+            //if not help parameter
+            for (auto &cli_param: cont_to_check) {
+                if (check_func_full(cli_param)) {
+                    auto split_line = utility::line_splitter(cli_param, '=');
                     const auto flag_name = utility::replace_string_all(split_line[0], "--", "");
                     const std::any flag_value = split_line[1]; //because zero index is flag name
 
-                    //entry point
+                    //get entry point of utility working
                     if (flag_name == LP::Static_load_parameters_names::entry) {
-                        load_parameters->set_entry_point(reinterpret_cast<const std::string &>(flag_value));
+                        auto entry_point = reinterpret_cast<con_string_ref>(flag_value);
+                        //check for file extension
+                        if (!check_file_extension(entry_point)) { //TODO может быть проблема в логике
+                            //if true - user provided ext //else - user does not provide ext
+                            entry_point += ".txt";
+                            if (check_file_existence(entry_point)) {
+                                Parameters::load_parameters->set_entry_point(entry_point);
+                            } else {
+                                throw MainException("Entry point file does not exists in filesystem");
+                            }
+                        } else {
+                            throw MainException("Wrong file extension in file name: " + entry_point);
+                        }
                         break;
                     }
                     //strategies for utility execution
                     if (flag_name == LP::Static_load_parameters_names::strat) {
-                        if (reinterpret_cast<const std::string &>(flag_value) == LP::Static_load_parameters_names::high_prior_strat) {
+                        const auto val = reinterpret_cast<con_string_ref>(flag_value);
+                        if (val == LP::Static_load_parameters_names::high_prior_strat) {
                             utility::colored_txt_output("Using high priority strategy.");
-                            context->set_strategy(
+                            Parameters::context->set_strategy(
                                 std::make_unique<auto>(Strategy::High_prior_strat())
                             );
-                        } else if (reinterpret_cast<const std::string &>(flag_value) == LP::Static_load_parameters_names::random_strat) {
+                        } else if (val == LP::Static_load_parameters_names::random_strat) {
                             utility::colored_txt_output("Using pseudo run strategy.");
-                            context->set_strategy(
+                            Parameters::context->set_strategy(
                                 std::make_unique<auto>(Strategy::Random_run_strat())
                             );
-                        } else if (reinterpret_cast<const std::string &>(flag_value) == LP::Static_load_parameters_names::parallel_strat) {
+                        } else if (val == LP::Static_load_parameters_names::parallel_strat) {
                             utility::colored_txt_output("Using parallel strategy.");
-                            context->set_strategy(
+                            Parameters::context->set_strategy(
                                 std::make_unique<auto>(Strategy::Parallel_strat())
                             );
                         } else {
@@ -192,22 +242,22 @@ namespace Main_utilities {
                     }
                     //need for more devices than one
                     if (flag_name == LP::Static_load_parameters_names::devices) {
-                        load_parameters->set_devices_entry_point(reinterpret_cast<const std::string &>(flag_value));
+                        Parameters::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
                     }
                     //time check flag
                     if (flag_name == LP::Static_load_parameters_names::time_check) {
-                        load_parameters->set_is_time_record(reinterpret_cast<const bool &>(flag_value));
+                        Parameters::load_parameters->set_is_time_record(reinterpret_cast<const bool &>(flag_value));
                     }
                     //colored flag
                     if (flag_name == LP::Static_load_parameters_names::colored) {
-                        load_parameters->set_is_colored(reinterpret_cast<const bool &>(flag_value));
+                        Parameters::load_parameters->set_is_colored(reinterpret_cast<const bool &>(flag_value));
                     }
                     //comments flag
                     if (flag_name == LP::Static_load_parameters_names::comments) {
-                        load_parameters->set_is_comments(reinterpret_cast<const bool &>(flag_value));
+                        Parameters::load_parameters->set_is_comments(reinterpret_cast<const bool &>(flag_value));
                     }
                 } else {
-                    throw MainException("Unknown compiler flag selected"); //kill utility if unknown flag
+                    throw MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
                 }
             }
         }
@@ -219,8 +269,8 @@ namespace Main_utilities {
      @param length len of the array
      @return vector with strings
      */
-    v_string<std::string> *get_str_array(const char *char_array, const int length) {
-        const auto str_array = new v_string(length);
+    Vec<std::string> *convert_from_str_2vector(const char *char_array, const int length) {
+        const auto str_array = new Vec(length);
         for (int i = 0; i < length; ++i) {
             str_array[i].emplace_back(&char_array[i]);
         }
@@ -235,18 +285,18 @@ namespace Main_utilities {
     */
     template<typename A, typename B>
         requires std::derived_from<TA::Test_case, A> and std::derived_from<TA::Test_result, B>
-    void main_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
+    void main_utility_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
         std::chrono::steady_clock::time_point start;
         std::chrono::steady_clock::time_point end;
 
         for (const auto &ts: vts) {
             //proceed test case one by one
             utility::colored_txt_output("Name: " + utility::trim(ts.get_name()));
-            if (load_parameters->get_is_comments()) {
+            if (Parameters::load_parameters->get_is_comments()) {
                 utility::colored_txt_output("Comment: " + ts.get_comment()); //output comments to console
             }
             //get start time of the test case execution
-            if (load_parameters->get_is_time_record()) {
+            if (Parameters::load_parameters->get_is_time_record()) {
                 start = std::chrono::steady_clock::now();
             }
 
@@ -285,7 +335,7 @@ namespace Main_utilities {
                         }
                         utility::println();
 
-                        utility::print("Enter bug description (shortly): ");
+                        utility::print("Enter bug description (shortly, if you can): ");
                         bug_description = utility::userInput<std::string>();
                         if (bug_description == EXIT_SYM) {
                             break;
@@ -314,7 +364,7 @@ namespace Main_utilities {
                                 severity = TA::Severity::Blocker;
                                 [[fallthrough]]
                             default:
-                                throw;
+                                throw MainException("Unknown test severity."); //you can write endless loop to not terminate program
                         }
 
                         const auto bug = TA::Bug(bug_name, bug_description, severity);
@@ -329,7 +379,7 @@ namespace Main_utilities {
                     throw MainException("Unknown test result.");
                 }
             }
-            if (load_parameters->get_is_time_record()) {
+            if (Parameters::load_parameters->get_is_time_record()) {
                 end = std::chrono::steady_clock::now();
                 std::chrono::duration<double> elapsed_seconds = end - start;
                 utility::colored_txt_output("Seconds for this test case: " + std::to_string(elapsed_seconds.count()));
@@ -338,35 +388,59 @@ namespace Main_utilities {
     }
 }
 
-void main(const int argc, char *args) {
+void main(const int argc, const char *args) {
     arg_count = argc;
-    Main_utilities::check_flags(Main_utilities::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
-    file_reader = std::make_unique<File_controller>(load_parameters->get_entry_point());
-    parser = std::make_unique<Line_parser>();
 
-    //return modified vector with ts, after all transformations:
-    //1) get data from file,
-    //2) delete comments from file,
-    //3) create test cases
-    v_string vts = context->get_strat()->doAlgorithm(test_case_fabric->create_test_cases(parser->parse_lines_empty(file_reader->readlines())));
-    v_string vtr = std::vector<TA::Test_result>(); //for test results after test case run
-
-    //Execute main cycle of the utility
-    if (!load_parameters->get_devices_entry_point().empty()) {
-        for (v_string devices = File_controller::readlines(); const auto &dev: devices) {
-            //get devices from file
-            Main_utilities::main_cycle(vts, vtr, dev);
+    if (arg_count > 1) {
+        ///Entity init block
+        {
+            Parameters::load_parameters = std::make_unique<LP::Load_parameters>();
+            Main_utilities::check_flags(Main_utilities::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
+            Parameters::file_reader = std::make_unique<File_controller>(Parameters::load_parameters->get_entry_point());
+            Parameters::parser = std::make_unique<Line_parser>();
         }
+
+        ///Modified vector with ts, after all transformations:
+        Vec vts = Parameters::context->get_strat()->doAlgorithm(
+            Parameters::test_case_fabric->create_test_cases( //3) Create test cases objects
+                Parameters::parser->parse_directives( //2.5) parse directives in suit file
+                    Parameters::parser->parse_lines_empty( //2) Delete comments from file
+                        Parameters::file_reader->readlines() //1) Get data from entry point file
+                    )
+                )
+            )
+        );
+        auto vtr = Vec<TA::Test_result>(); ///vector for test results after test case run
+
+        //Execute main cycle of the utility
+        if (!Parameters::load_parameters->get_devices_entry_point().empty()) {
+            if (Main_utilities::check_file_existence(devices_static_file_name)) {
+                for (const Vec devices = File_controller::readlines(); const auto &device: devices) {
+                    //get devices from file
+                    utility::colored_txt_output("Device name: " + device.get_name());
+                    Main_utilities::main_utility_cycle(vts, vtr, device);
+                }
+            } else {
+                throw MainException("No device entry point file was found.");
+            }
+        } else {
+            utility::colored_txt_output("Device name: Single device mode running");
+            Main_utilities::main_utility_cycle(vts, vtr);
+        }
+
+        //proceed vector with test results at the end of cycle
+        Main_utilities::print_test_results_2console(vtr);
+
+        //write test results to file if parameter
+        if (Parameters::load_parameters->get_is_file_write()) {
+            Main_utilities::write_test_results_2file(vtr);
+        }
+        utility::colored_txt_output("Out utility, bye");
+    } else if (const std::string conv_arg = args; arg_count >= 2 and conv_arg.contains("--help")) {
+        //print help to user if user wants help
+        Main_utilities::print_help();
     } else {
-        Main_utilities::main_cycle(vts, vtr);
+        //anywhere print help to user
+        Main_utilities::print_help();
     }
-
-    //proceed vector with test results at the end of cycle
-    Main_utilities::print_test_results(vtr);
-
-    //write test results to file if parameter
-    if (load_parameters->get_is_file_write()) {
-        Main_utilities::write_to_file(vtr);
-    }
-    utility::colored_txt_output("Out utility, bye");
 }

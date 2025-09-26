@@ -3,12 +3,9 @@ project(Check_runner)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_library(Utils Util_funcs.cppm)
-
 file(GLOB sources
         "*.hpp"
         "*.cpp"
-        "*.cppm"
 )
 
 add_executable(Check_runner
@@ -16,4 +13,8 @@ add_executable(Check_runner
         ${sources}
 )
 
-target_link_libraries(Check_runner PUBLIC Utils)
+target_sources(Check_runner
+        PUBLIC
+        FILE_SET all_my_modules TYPE CXX_MODULES FILES
+        Util_funcs.cppm
+)

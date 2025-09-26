@@ -1,6 +1,8 @@
 #ifndef STRATEGYEXCEPTION_HPP
 #define STRATEGYEXCEPTION_HPP
+
 #include "Base_exception.hpp"
+#include <string>
 
 class StrategyException final : public BaseException {
 public:

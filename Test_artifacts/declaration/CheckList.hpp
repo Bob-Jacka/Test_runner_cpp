@@ -6,14 +6,18 @@
 #include "TestArtifact.hpp"
 
 namespace TA {
+    /**
+     * Entity class for representing checklist in testing.
+     */
     class CheckList final : public TestArtifact {
         std::string name;
+        std::string description;
         std::vector<std::string> steps;
 
     public:
         CheckList() = delete;
 
-        CheckList(std::string, std::vector<std::string>);
+        CheckList(std::string, std::string, std::vector<std::string>);
 
         ~CheckList() override = default;
 
