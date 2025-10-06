@@ -372,15 +372,30 @@ namespace utility {
     }
 
     /**
-     * Split string into vector or create another vector and return it.
+     * Split string into vector and no return.
      * @param s source string to split
      * @param delim delimiter to split on
      * @param elems vector with strings to add split string
      * @return vector if you want to assign to variable.
      */
-    export std::vector<std::string> &split(const std::string &s, std::vector<std::string> &elems, const char delim = ' ') {
+    export void split(const std::string &s, std::vector<std::string> &elems, const char delim = ' ') {
         std::stringstream ss(s);
         std::string item;
+        while (std::getline(ss, item, delim)) {
+            elems.push_back(item);
+        }
+    }
+
+    /**
+     * Split string into vector and return it.
+     * @param s source string to split
+     * @param delim delimiter to split on
+     * @return vector if you want to assign to variable.
+     */
+    export std::vector<std::string> &split(const std::string &s, const char delim = ' ') {
+        std::stringstream ss(s);
+        std::string item;
+        std::vector<std::string> elems;
         while (std::getline(ss, item, delim)) {
             elems.push_back(item);
         }

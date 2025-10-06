@@ -5,6 +5,8 @@
 #include "../Test_artifacts/declaration/Bug.hpp"
 #include "../Test_artifacts/declaration/CheckList.hpp"
 #include "../Test_artifacts/declaration/Test_case.hpp"
+#include "../Test_artifacts/declaration/Test_suit.hpp"
+
 import UtilFuncs_mod;
 
 /**
@@ -39,11 +41,11 @@ public:
 
     [[nodiscard]] TA::Test_case create_test_case(const std::string &, const std::string &, const TA::Priority &) const;
 
-    [[nodiscard]]
-
     [[nodiscard]] TA::Bug create_bug(const std::string &, const std::string &) const;
 
     [[nodiscard]] TA::CheckList create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
+
+    [[nodiscard]] TA::Test_suit<TA::Test_case> create_test_suit(const std::vector<std::string> &, const std::string &);
 
     //Other actions
 

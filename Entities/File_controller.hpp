@@ -22,7 +22,7 @@ public:
 
     //non-static
 
-    std::vector<std::string> readlines();
+    std::vector<std::string> &readlines();
 
     std::string readline();
 

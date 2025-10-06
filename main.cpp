@@ -181,9 +181,9 @@ namespace Main_utilities {
     }
 
     /**
-    Function for checking command line arguments.
-    @param cont_to_check constant string to check for flag value.
-    @throw unknown_compiler_flag if undefined compiler flag occurred.
+    * Function for checking command line arguments.
+    * @param cont_to_check constant string to check for flag value.
+    * @throw unknown_compiler_flag if undefined compiler flag occurred.
     */
     void check_flags(const Vec<std::string> &cont_to_check) {
         const auto check_func_full = [&](const std::string &str) -> bool {
@@ -205,7 +205,8 @@ namespace Main_utilities {
                     if (flag_name == LP::Static_load_parameters_names::entry) {
                         auto entry_point = reinterpret_cast<con_string_ref>(flag_value);
                         //check for file extension
-                        if (!check_file_extension(entry_point)) { //TODO может быть проблема в логике
+                        if (!check_file_extension(entry_point)) {
+                            //TODO может быть проблема в логике
                             //if true - user provided ext //else - user does not provide ext
                             entry_point += ".txt";
                             if (check_file_existence(entry_point)) {
@@ -401,14 +402,13 @@ void main(const int argc, const char *args) {
         }
 
         ///Modified vector with ts, after all transformations:
+        Parameters::parser->set_main_suits(Parameters::file_reader->readlines()); //1) Get data from entry point file)
+        Parameters::parser->parse_lines_empty(); //2) Delete comments from file
+        Parameters::parser->parse_directives(); //2.5) parse directives in suit file
+
+        //3) Create test cases objects
         Vec vts = Parameters::context->get_strat()->doAlgorithm(
-            Parameters::test_case_fabric->create_test_cases( //3) Create test cases objects
-                Parameters::parser->parse_directives( //2.5) parse directives in suit file
-                    Parameters::parser->parse_lines_empty( //2) Delete comments from file
-                        Parameters::file_reader->readlines() //1) Get data from entry point file
-                    )
-                )
-            )
+            Parameters::test_case_fabric->create_test_cases(Parameters::parser->get_main_suit())
         );
         auto vtr = Vec<TA::Test_result>(); ///vector for test results after test case run
 

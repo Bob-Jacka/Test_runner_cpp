@@ -8,7 +8,7 @@
 namespace LP {
     /**
      * Utility load parameters struct.
-     * Simply stores load compiler data.
+     * Simply stores load compiler data and provide it.
      */
     struct Load_parameters {
     private:
@@ -23,11 +23,14 @@ namespace LP {
 
         //strategies to run
         bool is_random_run{}; ///randomly run test cases
-        bool is_parallel_run{}; ///
+        bool is_parallel_run{}; ///strategy for parallel adding tests
         bool is_high_priority{}; ///runs only high priority test cases
+        std::vector<std::string> cli_parameters{};
 
     public:
         Load_parameters();
+
+        ~Load_parameters() = default;
 
         [[nodiscard]] std::string get_entry_point() const;
 
@@ -47,9 +50,13 @@ namespace LP {
 
         [[nodiscard]] bool get_is_file_write() const;
 
+        [[nodiscard]] std::string get_devices() const;
+
+        [[nodiscard]] std::vector<std::string> get_cli_parameters() const;
+
         void set_entry_point(const std::string &);
 
-        void set_devices_entry_point(const std::string& devices_entry_point);
+        void set_devices_entry_point(const std::string &devices_entry_point);
 
         void set_check_device_count(int);
 
@@ -113,7 +120,7 @@ namespace LP {
         this->check_device_count = check_device_count;
     }
 
-    inline void Load_parameters::set_devices_entry_point(const std::string& devices_entry_point) {
+    inline void Load_parameters::set_devices_entry_point(const std::string &devices_entry_point) {
         this->devices_entry_point = devices_entry_point;
     }
 
