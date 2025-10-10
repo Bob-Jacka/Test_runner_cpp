@@ -8,10 +8,37 @@
 #include "../Data/Constants.hpp"
 
 /**
+ * Namespace for interpreter
+ */
+namespace Line_interpreter_ns {
+    class DirectiveInterpreter {
+        mutable int interpreter_position = 0; ///position of interpreter in main suit of utility
+
+    public:
+        void directive_group(std::vector<std::string> &, const std::string &) const;
+
+        void directive_if(const std::string &) const;
+
+        void directive_elif(const std::string &) const;
+
+        void directive_else() const;
+
+        std::vector<std::string> directive_import(const std::string &) const;
+
+        //interpreter other actions
+        [[nodiscard]] int get_interpreter_position() const;
+
+        void set_interpreter_position(const int &);
+    };
+}
+
+/**
  * Line interpreter of utility
  */
 class Line_parser {
     std::vector<std::string> main_suit; ///main vector with lines
+    Line_interpreter_ns::DirectiveInterpreter interpreter;
+
     std::vector<std::string> import_suits(File_controller *file_controller) const;
 
 public:

@@ -401,4 +401,28 @@ namespace utility {
         }
         return elems;
     }
+
+    /**
+     * Function for receiving element from vector and its position.
+     * @param vec vector with elements
+     * @param elem element to find in vector or part of element in vector to search
+     * @return tuple, where first element its position and second element full value
+     */
+    export template<typename Vec_type = std::string>
+    std::tuple<int, Vec_type> get_elem_from_vector(const std::vector<Vec_type> &vec, const Vec_type &elem) {
+        return {};
+        //TODO
+    }
+
+    /**
+     * Some kind of custom hash function for grouping.
+     * Get 5 first characters from source string into "hash"
+     * @tparam hash_len_mod length modifier of hash
+     * @param str source string object to "count" hash on it.
+     * @return "hashed" string
+     */
+    export template<std::size_t hash_len_mod = 1>
+    std::string hash(const std::string &str) {
+        return "#" + str.substr(0, 0 + 5 + hash_len_mod);
+    }
 }

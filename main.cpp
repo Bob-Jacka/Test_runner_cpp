@@ -24,9 +24,9 @@ template<typename T>
 using Vec = std::pmr::vector<T>; ///short type for vector
 
 /**
- * Structure for entities data
+ * Structure for entities data in this utility.
  */
-struct Parameters {
+struct Utility_entities {
     static std::unique_ptr<LP::Load_parameters> load_parameters; ///load parameters of the utility
     static std::unique_ptr<TestCaseFabric> test_case_fabric; ///test artifacts fabric entity
     static std::unique_ptr<Strategy::StratContext> context; ///context for determining utility strategy
@@ -57,7 +57,11 @@ namespace Main_utilities {
      * @return bool value of checking.
      */
     bool check_file_extension(const std::string &file_name) {
-        return file_name.ends_with(".txt") or file_name.contains(".");
+        if (file_name.ends_with(".txt") or file_name.contains(".")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -66,7 +70,7 @@ namespace Main_utilities {
      * @throw FileControllerException
      */
     void write_test_results_2file(const Vec<TA::Test_result> &test_results) -> void {
-        if (auto file_test_results = Parameters::file_reader->create_test_result_file(); file_test_results.is_open()) {
+        if (auto file_test_results = Utility_entities::file_reader->create_test_result_file(); file_test_results.is_open()) {
             for (auto &test_result: test_results) {
                 file_test_results << test_result.get_name() << "\n";
                 file_test_results << test_result.get_device_name() << "\n";
@@ -142,7 +146,7 @@ namespace Main_utilities {
     * @return vector with generic objects.
     */
     template<typename T>
-    Vec<T> resolve_cli_args(char *argv) {
+    Vec<T> resolve_cli_args(const char *argv) {
         if (argv != nullptr) {
             auto vec = Vec(arg_count);
             auto split_line = std::vector<std::string>(arg_count);
@@ -182,7 +186,7 @@ namespace Main_utilities {
 
     /**
     * Function for checking command line arguments.
-    * @param cont_to_check constant string to check for flag value.
+    * @param cont_to_check constant string vector to check for flag value.
     * @throw unknown_compiler_flag if undefined compiler flag occurred.
     */
     void check_flags(const Vec<std::string> &cont_to_check) {
@@ -194,7 +198,6 @@ namespace Main_utilities {
         if (cont_to_check.empty()) {
             throw MainException("flags vector is empty");
         } else {
-            //if not help parameter
             for (auto &cli_param: cont_to_check) {
                 if (check_func_full(cli_param)) {
                     auto split_line = utility::line_splitter(cli_param, '=');
@@ -207,10 +210,10 @@ namespace Main_utilities {
                         //check for file extension
                         if (!check_file_extension(entry_point)) {
                             //TODO может быть проблема в логике
-                            //if true - user provided ext //else - user does not provide ext
+                            //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
                             entry_point += ".txt";
                             if (check_file_existence(entry_point)) {
-                                Parameters::load_parameters->set_entry_point(entry_point);
+                                Utility_entities::load_parameters->set_entry_point(entry_point);
                             } else {
                                 throw MainException("Entry point file does not exists in filesystem");
                             }
@@ -224,17 +227,17 @@ namespace Main_utilities {
                         const auto val = reinterpret_cast<con_string_ref>(flag_value);
                         if (val == LP::Static_load_parameters_names::high_prior_strat) {
                             utility::colored_txt_output("Using high priority strategy.");
-                            Parameters::context->set_strategy(
+                            Utility_entities::context->set_strategy(
                                 std::make_unique<auto>(Strategy::High_prior_strat())
                             );
                         } else if (val == LP::Static_load_parameters_names::random_strat) {
                             utility::colored_txt_output("Using pseudo run strategy.");
-                            Parameters::context->set_strategy(
+                            Utility_entities::context->set_strategy(
                                 std::make_unique<auto>(Strategy::Random_run_strat())
                             );
                         } else if (val == LP::Static_load_parameters_names::parallel_strat) {
                             utility::colored_txt_output("Using parallel strategy.");
-                            Parameters::context->set_strategy(
+                            Utility_entities::context->set_strategy(
                                 std::make_unique<auto>(Strategy::Parallel_strat())
                             );
                         } else {
@@ -243,19 +246,19 @@ namespace Main_utilities {
                     }
                     //need for more devices than one
                     if (flag_name == LP::Static_load_parameters_names::devices) {
-                        Parameters::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
+                        Utility_entities::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
                     }
                     //time check flag
                     if (flag_name == LP::Static_load_parameters_names::time_check) {
-                        Parameters::load_parameters->set_is_time_record(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_time_record(reinterpret_cast<const bool &>(flag_value));
                     }
                     //colored flag
                     if (flag_name == LP::Static_load_parameters_names::colored) {
-                        Parameters::load_parameters->set_is_colored(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_colored(reinterpret_cast<const bool &>(flag_value));
                     }
                     //comments flag
                     if (flag_name == LP::Static_load_parameters_names::comments) {
-                        Parameters::load_parameters->set_is_comments(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_comments(reinterpret_cast<const bool &>(flag_value));
                     }
                 } else {
                     throw MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
@@ -287,17 +290,17 @@ namespace Main_utilities {
     template<typename A, typename B>
         requires std::derived_from<TA::Test_case, A> and std::derived_from<TA::Test_result, B>
     void main_utility_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
-        std::chrono::steady_clock::time_point start;
+        std::chrono::steady_clock::time_point start; //start time of ts execution
         std::chrono::steady_clock::time_point end;
 
         for (const auto &ts: vts) {
             //proceed test case one by one
             utility::colored_txt_output("Name: " + utility::trim(ts.get_name()));
-            if (Parameters::load_parameters->get_is_comments()) {
+            if (Utility_entities::load_parameters->get_is_comments()) {
                 utility::colored_txt_output("Comment: " + ts.get_comment()); //output comments to console
             }
             //get start time of the test case execution
-            if (Parameters::load_parameters->get_is_time_record()) {
+            if (Utility_entities::load_parameters->get_is_time_record()) {
                 start = std::chrono::steady_clock::now();
             }
 
@@ -311,6 +314,7 @@ namespace Main_utilities {
                 utility::println(); //new line
             }
 
+            //result forever loop
             while (true) {
                 //test case result user input
                 auto result = TA::Test_result();
@@ -331,14 +335,14 @@ namespace Main_utilities {
                     while (true) {
                         utility::print("Enter bug name: ");
                         bug_name = utility::userInput<std::string>();
-                        if (bug_name == EXIT_SYM) {
+                        if (bug_name == Main_utilities::EXIT_SYM) {
                             break;
                         }
                         utility::println();
 
                         utility::print("Enter bug description (shortly, if you can): ");
                         bug_description = utility::userInput<std::string>();
-                        if (bug_description == EXIT_SYM) {
+                        if (bug_description == Main_utilities::EXIT_SYM) {
                             break;
                         }
                         utility::println();
@@ -380,7 +384,7 @@ namespace Main_utilities {
                     throw MainException("Unknown test result.");
                 }
             }
-            if (Parameters::load_parameters->get_is_time_record()) {
+            if (Utility_entities::load_parameters->get_is_time_record()) {
                 end = std::chrono::steady_clock::now();
                 std::chrono::duration<double> elapsed_seconds = end - start;
                 utility::colored_txt_output("Seconds for this test case: " + std::to_string(elapsed_seconds.count()));
@@ -395,25 +399,25 @@ void main(const int argc, const char *args) {
     if (arg_count > 1) {
         ///Entity init block
         {
-            Parameters::load_parameters = std::make_unique<LP::Load_parameters>();
+            Utility_entities::load_parameters = std::make_unique<LP::Load_parameters>();
             Main_utilities::check_flags(Main_utilities::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
-            Parameters::file_reader = std::make_unique<File_controller>(Parameters::load_parameters->get_entry_point());
-            Parameters::parser = std::make_unique<Line_parser>();
+            Utility_entities::file_reader = std::make_unique<File_controller>(Utility_entities::load_parameters->get_entry_point());
+            Utility_entities::parser = std::make_unique<Line_parser>();
         }
 
         ///Modified vector with ts, after all transformations:
-        Parameters::parser->set_main_suits(Parameters::file_reader->readlines()); //1) Get data from entry point file)
-        Parameters::parser->parse_lines_empty(); //2) Delete comments from file
-        Parameters::parser->parse_directives(); //2.5) parse directives in suit file
+        Utility_entities::parser->set_main_suits(Utility_entities::file_reader->readlines()); //1) Get data from entry point file)
+        Utility_entities::parser->parse_lines_empty(); //2) Delete comments from file
+        Utility_entities::parser->parse_directives(); //2.5) parse directives in suit file
 
         //3) Create test cases objects
-        Vec vts = Parameters::context->get_strat()->doAlgorithm(
-            Parameters::test_case_fabric->create_test_cases(Parameters::parser->get_main_suit())
+        Vec vts = Utility_entities::context->get_strat()->doAlgorithm(
+            Utility_entities::test_case_fabric->create_test_cases(Utility_entities::parser->get_main_suit())
         );
         auto vtr = Vec<TA::Test_result>(); ///vector for test results after test case run
 
         //Execute main cycle of the utility
-        if (!Parameters::load_parameters->get_devices_entry_point().empty()) {
+        if (!Utility_entities::load_parameters->get_devices_entry_point().empty()) {
             if (Main_utilities::check_file_existence(devices_static_file_name)) {
                 for (const Vec devices = File_controller::readlines(); const auto &device: devices) {
                     //get devices from file
@@ -432,15 +436,17 @@ void main(const int argc, const char *args) {
         Main_utilities::print_test_results_2console(vtr);
 
         //write test results to file if parameter
-        if (Parameters::load_parameters->get_is_file_write()) {
+        if (Utility_entities::load_parameters->get_is_file_write()) {
             Main_utilities::write_test_results_2file(vtr);
         }
         utility::colored_txt_output("Out utility, bye");
     } else if (const std::string conv_arg = args; arg_count >= 2 and conv_arg.contains("--help")) {
         //print help to user if user wants help
         Main_utilities::print_help();
+        exit(EXIT_SUCCESS);
     } else {
         //anywhere print help to user
         Main_utilities::print_help();
+        exit(EXIT_FAILURE);
     }
 }
