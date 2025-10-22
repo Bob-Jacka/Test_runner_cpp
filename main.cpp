@@ -286,6 +286,7 @@ namespace Main_utilities {
     * @param vts vector for test cases.
     * @param vtr vector for test results.
     * @param device optional device name.
+    * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
     */
     template<typename A, typename B>
         requires std::derived_from<TA::Test_case, A> and std::derived_from<TA::Test_result, B>
@@ -393,6 +394,12 @@ namespace Main_utilities {
     }
 }
 
+/**
+ * Program entry point
+ * @param argc
+ * @param args
+ * @throw MainException if necessary files not found
+ */
 void main(const int argc, const char *args) {
     arg_count = argc;
 

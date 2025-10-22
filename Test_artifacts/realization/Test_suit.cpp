@@ -20,7 +20,7 @@ template<typename T> requires std::derived_from<TA::TestArtifact, T>
 void TA::Test_suit<T>::count_test_artifacts() const {
     int counter = 0;
     for (register const auto &_: this->test_artifacts) {
-        counter++;
+        ++counter;
     }
 }
 

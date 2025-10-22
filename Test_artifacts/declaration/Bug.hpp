@@ -5,7 +5,7 @@
 #include "TestArtifact.hpp"
 
 /**
- * Namespace for all test artifacts
+ * Namespace for all test artifacts in testing
  */
 namespace TA {
     /**

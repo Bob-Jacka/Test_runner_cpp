@@ -30,5 +30,6 @@ DIRECTIVE step_end = "Steps_end";
 
 //Other directives:
 DIRECTIVE ignore_directive = "Ignore"; ///ignore test case with given directive from execution
+DIRECTIVE parameters_directive = "Parameters"; ///directive specially for condition checking
 
 #endif

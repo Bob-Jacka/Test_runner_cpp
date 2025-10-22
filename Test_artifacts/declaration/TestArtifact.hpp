@@ -7,6 +7,7 @@
 namespace TA {
     /**
      * Enum class representing priority of the bug or test case.
+     * Priority to execute test case or priority to fix bug.
      */
     enum class Priority {
         Low = 0,

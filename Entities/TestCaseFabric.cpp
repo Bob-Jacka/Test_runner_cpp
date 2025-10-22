@@ -46,10 +46,10 @@ TA::Bug TestCaseFabric::create_bug(const std::string &bug_name, const std::strin
     };
 }
 
-TA::CheckList TestCaseFabric::create_check_list(const std::string &name,
+TA::Check_list TestCaseFabric::create_check_list(const std::string &name,
                                                 const std::string &description,
                                                 const std::vector<std::string> &steps) const {
-    return TA::CheckList{
+    return TA::Check_list{
         .name = name,
         .description = description,
         .steps = steps

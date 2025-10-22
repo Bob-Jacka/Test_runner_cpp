@@ -1,6 +1,7 @@
 #ifndef LINEPARSER_HPP
 #define LINEPARSER_HPP
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -11,8 +12,16 @@
  * Namespace for interpreter
  */
 namespace Line_interpreter_ns {
+    /**
+     * Class for directive interpreter
+     */
     class DirectiveInterpreter {
-        mutable int interpreter_position = 0; ///position of interpreter in main suit of utility
+        mutable int interpreter_position; ///position of interpreter in main suit of utility
+        mutable std::map<std::string, std::string> suit_parameters; ///variables of suit
+
+        bool interpret_logical_expression(const std::string &);
+
+        int interpret_int_expression(const std::string &);
 
     public:
         void directive_group(std::vector<std::string> &, const std::string &) const;
@@ -25,10 +34,31 @@ namespace Line_interpreter_ns {
 
         std::vector<std::string> directive_import(const std::string &) const;
 
+        //constructor and destructor:
+        DirectiveInterpreter();
+
+        explicit DirectiveInterpreter(const std::vector<std::string> &) = delete;
+
+        DirectiveInterpreter(const DirectiveInterpreter &) = delete;
+
+        DirectiveInterpreter &operator=(const DirectiveInterpreter &) = delete;
+
+        ~DirectiveInterpreter() = default;
+
+        //parameters getter:
+        std::map<std::string, std::string> get_suit_parameters() const;
+
+        //Other methods:
+        void parse_parameters(const std::string &) const;
+
         //interpreter other actions
         [[nodiscard]] int get_interpreter_position() const;
 
-        void set_interpreter_position(const int &);
+        void set_interpreter_position(const int &) const;
+
+        void increment_interpreter_position() const;
+
+        void add_till_line_starts(const std::string &) const;
     };
 }
 
@@ -37,9 +67,9 @@ namespace Line_interpreter_ns {
  */
 class Line_parser {
     std::vector<std::string> main_suit; ///main vector with lines
-    Line_interpreter_ns::DirectiveInterpreter interpreter;
+    Line_interpreter_ns::DirectiveInterpreter interpreter; ///entity for directives execution
 
-    std::vector<std::string> import_suits(File_controller *file_controller) const;
+    std::vector<std::string> import_suits(File_controller *) const;
 
 public:
     explicit Line_parser();
@@ -54,11 +84,11 @@ public:
 
     [[nodiscard]] std::vector<std::string> get_main_suit() const;
 
-    void set_main_suits(const std::vector<std::string> &main_suits);
+    void set_main_suits(const std::vector<std::string> &);
+
+    void parse_directives() const;
 
     void parse_lines_empty() const; ///delete comments elements from vector
-
-    void parse_directives() const; ///method for parsing directives in test suit file.
 };
 
 #endif

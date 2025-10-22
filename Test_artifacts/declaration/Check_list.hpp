@@ -1,5 +1,6 @@
 #ifndef CHECKLIST_HPP
 #define CHECKLIST_HPP
+
 #include <string>
 #include <vector>
 
@@ -9,17 +10,17 @@ namespace TA {
     /**
      * Entity class for representing checklist in testing.
      */
-    class CheckList final : public TestArtifact {
+    class Check_list final : public TestArtifact {
         std::string name;
         std::string description;
         std::vector<std::string> steps;
 
     public:
-        CheckList() = delete;
+        Check_list() = delete;
 
-        CheckList(std::string, std::string, std::vector<std::string>);
+        Check_list(std::string, std::string, std::vector<std::string>);
 
-        ~CheckList() override = default;
+        ~Check_list() override = default;
 
         [[nodiscard]] std::string get_name() const override;
 
