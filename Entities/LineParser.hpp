@@ -9,7 +9,7 @@
 #include "../Data/Constants.hpp"
 
 /**
- * Namespace for interpreter
+ * Namespace for directive interpreter and other things
  */
 namespace Line_interpreter_ns {
     /**
@@ -17,11 +17,14 @@ namespace Line_interpreter_ns {
      */
     class DirectiveInterpreter {
         mutable int interpreter_position; ///position of interpreter in main suit of utility
+
         mutable std::map<std::string, std::string> suit_parameters; ///variables of suit
 
-        bool interpret_logical_expression(const std::string &);
+        std::vector<std::string> main_suit; ///main vector with lines
 
-        int interpret_int_expression(const std::string &);
+        std::vector<std::string> import_suits(File_controller *) const;
+
+        bool interpret_logical_expression(const std::string &) const;
 
     public:
         void directive_group(std::vector<std::string> &, const std::string &) const;
@@ -51,6 +54,14 @@ namespace Line_interpreter_ns {
         //Other methods:
         void parse_parameters(const std::string &) const;
 
+        [[nodiscard]] std::vector<std::string> get_main_suit() const;
+
+        void set_main_suits(const std::vector<std::string> &);
+
+        void parse_directives() const;
+
+        void parse_lines_empty() const; ///delete comments elements from vector
+
         //interpreter other actions
         [[nodiscard]] int get_interpreter_position() const;
 
@@ -61,34 +72,5 @@ namespace Line_interpreter_ns {
         void add_till_line_starts(const std::string &) const;
     };
 }
-
-/**
- * Line interpreter of utility
- */
-class Line_parser {
-    std::vector<std::string> main_suit; ///main vector with lines
-    Line_interpreter_ns::DirectiveInterpreter interpreter; ///entity for directives execution
-
-    std::vector<std::string> import_suits(File_controller *) const;
-
-public:
-    explicit Line_parser();
-
-    explicit Line_parser(const std::vector<std::string> &) = delete;
-
-    Line_parser(const Line_parser &) = delete;
-
-    Line_parser &operator=(const Line_parser &) = delete;
-
-    ~Line_parser() = default;
-
-    [[nodiscard]] std::vector<std::string> get_main_suit() const;
-
-    void set_main_suits(const std::vector<std::string> &);
-
-    void parse_directives() const;
-
-    void parse_lines_empty() const; ///delete comments elements from vector
-};
 
 #endif

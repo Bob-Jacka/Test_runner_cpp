@@ -31,7 +31,7 @@ struct Utility_entities {
     static std::unique_ptr<TestCaseFabric> test_case_fabric; ///test artifacts fabric entity
     static std::unique_ptr<Strategy::StratContext> context; ///context for determining utility strategy
     static std::unique_ptr<File_controller> file_reader; ///file controller for actions with filesystem
-    static std::unique_ptr<Line_parser> parser; ///entity for text parsing in suit
+    static std::unique_ptr<Line_interpreter_ns::DirectiveInterpreter> parser; ///entity for text parsing in suit
 };
 
 int arg_count = 0;
@@ -409,7 +409,7 @@ void main(const int argc, const char *args) {
             Utility_entities::load_parameters = std::make_unique<LP::Load_parameters>();
             Main_utilities::check_flags(Main_utilities::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
             Utility_entities::file_reader = std::make_unique<File_controller>(Utility_entities::load_parameters->get_entry_point());
-            Utility_entities::parser = std::make_unique<Line_parser>();
+            Utility_entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
         }
 
         ///Modified vector with ts, after all transformations:

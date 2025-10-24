@@ -7,10 +7,11 @@ import UtilFuncs_mod;
 class File_controller;
 
 /**
- * Execute logical expression.
+ * Execute logical expression with two arguments.
+ * @param parameters line that contains arguments and comparison sign.
  * @return bool value of result
  */
-bool Line_interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const std::string &parameters) {
+bool Line_interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const std::string &parameters) const {
     bool result = false;
     const auto arguments = utility::split(parameters); //split arguments to execute them
     if (arguments[1] == "<") {
@@ -27,13 +28,6 @@ bool Line_interpreter_ns::DirectiveInterpreter::interpret_logical_expression(con
     return result;
 }
 
-int Line_interpreter_ns::DirectiveInterpreter::interpret_int_expression(const std::string &parameters) {
-    //
-    return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 Line_interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
     this->interpreter_position = 0;
     this->suit_parameters = std::map<std::string, std::string>();
@@ -43,13 +37,16 @@ std::map<std::string, std::string> Line_interpreter_ns::DirectiveInterpreter::ge
     return this->suit_parameters;
 }
 
+/**
+ * Increment interpreter position in suit file
+ */
 void Line_interpreter_ns::DirectiveInterpreter::increment_interpreter_position() const {
-    this->interpreter_position++;
+    ++this->interpreter_position;
 }
 
 /**
  * Add lines to main_suit, till line not starts with another directive symbol
- * @param line_element_start
+ * @param line_element_start element to use as a predicate in inner loop
  */
 void Line_interpreter_ns::DirectiveInterpreter::add_till_line_starts(const std::string &line_element_start) const {
     while (true) {
@@ -74,8 +71,7 @@ void Line_interpreter_ns::DirectiveInterpreter::directive_group(std::vector<std:
         //check for directive ending and process inner test cases in group if they exist
         while (true) {
             if (const auto inner_line = main_suit[this->interpreter_position]; !inner_line.ends_with(suit_directive_end)) {
-                const auto hashed_comment_line = utility::hash(inner_line); //add hash identifier to line
-                main_suit[this->interpreter_position] = hashed_comment_line;
+                main_suit[this->interpreter_position] = utility::hash(inner_line); //add hash identifier to line
                 this->increment_interpreter_position();
             } else {
                 break;
@@ -105,7 +101,7 @@ void Line_interpreter_ns::DirectiveInterpreter::parse_parameters(const std::stri
             throw LineInterpreterException("Suit parameters should contain equal sign (=), but given " + parameter);
         }
     }
-    //It can be an error, because no parameters are given, but on the other hand it is just a message
+    //It can be an error, because no parameters are given, but on the other hand it is just a message and user might not provide any parameters
     if (this->suit_parameters.empty()) {
         utility::println("Expected parameters directive with valid attributes");
     }
@@ -144,7 +140,10 @@ void Line_interpreter_ns::DirectiveInterpreter::directive_if(const std::string &
 
     //algorithm next
     if (check_func_full(if_arguments)) {
-        Expressions::interpret_logical_expression(if_arguments);
+        const auto result = interpret_logical_expression(if_arguments);
+        if (result) {
+            //add next test cases
+        }
     } else if (check_func_short(if_arguments)) {
         //
         add_till_line_starts(directive_start);
@@ -200,51 +199,29 @@ void Line_interpreter_ns::DirectiveInterpreter::set_interpreter_position(const i
     this->interpreter_position = interpreter_position;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Private function for import different suit into given suit.
- * @return modified suit strings.
- */
-std::vector<std::string> Line_parser::import_suits(File_controller *file_controller) const {
-    //
-}
-
-Line_parser::Line_parser() {
-    this->interpreter = Line_interpreter_ns::DirectiveInterpreter();
-}
-
-std::vector<std::string> Line_parser::get_main_suit() const {
-    return this->main_suit;
-}
-
-void Line_parser::set_main_suits(const std::vector<std::string> &main_suits) {
-    this->main_suit = main_suits;
-}
-
 /**
  * Public entry point to line parser.
  * Proceed directives in input vector object one by one.
  * @throw LineInterpreterException if group directive is not valid ending.
  */
-void Line_parser::parse_directives() const {
+void Line_interpreter_ns::DirectiveInterpreter::parse_directives() const {
     for (int i = 0; i < this->main_suit.size(); ++i) {
         if (const auto &line = this->main_suit[i]; line.starts_with(directive_start)) {
             const auto split_string_line = utility::split(line, ' '); ///split directive line, 0 - dir name, 1 - param
             const auto directive_name = split_string_line[0].substr(1, split_string_line[0].length() - 2); //current dir name
 
             if (directive_name == group_directive_start) {
-                this->interpreter.directive_group(this->main_suit, directive_name);
+                directive_group(this->main_suit, directive_name);
             } else if (directive_name == if_directive) {
-                this->interpreter.directive_if(split_string_line);
+                directive_if(split_string_line[1]);
             } else if (directive_name == elif_directive) {
-                this->interpreter.directive_elif(split_string_line);
+                directive_elif(split_string_line[1]);
             } else if (directive_name == else_directive) {
-                this->interpreter.directive_else(split_string_line);
+                directive_else();
             } else if (directive_name == import_directive) {
                 this->main_suit.push_back(this->interpreter.directive_import(split_string_line)); //push lines into this
             } else if (directive_name == parameters_directive) {
-                this->interpreter.parse_parameters(split_string_line);
+                parse_parameters(split_string_line[1]);
             } else {
                 throw LineInterpreterException("Invalid line directive detected: " + directive_name);
             }
@@ -252,11 +229,19 @@ void Line_parser::parse_directives() const {
     }
 }
 
+std::vector<std::string> Line_interpreter_ns::DirectiveInterpreter::get_main_suit() const {
+    return this->main_suit;
+}
+
+void Line_interpreter_ns::DirectiveInterpreter::set_main_suits(const std::vector<std::string> &main_suits) {
+    this->main_suit = main_suits;
+}
+
 /**
  * Delete comment lines from input vector
  * @return lines vector
  */
-void Line_parser::parse_lines_empty() const {
+void Line_interpreter_ns::DirectiveInterpreter::parse_lines_empty() const {
     for (int i = 0; i < this->main_suit.size(); ++i) {
         if (auto &line = this->main_suit[i]; line.starts_with(comment)) {
             this->main_suit.erase(std::vector<auto>::reference(this->main_suit.begin() + i));

@@ -20,7 +20,7 @@ public:
 
     ~File_controller() = default;
 
-    //non-static
+    //non-static versions of read lines functions
 
     std::vector<std::string> &readlines();
 
