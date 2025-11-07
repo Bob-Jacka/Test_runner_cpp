@@ -3,14 +3,17 @@
 
 #include "Base_exception.hpp"
 
-class LineInterpreterException final : public BaseException {
-    explicit LineInterpreterException(const std::string &);
+namespace Check_exceptions {
+    class LineInterpreterException final : public BaseException {
+    public:
+        explicit LineInterpreterException(const std::string &);
 
-    ~LineInterpreterException() override;
-};
+        ~LineInterpreterException() override;
+    };
 
-inline LineInterpreterException::LineInterpreterException(const std::string &msg) {
-    utility::message_with_location(msg);
+    inline LineInterpreterException::LineInterpreterException(const std::string &msg) {
+        utility::message_with_location(msg);
+    }
 }
 
 #endif

@@ -56,7 +56,7 @@ namespace LP {
 
         void set_entry_point(const std::string &);
 
-        void set_devices_entry_point(const std::string &devices_entry_point);
+        void set_devices_entry_point(const std::string &);
 
         void set_check_device_count(int);
 
@@ -73,8 +73,7 @@ namespace LP {
         void set_is_file_write(bool);
     };
 
-    inline Load_parameters::Load_parameters() {
-    }
+    inline Load_parameters::Load_parameters() = default;
 
     inline int Load_parameters::get_check_device_count() const {
         return check_device_count;
@@ -151,7 +150,7 @@ namespace LP {
     /**
      * Static names of utility parameters.
      * Ex. --suit=<filename> or --strategy=high_prior
-     * Ex. --suit=<filename> --devices=<devices list>
+     * Ex. --suit=<filename> --devices=<devices file name>
      */
     struct Static_load_parameters_names {
         // main options

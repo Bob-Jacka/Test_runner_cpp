@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
-#include "TestArtifact.hpp"
+#include "Test_artifact.hpp"
 
 namespace TA {
     /**
      * Entity class for representing checklist in testing.
      */
-    class Check_list final : public TestArtifact {
+    class Check_list final : public Test_artifact {
         std::string name;
         std::string description;
         std::vector<std::string> steps;
@@ -18,7 +18,7 @@ namespace TA {
     public:
         Check_list() = delete;
 
-        Check_list(std::string, std::string, std::vector<std::string>);
+        Check_list(const std::string&, const std::string&, const std::vector<std::string>&);
 
         ~Check_list() override = default;
 
@@ -26,7 +26,7 @@ namespace TA {
 
         [[nodiscard]] std::vector<std::string> get_steps() const;
 
-        void to_string() const override;
+        [[nodiscard]] std::string to_string() const override;
     };
 }
 #endif

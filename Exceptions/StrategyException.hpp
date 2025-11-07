@@ -4,12 +4,14 @@
 #include "Base_exception.hpp"
 #include <string>
 
-class StrategyException final : public BaseException {
-public:
-    explicit StrategyException(const std::string &);
-};
+namespace Check_exceptions {
+    class StrategyException final : public BaseException {
+    public:
+        explicit StrategyException(const std::string &);
+    };
 
-inline StrategyException::StrategyException(const std::string &msg) {
-    utility::message_with_location(msg);
+    inline StrategyException::StrategyException(const std::string &msg) {
+        utility::message_with_location(msg);
+    }
 }
 #endif

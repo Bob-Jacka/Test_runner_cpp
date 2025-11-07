@@ -11,11 +11,11 @@ namespace Strategy {
      */
     class Parallel_strat final : public Strat {
     public:
-        Parallel_strat();
+        Parallel_strat() = default;
 
-        ~Parallel_strat() override;
+        ~Parallel_strat() override = default;
 
-        [[nodiscard]] auto doAlgorithm(std::vector<TA::Test_case>) const override;
+        [[nodiscard]] std::vector<TA::Test_case> doAlgorithm(const std::vector<TA::Test_case>&) const override;
     };
 }
 

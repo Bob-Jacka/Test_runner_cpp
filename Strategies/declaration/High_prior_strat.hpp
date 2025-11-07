@@ -5,11 +5,11 @@
 namespace Strategy {
     class High_prior_strat final : public Strat {
     public:
-        High_prior_strat();
+        High_prior_strat() = default;
 
-        ~High_prior_strat() override;
+        ~High_prior_strat() override = default;
 
-        [[nodiscard]] auto doAlgorithm(std::vector<TA::Test_case>) const override;
+        [[nodiscard]] std::vector<TA::Test_case> doAlgorithm(const std::vector<TA::Test_case>&) const override;
     };
 }
 #endif

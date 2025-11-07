@@ -1,15 +1,15 @@
 #ifndef TEST_CASE_HPP
 #define TEST_CASE_HPP
 
-#include "TestArtifact.hpp"
+#include "Test_artifact.hpp"
 
 namespace TA {
     /**
      * Data class for test case
      */
-    class Test_case final : public TestArtifact {
+    class Test_case final : public Test_artifact {
         std::string name;
-        std::string comment;
+        std::string comment; //comment or description in test case
         std::vector<std::string> steps; ///steps of the test case to execute
 
         Priority priority;
@@ -18,8 +18,8 @@ namespace TA {
     public:
         Test_case() = delete;
 
-        Test_case(std::string,
-                  std::string,
+        Test_case(const std::string &,
+                  const std::string &,
                   Priority,
                   Severity = Severity::Medium);
 
@@ -29,7 +29,7 @@ namespace TA {
 
         //operators
 
-        Test_case operator<=>(Test_case &other) const;
+        Test_case operator<=>(Test_case &) const;
 
         Test_case &operator=(const Test_case &) = delete;
 
@@ -43,7 +43,7 @@ namespace TA {
 
         [[nodiscard]] Severity get_severity() const;
 
-        void to_string() const override;
+        [[nodiscard]] std::string to_string() const override;
     };
 }
 #endif

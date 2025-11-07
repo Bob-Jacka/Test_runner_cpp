@@ -124,7 +124,7 @@ namespace utility {
      */
     export [[maybe_unused]] inline void colored_txt_output(const std::string &str, const Color &color = Color::WHITE) {
         switch (color) {
-            case Color::WHITE:
+                [[likely]] case Color::WHITE:
                 std::cout << termcolor::white;
                 break;
             case Color::RED:
@@ -136,7 +136,7 @@ namespace utility {
             case Color::GREEN:
                 std::cout << termcolor::green;
                 break;
-            default:
+                [[unlikely]] default:
                 std::cerr << "Color do not specified";
                 throw std::exception();
         }
@@ -192,7 +192,7 @@ namespace utility {
     */
     export [[maybe_unused]] std::string replace(std::string &s, const char c1, const char c2) {
         const auto l = s.length();
-        for (int i = 0; i < l; i++) {
+        for (int i = 0; i < l; ++i) {
             if (s[i] == c1) {
                 s[i] = c2;
             } else if (s[i] == c2) {
@@ -211,7 +211,7 @@ namespace utility {
     */
     export [[maybe_unused]] std::string replace(const std::string &s, const std::string &s1, const std::string &s2) {
         const auto l = s.size();
-        for (int i = 0; i < l; i++) {
+        for (int i = 0; i < l; ++i) {
             //
         }
         return "";
@@ -266,7 +266,7 @@ namespace utility {
      @param str source string
      @param replace replace this in source
      @param with replace with this string
-     @return
+     @return string with replacements
      */
     export [[maybe_unused]] inline std::string &replace_string_all(std::string &str, const std::string &replace, const std::string &with) {
         if (!replace.empty()) {
@@ -301,7 +301,7 @@ namespace utility {
     */
     export [[maybe_unused]] inline std::string convert_to_string(const std::string &input_array, const int size) {
         std::string s;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; ++i) {
             s += input_array[i];
         }
         return s;
@@ -309,9 +309,9 @@ namespace utility {
 
     /**
      * Trim string, to remove trailing whitespaces
-     * @param str
-     * @param whitespace
-     * @return
+     * @param str source string object
+     * @param whitespace separator between elements
+     * @return changed string object
      */
     export std::string trim(const std::string &str, const std::string &whitespace = " \t") {
         const auto strBegin = str.find_first_not_of(whitespace);
@@ -362,16 +362,6 @@ namespace utility {
     }
 
     /**
-    * Platform independent filepath getter.
-    * @deprecated because crashes program.
-    * @return string value of current path
-    */
-    export inline std::string getCwd() {
-        const std::filesystem::path currentPath = std::filesystem::current_path();
-        return currentPath.string();
-    }
-
-    /**
      * Split string into vector and no return.
      * @param s source string to split
      * @param delim delimiter to split on
@@ -387,12 +377,12 @@ namespace utility {
     }
 
     /**
-     * Split string into vector and return it.
+     * Split string into vector and return changed string.
      * @param s source string to split
      * @param delim delimiter to split on
      * @return vector if you want to assign to variable.
      */
-    export std::vector<std::string> &split(const std::string &s, const char delim = ' ') {
+    export std::vector<std::string> split(const std::string &s, const char delim = ' ') {
         std::stringstream ss(s);
         std::string item;
         std::vector<std::string> elems;

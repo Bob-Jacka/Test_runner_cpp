@@ -15,7 +15,7 @@ namespace Strategy {
 
         virtual ~Strat() = default;
 
-        [[nodiscard]] virtual auto doAlgorithm(std::vector<TA::Test_case>) const = 0;
+        [[nodiscard]] virtual std::vector<TA::Test_case> doAlgorithm(const std::vector<TA::Test_case> &) const = 0;
     };
 }
 

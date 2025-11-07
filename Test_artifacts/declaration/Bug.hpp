@@ -2,7 +2,7 @@
 #define BUG_HPP
 #include <string>
 
-#include "TestArtifact.hpp"
+#include "Test_artifact.hpp"
 
 /**
  * Namespace for all test artifacts in testing
@@ -11,13 +11,13 @@ namespace TA {
     /**
      * Data class for bug entity.
      */
-    class Bug final : TestArtifact {
+    class Bug final : Test_artifact {
         std::string name;
         std::string description;
         Severity severity;
 
     public:
-        Bug(std::string name, std::string description, Severity severity = Severity::Low);
+        Bug(const std::string& name, const std::string& description, Severity severity = Severity::Low);
 
         Bug() = delete;
 
@@ -33,7 +33,7 @@ namespace TA {
 
         Bug operator<=>(Bug &other) const;
 
-        void to_string() const override;
+        [[nodiscard]] std::string to_string() const override;
     };
 }
 #endif

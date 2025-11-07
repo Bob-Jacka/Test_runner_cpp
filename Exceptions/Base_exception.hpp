@@ -5,17 +5,22 @@ import UtilFuncs_mod;
 
 #include <exception>
 
-class BaseException : public std::exception {
-public:
-    [[nodiscard]] const char * what() const noexcept override;
+/**
+ * Namespace for exceptions in check runner
+ */
+namespace Check_exceptions {
+    class BaseException : public std::exception {
+    public:
+        [[nodiscard]] const char *what() const noexcept override;
 
-    BaseException();
+        BaseException();
 
-    ~BaseException() override;
-};
+        ~BaseException() override;
+    };
 
-inline const char * BaseException::what() const noexcept {
-    return exception::what();
+    inline const char *BaseException::what() const noexcept {
+        return exception::what();
+    }
 }
 
 #endif

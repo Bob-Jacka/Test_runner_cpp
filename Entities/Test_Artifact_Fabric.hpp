@@ -25,19 +25,19 @@ enum class TS_style {
  * Entity for creating test cases.
  * Also support decompose to other formats.
  */
-class TestCaseFabric {
+class Test_artifact_fabric {
 public:
-    TestCaseFabric();
+    Test_artifact_fabric();
 
-    ~TestCaseFabric();
+    ~Test_artifact_fabric();
 
-    TestCaseFabric(const TestCaseFabric &) = delete;
+    Test_artifact_fabric(const Test_artifact_fabric &) = delete;
 
-    TestCaseFabric &operator=(const TestCaseFabric &) = delete;
+    Test_artifact_fabric &operator=(const Test_artifact_fabric &) = delete;
 
     //Methods for creating test artifacts
 
-    [[nodiscard]] std::vector<TA::Test_case> create_test_cases(const std::vector<std::string> &) const;
+    [[nodiscard]] std::vector<TA::Test_case> &create_test_cases(const std::vector<std::string> &) const;
 
     [[nodiscard]] TA::Test_case create_test_case(const std::string &, const std::string &, const TA::Priority &) const;
 
@@ -45,11 +45,11 @@ public:
 
     [[nodiscard]] TA::Check_list create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Test_suit<TA::Test_case> create_test_suit(const std::vector<std::string> &, const std::string &);
+    [[nodiscard]] TA::Test_suit<TA::Test_case> create_test_suit(const std::vector<std::string> &, const std::string &) const;
 
     //Other actions
 
-    void delete_test_case() const;
+    void delete_test_case(const std::vector<TA::Test_case> &, const std::string &) const;
 
     [[nodiscard]] std::string decompose_test_case(TS_style) const;
 };

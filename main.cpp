@@ -10,7 +10,7 @@
 #include "Entities/File_controller.hpp"
 #include "Entities/LineParser.hpp"
 #include "Exceptions/MainException.hpp"
-#include "Entities/TestCaseFabric.hpp"
+#include "Entities/Test_artifact_fabric.hpp"
 #include "Exceptions/FileControllerException.hpp"
 #include "Strategies/declaration/Random_run_strat.hpp"
 #include "Strategies/declaration/High_prior_strat.hpp"
@@ -21,16 +21,15 @@
 import UtilFuncs_mod;
 
 template<typename T>
-using Vec = std::pmr::vector<T>; ///short type for vector
+using Vec = std::vector<T>; ///short type for vector
 
 /**
  * Structure for entities data in this utility.
  */
 struct Utility_entities {
     static std::unique_ptr<LP::Load_parameters> load_parameters; ///load parameters of the utility
-    static std::unique_ptr<TestCaseFabric> test_case_fabric; ///test artifacts fabric entity
+    static std::unique_ptr<Test_artifact_fabric> test_case_fabric; ///test artifacts fabric entity
     static std::unique_ptr<Strategy::StratContext> context; ///context for determining utility strategy
-    static std::unique_ptr<File_controller> file_reader; ///file controller for actions with filesystem
     static std::unique_ptr<Line_interpreter_ns::DirectiveInterpreter> parser; ///entity for text parsing in suit
 };
 
@@ -65,16 +64,16 @@ namespace Main_utilities {
     }
 
     /**
-     * Write test results to file.
+     * Write down test results to file.
      * @param test_results vector with test results.
-     * @throw FileControllerException
+     * @throw FileControllerException if unknown bug severity
      */
     void write_test_results_2file(const Vec<TA::Test_result> &test_results) -> void {
-        if (auto file_test_results = Utility_entities::file_reader->create_test_result_file(); file_test_results.is_open()) {
+        if (auto file_test_results = File_controller::create_test_result_file(); file_test_results.is_open()) {
             for (auto &test_result: test_results) {
                 file_test_results << test_result.get_name() << "\n";
                 file_test_results << test_result.get_device_name() << "\n";
-                file_test_results << test_result.get_description() << "\n";
+                file_test_results << test_result.get_result() << "\n";
                 if (const auto bugs = test_result.get_bugs(); !bugs.empty()) {
                     int counter = 1; //if you are a programmer - you can start from 0 value!
                     file_test_results << "Found Bugs:" << "\n";
@@ -100,10 +99,10 @@ namespace Main_utilities {
                                 test_severity = "Blocker";
                                 break;
                             default:
-                                throw FileControllerException("Error in checking for enum value.");
+                                throw Check_exceptions::FileControllerException("Error in checking for enum value.");
                         }
                         file_test_results << "\tBug severity: " << test_severity << "\n";
-                        counter++;
+                        ++counter;
                     }
                 } else {
                     //no bug found branch
@@ -111,7 +110,7 @@ namespace Main_utilities {
                 }
             }
         } else {
-            throw FileControllerException("Error in open file for test results.");
+            throw Check_exceptions::FileControllerException("Error in open file for test results.");
         }
         utility::colored_txt_output("Results written to test results file");
     }
@@ -122,12 +121,12 @@ namespace Main_utilities {
     */
     void print_test_results_2console(const Vec<TA::Test_result> &vec) {
         int counter = 1;
-        for (auto &elem: vec) {
+        for (const auto &res: vec) {
             //elem = Test result object
             utility::print(counter);
-            utility::colored_txt_output(elem.get_name());
-            utility::colored_txt_output(elem.get_description());
-            if (const auto bugs = elem.get_bugs(); !bugs.empty()) {
+            utility::colored_txt_output("Test name: " + res.get_name());
+            utility::colored_txt_output("Test result: " + res.get_result());
+            if (const auto &bugs = res.get_bugs(); !bugs.empty()) {
                 for (const auto &bug: bugs) {
                     utility::colored_txt_output("\tBug name: " + bug.get_name());
                     utility::colored_txt_output("\tBug description: " + bug.get_description());
@@ -177,11 +176,11 @@ namespace Main_utilities {
         utility::println("\t5. 'comments' - for test case comment output");
         utility::println(); //just new line in console
         utility::println("Available utility directives in files with tests:");
-        utility::println("\t1. 'suit_start' - directive for indication for test suit start,");
-        utility::println("\t2. 'suit_end' - directive for indication for test suit end,");
-        utility::println("\t3. 'if' - usual if operator for branching in many programming languages,");
-        utility::println("\t4. 'else' - additional directive for if");
-        utility::println("\t5. 'end_if' - closes if condition");
+        utility::println("\t1. 'Group_start' - directive for indication for test suit start,");
+        utility::println("\t2. 'Group_end' - directive for indication for test suit end,");
+        utility::println("\t3. 'If' - usual if operator for branching in many programming languages,");
+        utility::println("\t4. 'Else' - additional directive for if");
+        utility::println("\t5. 'End_if' - closes if condition");
     }
 
     /**
@@ -193,10 +192,11 @@ namespace Main_utilities {
         const auto check_func_full = [&](const std::string &str) -> bool {
             return str.contains("=") and str.contains("--");
         }; ///lambda for checking if string is a flag or not.
-        using con_string_ref = const std::string &; ///short version of type
+        using con_string_ref = const std::string &; ///short version of type for string values
+        using con_bool_ref = const bool &; ///short version of type for boolean values
 
         if (cont_to_check.empty()) {
-            throw MainException("flags vector is empty");
+            throw Check_exceptions::MainException("flags vector is empty");
         } else {
             for (auto &cli_param: cont_to_check) {
                 if (check_func_full(cli_param)) {
@@ -215,10 +215,10 @@ namespace Main_utilities {
                             if (check_file_existence(entry_point)) {
                                 Utility_entities::load_parameters->set_entry_point(entry_point);
                             } else {
-                                throw MainException("Entry point file does not exists in filesystem");
+                                throw Check_exceptions::MainException("Entry point file does not exists in filesystem");
                             }
                         } else {
-                            throw MainException("Wrong file extension in file name: " + entry_point);
+                            throw Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
                         }
                         break;
                     }
@@ -241,7 +241,7 @@ namespace Main_utilities {
                                 std::make_unique<auto>(Strategy::Parallel_strat())
                             );
                         } else {
-                            throw MainException("No strategy selected.");
+                            throw Check_exceptions::MainException("No strategy selected.");
                         }
                     }
                     //need for more devices than one
@@ -250,18 +250,18 @@ namespace Main_utilities {
                     }
                     //time check flag
                     if (flag_name == LP::Static_load_parameters_names::time_check) {
-                        Utility_entities::load_parameters->set_is_time_record(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_time_record(reinterpret_cast<con_bool_ref>(flag_value));
                     }
                     //colored flag
                     if (flag_name == LP::Static_load_parameters_names::colored) {
-                        Utility_entities::load_parameters->set_is_colored(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_colored(reinterpret_cast<con_bool_ref>(flag_value));
                     }
                     //comments flag
                     if (flag_name == LP::Static_load_parameters_names::comments) {
-                        Utility_entities::load_parameters->set_is_comments(reinterpret_cast<const bool &>(flag_value));
+                        Utility_entities::load_parameters->set_is_comments(reinterpret_cast<con_bool_ref>(flag_value));
                     }
                 } else {
-                    throw MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
+                    throw Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
                 }
             }
         }
@@ -289,7 +289,7 @@ namespace Main_utilities {
     * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
     */
     template<typename A, typename B>
-        requires std::derived_from<TA::Test_case, A> and std::derived_from<TA::Test_result, B>
+        requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
     void main_utility_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
         std::chrono::steady_clock::time_point start; //start time of ts execution
         std::chrono::steady_clock::time_point end;
@@ -326,12 +326,12 @@ namespace Main_utilities {
                     result.set_name(ts.get_name());
                     result.set_result(action);
 
-                    utility::println("Write down bugs parameters:");
                     utility::println("To exit enter 'exit' word");
+                    utility::println("Write down bugs attributes:");
 
                     std::string bug_name;
                     std::string bug_description;
-                    std::string bug_severity;
+                    std::string maybe_bug_severity;
 
                     while (true) {
                         utility::print("Enter bug name: ");
@@ -339,38 +339,34 @@ namespace Main_utilities {
                         if (bug_name == Main_utilities::EXIT_SYM) {
                             break;
                         }
-                        utility::println();
+                        utility::println(); //simple new line
 
                         utility::print("Enter bug description (shortly, if you can): ");
                         bug_description = utility::userInput<std::string>();
                         if (bug_description == Main_utilities::EXIT_SYM) {
                             break;
                         }
-                        utility::println();
+                        utility::println(); //simple new line
 
                         utility::print("Enter bug severity: ");
-                        bug_severity = utility::userInput<std::string>();
-                        if (bug_severity == EXIT_SYM) {
+                        maybe_bug_severity = utility::userInput<std::string>();
+                        if (maybe_bug_severity == EXIT_SYM) {
                             break;
                         }
-                        utility::println();
+                        utility::println(); //simple new line
 
                         TA::Severity severity;
-                        switch (bug_severity) {
-                            case "Low":
-                                severity = TA::Severity::Low;
-                                [[fallthrough]]
-                            case "Medium":
-                                severity = TA::Severity::Medium;
-                                [[fallthrough]]
-                            case "High":
-                                severity = TA::Severity::High;
-                                [[fallthrough]]
-                            case "Blocker":
-                                severity = TA::Severity::Blocker;
-                                [[fallthrough]]
-                            default:
-                                throw MainException("Unknown test severity."); //you can write endless loop to not terminate program
+                        if (maybe_bug_severity == "Low") {
+                            severity = TA::Severity::Low;
+                        } else if (maybe_bug_severity == "Medium") {
+                            severity = TA::Severity::Medium;
+                        } else if (maybe_bug_severity == "High") {
+                            severity = TA::Severity::High;
+                        } else if (maybe_bug_severity == "Blocker") {
+                            severity = TA::Severity::Blocker;
+                        } else {
+                            //you can write endless loop to not terminate program
+                            throw Check_exceptions::MainException("Unknown test severity.");
                         }
 
                         const auto bug = TA::Bug(bug_name, bug_description, severity);
@@ -381,14 +377,14 @@ namespace Main_utilities {
                     vtr.push_back(result);
                     break;
                 } else {
-                    //it can be no exception, if you want
-                    throw MainException("Unknown test result.");
+                    //it can be no exception, if you want to not terminate program
+                    throw Check_exceptions::MainException("Unknown test result.");
                 }
             }
             if (Utility_entities::load_parameters->get_is_time_record()) {
                 end = std::chrono::steady_clock::now();
                 std::chrono::duration<double> elapsed_seconds = end - start;
-                utility::colored_txt_output("Seconds for this test case: " + std::to_string(elapsed_seconds.count()));
+                utility::colored_txt_output("Elapsed seconds for this test case: " + std::to_string(elapsed_seconds.count()));
             }
         }
     }
@@ -396,8 +392,8 @@ namespace Main_utilities {
 
 /**
  * Program entry point
- * @param argc
- * @param args
+ * @param argc count of arguments in utility cli
+ * @param args given arguments
  * @throw MainException if necessary files not found
  */
 void main(const int argc, const char *args) {
@@ -408,31 +404,32 @@ void main(const int argc, const char *args) {
         {
             Utility_entities::load_parameters = std::make_unique<LP::Load_parameters>();
             Main_utilities::check_flags(Main_utilities::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
-            Utility_entities::file_reader = std::make_unique<File_controller>(Utility_entities::load_parameters->get_entry_point());
             Utility_entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
         }
 
-        ///Modified vector with ts, after all transformations:
-        Utility_entities::parser->set_main_suits(Utility_entities::file_reader->readlines()); //1) Get data from entry point file)
-        Utility_entities::parser->parse_lines_empty(); //2) Delete comments from file
-        Utility_entities::parser->parse_directives(); //2.5) parse directives in suit file
+        //Modified vector with ts, after all transformations:
+        //1) Get data from entry point file
+        auto lines_from_file = File_controller::readlines(Utility_entities::load_parameters->get_entry_point());
+        Utility_entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
+        Utility_entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
 
         //3) Create test cases objects
-        Vec vts = Utility_entities::context->get_strat()->doAlgorithm(
-            Utility_entities::test_case_fabric->create_test_cases(Utility_entities::parser->get_main_suit())
+        const Vec vts = Utility_entities::context->get_strat()->doAlgorithm(
+            Utility_entities::test_case_fabric->create_test_cases(lines_from_file)
         );
         auto vtr = Vec<TA::Test_result>(); ///vector for test results after test case run
 
         //Execute main cycle of the utility
         if (!Utility_entities::load_parameters->get_devices_entry_point().empty()) {
             if (Main_utilities::check_file_existence(devices_static_file_name)) {
-                for (const Vec devices = File_controller::readlines(); const auto &device: devices) {
+                const Vec devices = File_controller::readlines(Utility_entities::load_parameters->get_devices_entry_point());
+                for (const auto &device: devices) {
                     //get devices from file
-                    utility::colored_txt_output("Device name: " + device.get_name());
+                    utility::colored_txt_output("Device name: " + device);
                     Main_utilities::main_utility_cycle(vts, vtr, device);
                 }
             } else {
-                throw MainException("No device entry point file was found.");
+                throw Check_exceptions::MainException("No device entry point file was found.");
             }
         } else {
             utility::colored_txt_output("Device name: Single device mode running");
@@ -442,17 +439,17 @@ void main(const int argc, const char *args) {
         //proceed vector with test results at the end of cycle
         Main_utilities::print_test_results_2console(vtr);
 
-        //write test results to file if parameter
+        //write test results to file if parameter is true
         if (Utility_entities::load_parameters->get_is_file_write()) {
             Main_utilities::write_test_results_2file(vtr);
         }
         utility::colored_txt_output("Out utility, bye");
-    } else if (const std::string conv_arg = args; arg_count >= 2 and conv_arg.contains("--help")) {
+    } else if (const std::string conv_arg = args; arg_count == 2 and conv_arg.contains("--help")) {
         //print help to user if user wants help
         Main_utilities::print_help();
         exit(EXIT_SUCCESS);
     } else {
-        //anywhere print help to user
+        //anyway, print help to user
         Main_utilities::print_help();
         exit(EXIT_FAILURE);
     }

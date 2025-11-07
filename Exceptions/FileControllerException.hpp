@@ -3,15 +3,17 @@
 
 #include "Base_exception.hpp"
 
-class FileControllerException final : public BaseException {
-public:
-    explicit FileControllerException(const std::string &);
+namespace Check_exceptions {
+    class FileControllerException final : public BaseException {
+    public:
+        explicit FileControllerException(const std::string &);
 
-    ~FileControllerException() override;
-};
+        ~FileControllerException() override;
+    };
 
-inline FileControllerException::FileControllerException(const std::string &msg) {
-    utility::message_with_location(msg);
+    inline FileControllerException::FileControllerException(const std::string &msg) {
+        utility::message_with_location(msg);
+    }
 }
 
 #endif

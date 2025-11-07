@@ -6,16 +6,16 @@
 #include "Bug.hpp"
 
 namespace TA {
-    class Test_result final : public TestArtifact {
+    class Test_result final : public Test_artifact {
         std::string name; ///actually test case name
         std::string result;
         std::string device_name;
         std::vector<Bug> bugs;
 
     public:
-        Test_result(std::string, std::string, std::vector<Bug>);
+        Test_result(const std::string &, const std::string &, const std::vector<Bug> &);
 
-        Test_result(std::string, std::string);
+        Test_result(const std::string &, const std::string &);
 
         Test_result();
 
@@ -25,23 +25,21 @@ namespace TA {
 
         [[nodiscard]] std::string get_name() const override;
 
-        [[nodiscard]] std::string get_description() const;
+        [[nodiscard]] std::string get_result() const;
 
         [[nodiscard]] std::string get_device_name() const;
 
-        void set_result(std::string);
+        void set_result(const std::string &);
 
-        void set_bugs(std::vector<Bug>);
+        void set_bugs(const std::vector<Bug> &);
 
-        void set_name(std::string);
+        void set_name(const std::string &);
 
-        void set_device_name(std::string);
+        void set_device_name(const std::string &);
 
-        void set_description(std::string);
+        void add_bug(const Bug &);
 
-        void add_bug(Bug);
-
-        void to_string() const override;
+        [[nodiscard]] std::string to_string() const override;
     };
 }
 #endif
