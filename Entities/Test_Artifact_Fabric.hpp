@@ -14,9 +14,9 @@ import UtilFuncs_mod;
  */
 enum class TS_style {
     TXT, //style for simple txt notepad
-    GOOGLE_STYLESHEET,
+    GOOGLE_STYLESHEET, //Special for Google tables
     TEST_RAIL,
-    JIRA,
+    JIRA, //Confluence style
     XML,
     JSON
 };
@@ -39,19 +39,15 @@ public:
 
     [[nodiscard]] std::vector<TA::Test_case> &create_test_cases(const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Test_case create_test_case(const std::string &, const std::string &, const TA::Priority &) const;
+    [[nodiscard]] TA::Bug *create_bug(const std::string &, const std::string &) const;
 
-    [[nodiscard]] TA::Bug create_bug(const std::string &, const std::string &) const;
+    [[nodiscard]] TA::Check_list *create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Check_list create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
-
-    [[nodiscard]] TA::Test_suit<TA::Test_case> create_test_suit(const std::vector<std::string> &, const std::string &) const;
+    [[nodiscard]] TA::Test_suit<TA::Test_case> *create_test_suit(const std::vector<std::string> &, const std::string &) const;
 
     //Other actions
 
-    void delete_test_case(const std::vector<TA::Test_case> &, const std::string &) const;
-
-    [[nodiscard]] std::string decompose_test_case(TS_style) const;
+    [[nodiscard]] std::string decompose_test_case(const TA::Test_case &, TS_style) const;
 };
 
 #endif

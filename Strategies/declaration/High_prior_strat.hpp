@@ -9,7 +9,7 @@ namespace Strategy {
 
         ~High_prior_strat() override = default;
 
-        [[nodiscard]] std::vector<TA::Test_case> doAlgorithm(const std::vector<TA::Test_case>&) const override;
+        [[nodiscard]] std::vector<TA::Test_case> doAlgorithm(std::vector<TA::Test_case>&) const override;
     };
 }
 #endif

@@ -118,7 +118,7 @@ void Line_interpreter_ns::DirectiveInterpreter::parse_parameters(const std::stri
 
     for (const auto &parameter: split_line) {
         if (check_lambda(parameter)) {
-            const auto name_and_value = utility::split(parameter, '=');
+            auto name_and_value = utility::split(parameter, '=');
             this->suit_parameters.insert(name_and_value[0], name_and_value[1]); //insert name and value of parameter into map
         } else {
             throw Check_exceptions::LineInterpreterException("Suit parameters should contain equal sign (=), but given " + parameter);
@@ -176,9 +176,8 @@ bool Line_interpreter_ns::DirectiveInterpreter::high_level_branch_wrapper(const 
             return true;
         } // else branch is not success
         return false;
-    } else {
-        throw Check_exceptions::LineInterpreterException("Unknown if directive state: " + _arguments);
     }
+    throw Check_exceptions::LineInterpreterException("Unknown if directive state: " + _arguments);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,12 +238,12 @@ void Line_interpreter_ns::DirectiveInterpreter::parse_directives(const std::vect
 }
 
 /**
- * Delete comment lines from input vector
- * @return lines vector
+ * Delete comment lines from input vector.
+ * Also delete ignore lines that starts with -ignore directive
  */
 void Line_interpreter_ns::DirectiveInterpreter::parse_lines_empty(std::vector<std::string> &input_vector) const {
     for (int i = 0; i < input_vector.size(); ++i) {
-        if (auto &line = input_vector[i]; line.starts_with(comment)) {
+        if (auto &line = input_vector[i]; line.starts_with(comment) or line.starts_with(ignore_directive)) {
             input_vector.erase(input_vector.begin() + i);
         }
     }

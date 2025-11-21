@@ -2,17 +2,19 @@
 #define CONSTANTS_HPP
 
 #define DIRECTIVE constexpr auto ///special type for directives in utility
+#define JUST_CONSTANT constexpr auto ///special type for constants
 
 //File with utility constants / settings
 
-DIRECTIVE version = "0.0.3"; ///version of the app
-DIRECTIVE comment = "*"; ///use for mark line in suit as a comment
-DIRECTIVE directive_start = "#"; ///use for mark line in suit as a utility directive
-DIRECTIVE test_case_separator = "|"; ///symbol for separating modified string line to test case
+JUST_CONSTANT version = "0.0.4"; ///version of the app
+JUST_CONSTANT comment = "*"; ///use for mark line in suit as a comment
+JUST_CONSTANT directive_start = "#"; ///use for mark line in suit as a utility directive
+JUST_CONSTANT test_case_separator = "|"; ///symbol for separating modified string line to test case
+JUST_CONSTANT stop_word = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
 
 /**
  * triggers suit creation if : symbol is standing at the end of line and not contain | symbol.
- * Also used in other directives
+ * Also used in other directives, like if or elif.
  */
 DIRECTIVE group_indicator = ":";
 
@@ -35,7 +37,7 @@ DIRECTIVE import_directive = "Import"; ///for importing another suit, require on
 DIRECTIVE step_start = "Steps_start"; ///start of the steps in test case comment area
 DIRECTIVE step_end = "Steps_end";
 
-//Other directives:
+//Other directives in utility:
 DIRECTIVE ignore_directive = "Ignore"; ///ignore test case with given directive from execution, alternative method to just comment line with *
 DIRECTIVE parameters_directive = "Parameters"; ///directive specially for condition checking, example of usage - #Parameters: a=true, b=true
 

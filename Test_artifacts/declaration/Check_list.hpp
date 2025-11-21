@@ -18,13 +18,17 @@ namespace TA {
     public:
         Check_list() = delete;
 
-        Check_list(const std::string&, const std::string&, const std::vector<std::string>&);
+        Check_list(const std::string &, const std::string &);
+
+        Check_list(const std::string &, const std::string &, const std::vector<std::string> &);
 
         ~Check_list() override = default;
 
         [[nodiscard]] std::string get_name() const override;
 
         [[nodiscard]] std::vector<std::string> get_steps() const;
+
+        [[nodiscard]] std::string get_description() const;
 
         [[nodiscard]] std::string to_string() const override;
     };

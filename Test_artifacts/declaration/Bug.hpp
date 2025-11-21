@@ -17,7 +17,7 @@ namespace TA {
         Severity severity;
 
     public:
-        Bug(const std::string& name, const std::string& description, Severity severity = Severity::Low);
+        Bug(const std::string &, const std::string &, Severity severity = Severity::Low);
 
         Bug() = delete;
 

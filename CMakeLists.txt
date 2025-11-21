@@ -3,6 +3,13 @@ project(Check_runner)
 
 set(CMAKE_CXX_STANDARD 23)
 
+if (DEFINED TEST_INCLUDE)
+    add_executable(Check_runner
+            Tests/Test_dependencie/catch_amalgamated.hpp
+            Tests/Test_dependencie/catch_amalgamated.cpp
+    )
+endif ()
+
 add_executable(Check_runner
         main.cpp
         Exceptions/Base_exception.hpp

@@ -13,7 +13,8 @@ namespace LP {
     struct Load_parameters {
     private:
         std::string entry_point; ///entry point of utility use.
-        std::string devices_entry_point; //file with devices
+        std::string devices_entry_point; ///file with devices to test on
+        std::string parameters; ///main parameters in utility
         int check_device_count{}; ///count of devices for test on.
 
         bool is_colored{};
@@ -25,7 +26,6 @@ namespace LP {
         bool is_random_run{}; ///randomly run test cases
         bool is_parallel_run{}; ///strategy for parallel adding tests
         bool is_high_priority{}; ///runs only high priority test cases
-        std::vector<std::string> cli_parameters{};
 
     public:
         Load_parameters();
@@ -54,6 +54,8 @@ namespace LP {
 
         [[nodiscard]] std::vector<std::string> get_cli_parameters() const;
 
+        [[nodiscard]] std::string get_parameters() const;
+
         void set_entry_point(const std::string &);
 
         void set_devices_entry_point(const std::string &);
@@ -71,6 +73,8 @@ namespace LP {
         void set_is_high_priority(bool);
 
         void set_is_file_write(bool);
+
+        void set_parameters(const std::string &);
     };
 
     inline Load_parameters::Load_parameters() = default;
@@ -111,6 +115,10 @@ namespace LP {
         return is_file_write;
     }
 
+    inline std::string Load_parameters::get_parameters() const {
+        return parameters;
+    }
+
     inline void Load_parameters::set_entry_point(const std::string &) {
         this->entry_point = entry_point;
     }
@@ -147,6 +155,10 @@ namespace LP {
         this->is_file_write = get_devices;
     }
 
+    inline void Load_parameters::set_parameters(const std::string &parameters) {
+        this->parameters = parameters;
+    }
+
     /**
      * Static names of utility parameters.
      * Ex. --suit=<filename> or --strategy=high_prior
@@ -162,6 +174,7 @@ namespace LP {
         static constexpr std::string time_check = "time_record";
         static constexpr std::string comments = "comment";
         static constexpr std::string colored = "colored";
+        static constexpr std::string parameters = "parameters";
 
         // strategies, cannot be None (required)
         static constexpr std::string high_prior_strat = "high_prior";

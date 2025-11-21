@@ -33,7 +33,7 @@ struct Utility_entities {
     static std::unique_ptr<Line_interpreter_ns::DirectiveInterpreter> parser; ///entity for text parsing in suit
 };
 
-int arg_count = 0;
+int arg_count = 0; //count of arguments in utility
 
 /**
  * Special namespace for functions that used in Main function
@@ -126,8 +126,8 @@ namespace Main_utilities {
             utility::print(counter);
             utility::colored_txt_output("Test name: " + res.get_name());
             utility::colored_txt_output("Test result: " + res.get_result());
-            if (const auto &bugs = res.get_bugs(); !bugs.empty()) {
-                for (const auto &bug: bugs) {
+            if (const auto &bugs_vec = res.get_bugs(); !bugs_vec.empty()) {
+                for (const auto &bug: bugs_vec) {
                     utility::colored_txt_output("\tBug name: " + bug.get_name());
                     utility::colored_txt_output("\tBug description: " + bug.get_description());
                     utility::colored_txt_output("\tBug severity: " + reinterpret_cast<auto>(bug.get_severity()));
@@ -163,8 +163,7 @@ namespace Main_utilities {
      */
     void print_help() -> void {
         utility::println("Test runner C++ edition");
-        utility::println("Utility description: - utility is using for test cycles");
-        utility::println(); //just new line in console
+        utility::println("Utility description: - utility is using for test cycles\n");
         utility::println("Utility parameters:");
         utility::println("\t1. 'strategy' - used for specifying run strategy");
         utility::println("\t\t1.1 'high_prior' - for only high priority test run");
@@ -173,8 +172,7 @@ namespace Main_utilities {
         utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
         utility::println("\t3. 'time_record' - for record time, during test case execution");
         utility::println("\t4. 'colored' - for color text output");
-        utility::println("\t5. 'comments' - for test case comment output");
-        utility::println(); //just new line in console
+        utility::println("\t5. 'comments' - for test case comment output\n");
         utility::println("Available utility directives in files with tests:");
         utility::println("\t1. 'Group_start' - directive for indication for test suit start,");
         utility::println("\t2. 'Group_end' - directive for indication for test suit end,");
@@ -228,22 +226,27 @@ namespace Main_utilities {
                         if (val == LP::Static_load_parameters_names::high_prior_strat) {
                             utility::colored_txt_output("Using high priority strategy.");
                             Utility_entities::context->set_strategy(
-                                std::make_unique<auto>(Strategy::High_prior_strat())
+                                std::make_unique<auto>(new Strategy::High_prior_strat())
                             );
                         } else if (val == LP::Static_load_parameters_names::random_strat) {
                             utility::colored_txt_output("Using pseudo run strategy.");
                             Utility_entities::context->set_strategy(
-                                std::make_unique<auto>(Strategy::Random_run_strat())
+                                std::make_unique<auto>(new Strategy::Random_run_strat())
                             );
                         } else if (val == LP::Static_load_parameters_names::parallel_strat) {
                             utility::colored_txt_output("Using parallel strategy.");
                             Utility_entities::context->set_strategy(
-                                std::make_unique<auto>(Strategy::Parallel_strat())
+                                std::make_unique<auto>(new Strategy::Parallel_strat())
                             );
                         } else {
                             throw Check_exceptions::MainException("No strategy selected.");
                         }
                     }
+                    //set utility usage parameters
+                    if (flag_name == LP::Static_load_parameters_names::parameters) {
+                        Utility_entities::load_parameters->set_parameters(flag_name);
+                    }
+
                     //need for more devices than one
                     if (flag_name == LP::Static_load_parameters_names::devices) {
                         Utility_entities::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
@@ -282,17 +285,49 @@ namespace Main_utilities {
     }
 
     /**
+     * Menu for situation when user stop test case execution and want to quit with saved progress.
+     * Later user might load test cases progress and continue to test.
+     * I am truly forget to include this feature earlier (and at the architecture stage).
+     */
+    [[noreturn]] void stop_menu() {
+        int user_action;
+        while (true) {
+            utility::println("Stop menu, choose action number to continue:");
+            utility::println("1. Save current progress (create file with progress)");
+            utility::println("2. Load current progress");
+            utility::println("3. See bugs");
+            utility::println("4. Close menu");
+            utility::userInput(user_action);
+            switch (user_action) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                default:
+                    utility::println("Wrong action number, try again.");
+                    continue;
+            }
+        }
+    }
+
+    /**
     * Main cycle of the utility execution - proceed test cases.
     * @param vts vector for test cases.
     * @param vtr vector for test results.
     * @param device optional device name.
+    * @tparam A type of container with test cases
+    * @tparam B type of container with test results
     * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
     */
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
     void main_utility_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
         std::chrono::steady_clock::time_point start; //start time of ts execution
-        std::chrono::steady_clock::time_point end;
+        std::chrono::steady_clock::time_point end; //end time of ts execution
 
         for (const auto &ts: vts) {
             //proceed test case one by one
@@ -304,19 +339,25 @@ namespace Main_utilities {
             if (Utility_entities::load_parameters->get_is_time_record()) {
                 start = std::chrono::steady_clock::now();
             }
-
+        Back_label:
             //ask user about result block
             std::string action; {
                 utility::colored_txt_output("Is test case successful?");
-                utility::colored_txt_output("Enter yes (y), no (n) or skip for test result");
+                utility::colored_txt_output("You can write 'fluggegecheimen' word to stop utility for actions");
+                utility::colored_txt_output("Enter 'yes' (y), 'no' (n) or 'skip' for test result");
 
                 utility::print(INPUT_SYM);
                 utility::userInput(action);
-                utility::println(); //new line
+                utility::println(); //just new line symbol
             }
 
             //result forever loop
             while (true) {
+                if (action == stop_word) {
+                    stop_menu();
+                    goto Back_label;
+                    //Edsger Wybe Dijkstra said that 'goto' statement is bad, I know, but it is some kind of reference to previous version of Test_runner
+                }
                 //test case result user input
                 auto result = TA::Test_result();
                 if (action == "yes" or action == "y" or action == "skip") {
@@ -339,16 +380,14 @@ namespace Main_utilities {
                         if (bug_name == Main_utilities::EXIT_SYM) {
                             break;
                         }
-                        utility::println(); //simple new line
 
-                        utility::print("Enter bug description (shortly, if you can): ");
+                        utility::print("\nEnter bug description (shortly, if you can): ");
                         bug_description = utility::userInput<std::string>();
                         if (bug_description == Main_utilities::EXIT_SYM) {
                             break;
                         }
-                        utility::println(); //simple new line
 
-                        utility::print("Enter bug severity: ");
+                        utility::print("\nEnter bug severity: ");
                         maybe_bug_severity = utility::userInput<std::string>();
                         if (maybe_bug_severity == EXIT_SYM) {
                             break;
@@ -356,6 +395,7 @@ namespace Main_utilities {
                         utility::println(); //simple new line
 
                         TA::Severity severity;
+                        // maybe_bug_severity = TODO строку с большой буквы сделать
                         if (maybe_bug_severity == "Low") {
                             severity = TA::Severity::Low;
                         } else if (maybe_bug_severity == "Medium") {
@@ -411,6 +451,9 @@ void main(const int argc, const char *args) {
         //1) Get data from entry point file
         auto lines_from_file = File_controller::readlines(Utility_entities::load_parameters->get_entry_point());
         Utility_entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
+        if (!Utility_entities::load_parameters->get_parameters().empty()) {
+            Utility_entities::parser->parse_parameters(Utility_entities::load_parameters->get_parameters()); //2.25 Parse given in console parameters
+        }
         Utility_entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
 
         //3) Create test cases objects

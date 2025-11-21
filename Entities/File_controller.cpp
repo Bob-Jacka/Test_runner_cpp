@@ -96,4 +96,26 @@ std::fstream File_controller::create_test_result_file(const std::string &results
     if (auto file = std::ifstream(results_file_name); file.is_open()) {
         //
     }
+    throw Check_exceptions::FileControllerException("Cannot create test result file");
 }
+
+#ifdef LINUX
+#include <sys/mman.h>
+
+/**
+ * Map file with usage of system call.
+ * @return array with strings
+ */
+char* map_file(ifstream &fd) {
+    size_t length = 100; // Length to map
+    char *mapped = (char *)mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (mapped == MAP_FAILED) {
+        perror("mmap");
+        close(fd);
+        return 1;
+    }
+    munmap(mapped, length);
+    close(fd);
+    return mapped;
+}
+#endif

@@ -29,12 +29,12 @@ namespace Line_interpreter_ns {
 
         bool jmp_to(const std::string &) const;
 
-        void parse_parameters(const std::string &) const;
-
         bool high_level_branch_wrapper(const std::string &_arguments) const;
 
     public:
         void directive_group(const std::string &) const;
+
+        void parse_parameters(const std::string &) const;
 
         std::vector<std::string> directive_import(const std::string &) const;
 

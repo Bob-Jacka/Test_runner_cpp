@@ -14,7 +14,7 @@ public:
 
     ~File_controller() = default;
 
-    //static methods, open file and read
+    //static methods, open file and read data from it
 
     static std::vector<std::string> readlines(const std::string &, int);
 
