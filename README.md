@@ -16,9 +16,11 @@ Example of utility with flags usage: ./Check_runner --suit="some-test-suit.txt" 
 Just write flag in command line interface and provide parameter
 
 1) strategy - using for determining execution strategy, can take one of the following values:
-   1.1) high_prior - runs only test cases with priority that equal to High
-   1.2) random - pseudo random strategy, shuffle test cases and execute them
-   1.3) parallel
+    1) high_prior - runs only test cases with priority that equal to High
+    2) random - pseudo random strategy, shuffle test cases and execute them
+    3) parallel - parallel test case search
+    4) everything_now - print all tests cases in console for fully manual mode
+    5) usual - usually test case execution (do nothing with ts)
 2) devices - provide text file with devices to test on
 3) time_record - bool value, if set to true then each test case will count of execution
 4) colored - bool value, if set to true then utility output text will be colored in colors
@@ -48,7 +50,7 @@ These symbols are using in simple text file,
 9) Steps_end - end directive for steps
 10) Ignore - ignore test case from execution (not add test to suit)
 11) Parameters - special directive for adding parameters into suit, can be in several files, if one suit include into
-    another, then parameters accumulate
+    another, then parameters accumulate; parse parameters till the line end
 
 ## Rules of writing:
 
@@ -61,9 +63,11 @@ These symbols are using in simple text file,
 
 ### Usage of group directive:
 
+```
 #Group_start Общие проверки:
-Наличие версии игры на главном экране|Высокий|
+   Наличие версии игры на главном экране|Высокий|
 #Group_end
+```
 
 *Where "#Group_start" starts group directive and add test cases above this line until reach "#Group_end" directive
 
@@ -78,6 +82,7 @@ These symbols are using in simple text file,
    test1||
    test2||
    test3||
+#End_if
 ```
 
 *If "if" statement executes to true then next tests are added to suit
@@ -95,6 +100,7 @@ These symbols are using in simple text file,
    test4||
    test5||
    test6||
+#End_if
 ```
 
 #### Else operator
@@ -114,6 +120,7 @@ These symbols are using in simple text file,
    test7||
    test8||
    test9||
+#End_if
 ```
 
 *If "elif" statement executes to true then next tests are added to suit

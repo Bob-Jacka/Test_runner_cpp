@@ -8,17 +8,19 @@
 namespace LP {
     /**
      * Utility load parameters struct.
-     * Simply stores load compiler data and provide it.
+     * Simply stores load compiler data and provide it outside.
      */
     struct Load_parameters {
     private:
+        //main utility parameters, part of it is required
         std::string entry_point; ///entry point of utility use.
         std::string devices_entry_point; ///file with devices to test on
         std::string parameters; ///main parameters in utility
         int check_device_count{}; ///count of devices for test on.
 
-        bool is_colored{};
-        bool is_comments{};
+        //other utility parameters
+        bool is_colored{}; ///is need for colored output
+        bool is_comments{}; ///is need for comments in utility
         bool is_time_record{}; ///for each test case to record time
         bool is_file_write{}; ///is need for file write at the end of test run
 
@@ -26,6 +28,8 @@ namespace LP {
         bool is_random_run{}; ///randomly run test cases
         bool is_parallel_run{}; ///strategy for parallel adding tests
         bool is_high_priority{}; ///runs only high priority test cases
+        bool is_everything_now{}; ///usually prints all tests in console or anything
+        bool is_usual_run{};
 
     public:
         Load_parameters();
@@ -45,6 +49,10 @@ namespace LP {
         [[nodiscard]] bool get_is_random() const;
 
         [[nodiscard]] bool get_is_high_priority() const;
+
+        [[nodiscard]] bool get_is_everything_now() const;
+
+        [[nodiscard]] bool get_is_usual_run() const;
 
         [[nodiscard]] std::string get_devices_entry_point() const;
 
@@ -71,6 +79,10 @@ namespace LP {
         void set_is_random_run(bool);
 
         void set_is_high_priority(bool);
+
+        void set_is_everything_now(bool);
+
+        void set_is_usual_strat(bool);
 
         void set_is_file_write(bool);
 
@@ -105,6 +117,14 @@ namespace LP {
 
     inline bool Load_parameters::get_is_high_priority() const {
         return is_high_priority;
+    }
+
+    inline bool Load_parameters::get_is_everything_now() const {
+        return is_everything_now;
+    }
+
+    inline bool Load_parameters::get_is_usual_run() const {
+        return is_usual_run;
     }
 
     inline std::string Load_parameters::get_devices_entry_point() const {
@@ -151,6 +171,14 @@ namespace LP {
         this->is_high_priority = high_prior;
     }
 
+    inline void Load_parameters::set_is_everything_now(const bool everything_now) {
+        this->is_everything_now = everything_now;
+    }
+
+    inline void Load_parameters::set_is_usual_strat(const bool usual) {
+        this->is_usual_run = usual;
+    }
+
     inline void Load_parameters::set_is_file_write(const bool get_devices) {
         this->is_file_write = get_devices;
     }
@@ -180,6 +208,8 @@ namespace LP {
         static constexpr std::string high_prior_strat = "high_prior";
         static constexpr std::string random_strat = "random";
         static constexpr std::string parallel_strat = "parallel";
+        static constexpr std::string everything_now = "everything_now"; ///not presented in main check cli
+        static constexpr std::string usual_strat = "usual";
     };
 }
 

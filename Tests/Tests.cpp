@@ -3,13 +3,13 @@
 #define TEST
 
 #ifdef TEST
-#include "Test_dependencie/catch_amalgamated.hpp"
+#include "Test_dependencies/catch_amalgamated.hpp"
 
-#include "../Test_artifacts/declaration/Bug.hpp"
-#include "../Test_artifacts/declaration/Check_list.hpp"
-#include "../Test_artifacts/declaration/Test_case.hpp"
-#include "../Test_artifacts/declaration/Test_suit.hpp"
-#include "../Test_artifacts/declaration/Test_result.hpp"
+#include "../core/Test_artifacts/declaration/Bug.hpp"
+#include "../core/Test_artifacts/declaration/Check_list.hpp"
+#include "../core/Test_artifacts/declaration/Test_case.hpp"
+#include "../core/Test_artifacts/declaration/Test_suit.hpp"
+#include "../core/Test_artifacts/declaration/Test_result.hpp"
 import UtilFuncs_mod;
 
 /**
@@ -23,7 +23,7 @@ namespace Test {
      * Namespace for utilities file
      */
     namespace UtilFuncs {
-        using namespace utility;
+        using namespace Utility;
         TEST_CASE("String should contain another string", positive) {
             REQUIRE(contains("test_string", "string"));
         }
@@ -79,7 +79,7 @@ namespace Test {
         }
 
         namespace Trim {
-            TEST_CASE() {
+            TEST_CASE("Should trim string") {
                 REQUIRE(trim());
             }
 
@@ -97,67 +97,75 @@ namespace Test {
      * Namespace for all test artifacts in utility
      */
     namespace Artifacts {
-        using namespace TA;
+        using namespace Check_runner::TA;
 
         namespace Bugs_test {
             TEST_CASE("Should create bug entity with all valid parameters", positive) {
-                const auto sut = new Bug("Test bug", "Test description", Severity::Blocker);
+                const auto sut = new Check_runner::TA::Bug("Test bug", "Test description", Check_runner::TA::Severity::Blocker);
                 SECTION("Check for parameters") {
                     REQUIRE(sut->get_name() == "Test bug");
                     REQUIRE(sut->get_description() == "Test description");
-                    REQUIRE(sut->get_severity() == Severity::Blocker);
+                    REQUIRE(sut->get_severity() == Check_runner::TA::Severity::Blocker);
                 }
+                delete sut;
             }
 
             TEST_CASE("Should create bug entity with empty parameters", positive) {
-                const auto sut = new Bug("", "", Severity::Low);
+                const auto sut = new Check_runner::TA::Bug("", "", Check_runner::TA::Severity::Low);
                 SECTION("Check for parameters") {
                     REQUIRE(sut->get_name() == "");
                     REQUIRE(sut->get_description() == "");
-                    REQUIRE(sut->get_severity() == Severity::Low);
+                    REQUIRE(sut->get_severity() == Check_runner::TA::Severity::Low);
                 }
+                delete sut;
             }
         }
 
+
+#ifdef EXPERIMENTAL
         namespace CheckList_test {
             TEST_CASE("Should create check list without steps", positive) {
-                auto sut = new Check_list("Check list name", "Check list description");
+                const auto sut = new Check_list("Check list name", "Check list description");
                 SECTION("Check for parameters") {
                     REQUIRE(sut->get_name() == "Check list name");
                     REQUIRE(sut->get_description() == "Check list description");
-                    REQUIRE();
+                    REQUIRE(sut->get_steps().size() == 0);
                 }
+                delete sut;
             }
 
             TEST_CASE("Should create check list with steps", positive) {
-                auto sut = new Check_list();
+                const auto sut = new Check_list();
                 SECTION("Check for parameters") {
                     REQUIRE();
                     REQUIRE();
                     REQUIRE();
                 }
+                delete sut;
             }
         }
 
         namespace Test_case_test {
             TEST_CASE("Should create test case with valid parameters", positive) {
-                auto sut = new Test_case();
+                const auto sut = new Test_case("Test name", "Test description", Priority::Critical, Severity::Low);
                 SECTION("Check for parameters") {
                     REQUIRE();
                     REQUIRE();
                     REQUIRE();
                 }
+                delete sut;
             }
         }
 
         namespace Test_result_test {
             TEST_CASE("Should create test result with valid parameters", positive) {
-                auto sut = new Test_result();
+                const auto sut = new Test_result();
                 SECTION("Check for parameters") {
                     REQUIRE();
                     REQUIRE();
                     REQUIRE();
                 }
+                delete sut;
             }
         }
 
@@ -169,6 +177,7 @@ namespace Test {
                     REQUIRE();
                     REQUIRE();
                 }
+                delete sut;
             }
 
             TEST_CASE("Should create test suit with two parameters", positive) {
@@ -178,14 +187,16 @@ namespace Test {
                     REQUIRE();
                     REQUIRE();
                 }
+                delete sut;
             }
         }
-    }
 
-    namespace Entities {
-        TEST_CASE() {
-            REQUIRE();
+        namespace Entities {
+            TEST_CASE() {
+                REQUIRE();
+            }
         }
+#endif
     }
 }
 

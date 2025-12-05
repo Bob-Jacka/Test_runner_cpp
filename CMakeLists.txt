@@ -5,56 +5,61 @@ set(CMAKE_CXX_STANDARD 23)
 
 if (DEFINED TEST_INCLUDE)
     add_executable(Check_runner
-            Tests/Test_dependencie/catch_amalgamated.hpp
-            Tests/Test_dependencie/catch_amalgamated.cpp
+            Tests/Test_dependencies/catch_amalgamated.hpp
+            Tests/Test_dependencies/catch_amalgamated.cpp
     )
 endif ()
 
 add_executable(Check_runner
-        main.cpp
-        Exceptions/Base_exception.hpp
-        Exceptions/FileControllerException.hpp
-        Exceptions/LineInterpreterException.hpp
-        Exceptions/MainException.hpp
-        Exceptions/StrategyException.hpp
+        core/Data/Constants.hpp
+        core/Data/Translation.hpp
+        core/Entities/File_controller.cpp
+        core/Entities/File_controller.hpp
+        core/Entities/LineParser.cpp
+        core/Entities/LineParser.hpp
+        core/Entities/Test_Artifact_Fabric.cpp
+        core/Entities/Test_Artifact_Fabric.hpp
+        core/Exceptions/Base_exception.hpp
+        core/Exceptions/FileControllerException.hpp
+        core/Exceptions/LineInterpreterException.hpp
+        core/Exceptions/MainException.hpp
+        core/Exceptions/StrategyException.hpp
 
-        Strategies/declaration/High_prior_strat.hpp
-        Strategies/declaration/Parallel_strat.hpp
-        Strategies/declaration/Random_run_strat.hpp
-        Strategies/declaration/Strat.hpp
-        Strategies/declaration/StratContex.hpp
-        Strategies/realization/High_prior_strat.cpp
-        Strategies/realization/Parallel_strat.cpp
-        Strategies/realization/Random_run_strat.cpp
+        core/Strategies/declaration/High_prior_strat.hpp
+        core/Strategies/declaration/Parallel_strat.hpp
+        core/Strategies/declaration/Random_run_strat.hpp
+        core/Strategies/declaration/Strat.hpp
+        core/Strategies/declaration/StratContex.hpp
+        core/Strategies/declaration/Usual_strat.hpp
+        core/Strategies/realization/High_prior_strat.cpp
+        core/Strategies/realization/Parallel_strat.cpp
+        core/Strategies/realization/Random_run_strat.cpp
+        core/Strategies/realization/Usual_strat.cpp
 
-        termcolor.hpp
-
-        Test_artifacts/declaration/Bug.hpp
-        Test_artifacts/declaration/Check_list.hpp
-        Test_artifacts/declaration/Test_artifact.hpp
-        Test_artifacts/declaration/Test_case.hpp
-        Test_artifacts/declaration/Test_result.hpp
-        Test_artifacts/declaration/Test_suit.hpp
-        Test_artifacts/realization/Bug.cpp
-        Test_artifacts/realization/Check_list.cpp
-        Test_artifacts/realization/Test_case.cpp
-        Test_artifacts/realization/Test_result.cpp
-        Test_artifacts/realization/Test_suit.cpp
-
-        Data/Translation.hpp
-
-        Entities/File_controller.cpp
-        Entities/File_controller.hpp
-        Entities/LineParser.cpp
-        Entities/LineParser.hpp
-        Entities/Test_Artifact_Fabric.cpp
-        Entities/Test_Artifact_Fabric.hpp
-
+        core/Test_artifacts/declaration/Bug.hpp
+        core/Test_artifacts/declaration/Check_list.hpp
+        core/Test_artifacts/declaration/Test_artifact.hpp
+        core/Test_artifacts/declaration/Test_case.hpp
+        core/Test_artifacts/declaration/Test_result.hpp
+        core/Test_artifacts/declaration/Test_suit.hpp
+        core/Test_artifacts/realization/Bug.cpp
+        core/Test_artifacts/realization/Check_list.cpp
+        core/Test_artifacts/realization/Test_case.cpp
+        core/Test_artifacts/realization/Test_result.cpp
+        libio.cppm
         Load_parameters.hpp
+        main.cpp
+        termcolor.hpp
+        Tests/run_tests.sh
+        Tests/Tests.cpp
+        Tests/Test_dependencies/catch_amalgamated.cpp
+        Tests/Test_dependencies/catch_amalgamated.hpp
+        Util_funcs.cppm
 )
 
 target_sources(Check_runner
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
         Util_funcs.cppm
+        libio.cppm
 )

@@ -17,7 +17,7 @@ export module UtilFuncs_mod;
 /**
  Namespace with utility functions of the C+ compiler
  */
-namespace utility {
+namespace Utility {
     /**
      Enumerate class for compiler output colors
      */
