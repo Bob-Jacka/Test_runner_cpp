@@ -17,8 +17,7 @@ namespace Strategy {
         std::unique_ptr<Strat> strategy_;
 
     public:
-        explicit StratContext(std::unique_ptr<Strat> &&strategy = {}) : strategy_(std::move(strategy)) {
-        }
+        explicit StratContext() = default;
 
         void set_strategy(std::unique_ptr<Strat> &&strategy) {
             strategy_ = std::move(strategy);

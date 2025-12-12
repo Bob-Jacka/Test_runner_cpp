@@ -7,7 +7,7 @@ namespace Check_runner {
     namespace TA {
         /**
          * Class for combine test artifacts.
-         * @tparam T generic type for test artifact.
+         * @tparam T generic type for test artifact in suit.
          */
         template<typename T>
             requires std::is_base_of_v<Test_artifact, T>
@@ -16,14 +16,11 @@ namespace Check_runner {
             std::vector<T> test_artifacts; ///vector with generic test artifacts
 
         public:
-            ~Test_suit() override {
-                delete_test_artifacts();
-            }
-
             Test_suit() = delete;
 
             explicit Test_suit(const std::string &suit_name) {
                 this->suit_name = suit_name;
+                this->test_artifacts = std::vector<T>();
             }
 
             Test_suit(const std::string &suit_name, std::vector<T> &tests) {
@@ -47,8 +44,12 @@ namespace Check_runner {
                 this->test_artifacts.push_back(other);
             }
 
-            void delete_test_artifacts(std::string &other) {
-                this->test_artifacts.at(other) = nullptr;
+            void delete_test_artifacts() {
+                this->test_artifacts.clear();
+            }
+
+            ~Test_suit() override {
+                this->delete_test_artifacts();
             }
         };
     }

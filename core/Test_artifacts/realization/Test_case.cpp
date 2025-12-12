@@ -1,13 +1,5 @@
 #include "../declaration/Test_case.hpp"
 
-std::string Check_runner::TA::Test_case::get_comment() const {
-    return this->comment;
-}
-
-Check_runner::TA::Priority Check_runner::TA::Test_case::get_priority() const {
-    return this->priority;
-}
-
 Check_runner::TA::Test_case::Test_case(const Test_case &other) : Test_artifact(other) {
     this->name = other.name;
     this->severity = other.severity;
@@ -17,15 +9,26 @@ Check_runner::TA::Test_case::Test_case(const Test_case &other) : Test_artifact(o
 }
 
 Check_runner::TA::Test_case::Test_case(const std::string &name, const std::string &comment, const Priority given_prior, const Severity given_sev) {
-    this->name = name;
-    this->comment = comment;
-    this->priority = given_prior;
-    this->severity = given_sev;
+    if (!name.empty()) {
+        this->name = name;
+        this->comment = comment;
+        this->priority = given_prior;
+        this->severity = given_sev;
+        this->steps = std::vector<std::string>();
+    } else {
+        throw Check_exceptions::TestArtifactException("Name cannot be empty string");
+    }
+}
+
+std::string Check_runner::TA::Test_case::get_comment() const {
+    return this->comment;
+}
+
+Check_runner::TA::Priority Check_runner::TA::Test_case::get_priority() const {
+    return this->priority;
 }
 
 bool Check_runner::TA::Test_case::operator<(const Test_case &rhs) const {
-    if (this->name < rhs.name)
-        return true;
     if (rhs.name < this->name)
         return false;
     if (this->comment < rhs.comment)
@@ -65,6 +68,15 @@ bool Check_runner::TA::Test_case::operator==(const Test_case &rhs) const {
 
 bool Check_runner::TA::Test_case::operator!=(const Test_case &rhs) const {
     return severity != rhs.severity;
+}
+
+Check_runner::TA::Test_case &Check_runner::TA::Test_case::operator=(const Test_case &rhs) {
+    this->name = rhs.name;
+    this->comment = rhs.comment;
+    this->priority = rhs.priority;
+    this->severity = rhs.severity;
+    this->steps = rhs.steps;
+    return *this;
 }
 
 std::string Check_runner::TA::Test_case::get_name() const {

@@ -6,11 +6,13 @@
 
 //File with utility constants / settings
 
-JUST_CONSTANT version = "0.0.4"; ///version of the app
+JUST_CONSTANT version = "0.0.5"; ///version of the app
 JUST_CONSTANT comment = "*"; ///use for mark line in suit as a comment
 JUST_CONSTANT directive_start = "#"; ///use for mark line in suit as a utility directive
 JUST_CONSTANT test_case_separator = "|"; ///symbol for separating modified string line to test case
 JUST_CONSTANT stop_word = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
+#define repeat_forever while (true)
+#define raise throw
 
 /**
  * triggers suit creation if : symbol is standing at the end of line and not contain | symbol.

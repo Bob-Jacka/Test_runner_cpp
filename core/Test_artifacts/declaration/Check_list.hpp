@@ -1,9 +1,6 @@
 #ifndef CHECKLIST_HPP
 #define CHECKLIST_HPP
 
-#include <string>
-#include <vector>
-
 #include "Test_artifact.hpp"
 
 namespace Check_runner {

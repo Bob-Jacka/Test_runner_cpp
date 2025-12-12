@@ -14,7 +14,7 @@ namespace Check_runner {
             std::vector<std::string> steps; ///steps of the test case to execute
 
             Priority priority;
-            Severity severity;
+            Severity severity; //useless parameter, delete later
 
         public:
             Test_case() = delete;
@@ -42,7 +42,7 @@ namespace Check_runner {
 
             bool operator!=(const Test_case &rhs) const;
 
-            Test_case &operator=(const Test_case &) = delete;
+            Test_case &operator=(const Test_case &);
 
             //methods
 

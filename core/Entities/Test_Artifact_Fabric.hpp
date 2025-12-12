@@ -37,17 +37,17 @@ public:
 
     //Methods for creating test artifacts
 
-    [[nodiscard]] std::vector<TA::Test_case> &create_test_cases(const std::vector<std::string> &) const;
+    [[nodiscard]] std::vector<Check_runner::TA::Test_case> &create_test_cases(const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Bug *create_bug(const std::string &, const std::string &) const;
+    [[nodiscard]] Check_runner::TA::Bug *create_bug(const std::string &, const std::string &) const;
 
-    [[nodiscard]] TA::Check_list *create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
+    [[nodiscard]] Check_runner::TA::Check_list *create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
 
-    [[nodiscard]] TA::Test_suit<TA::Test_case> *create_test_suit(const std::vector<std::string> &, const std::string &) const;
+    [[nodiscard]] Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *create_test_suit(const std::vector<std::string> &, const std::string &) const;
 
     //Other actions
 
-    [[nodiscard]] std::string decompose_test_case(const TA::Test_case &, TS_style) const;
+    [[nodiscard]] std::string decompose_test_case(const Check_runner::TA::Test_case &, TS_style) const;
 };
 
 #endif

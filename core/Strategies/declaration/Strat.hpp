@@ -2,7 +2,6 @@
 #define STRAT_HPP
 
 #include <vector>
-#include <ranges>
 #include "../../Test_artifacts/declaration/Test_case.hpp"
 
 namespace Strategy {

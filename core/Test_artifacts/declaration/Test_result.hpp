@@ -1,8 +1,6 @@
 #ifndef TEST_RESULT_HPP
 #define TEST_RESULT_HPP
 
-#include <string>
-
 #include "Bug.hpp"
 
 namespace Check_runner {

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "../../Exceptions/TestArtifactException.hpp"
 
 namespace Check_runner {
     namespace TA {
@@ -69,6 +70,51 @@ namespace Check_runner {
             }
             if (severity == "Blocker") {
                 return Severity::Blocker;
+            }
+            throw;
+        }
+
+        /**
+         * Proceed string object to Priority value.
+         * @param priority string object.
+         * @return Priority enum object.
+         */
+        inline std::string priority_to_object(const Priority priority) {
+            if (priority == Priority::Low) {
+                return "Low";
+            }
+            if (priority == Priority::Medium) {
+                return "Medium";
+            }
+            if (priority == Priority::High) {
+                return "High";
+            }
+            if (priority == Priority::Critical) {
+                return "Critical";
+            }
+            throw;
+        }
+
+        /**
+         * Proceed string object to Severity value.
+         * @param severity string object.
+         * @return Severity enum object.
+         */
+        inline std::string object_to_severity(const Severity severity) {
+            if (severity == Severity::Low) {
+                return "Low";
+            }
+            if (severity == Severity::Medium) {
+                return "Medium";
+            }
+            if (severity == Severity::High) {
+                return "High";
+            }
+            if (severity == Severity::Critical) {
+                return "Critical";
+            }
+            if (severity == Severity::Blocker) {
+                return "Blocker";
             }
             throw;
         }

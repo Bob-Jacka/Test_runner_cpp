@@ -69,13 +69,16 @@ def main_cycle(path: str):
         print(f'Name of the element "{file_name}" in exclude list!')
 
 
-def print_paths(prefix: str):
+def print_paths(prefix: str, input_dir: str = None):
     """
     Print all paths starting with given prefix
-    :param prefix:
+    :param input_dir: start from input directory
+    :param prefix: prefix to change
     :return: None
     """
-    current_sep = os.name == 'posix' if LINUX_SEP else WINDOWS_SEP
+    current_sep = LINUX_SEP if os.name == 'posix' else WINDOWS_SEP
+    if input_dir is not None:
+        filter(lambda x: x.startswith(input_dir), files_path)
     for file in sorted(files_path):
         changed_filename = file.removeprefix(prefix)
         changed_filename = changed_filename.replace(current_sep, CMAKE_SEP)

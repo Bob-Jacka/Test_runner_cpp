@@ -7,38 +7,44 @@ if (DEFINED TEST_INCLUDE)
     add_executable(Check_runner
             Tests/Test_dependencies/catch_amalgamated.hpp
             Tests/Test_dependencies/catch_amalgamated.cpp
+            Tests/Tests.cpp
     )
 endif ()
 
 add_executable(Check_runner
         core/Data/Constants.hpp
-        core/Data/Translation.hpp
+        core/Exceptions/Base_exception.hpp
+        core/Exceptions/FileControllerException.hpp
+        core/Exceptions/LineInterpreterException.hpp
+        core/Exceptions/MainException.hpp
+        core/Exceptions/StrategyException.hpp
+        core/Exceptions/TestArtifactException.hpp
+
         core/Entities/File_controller.cpp
         core/Entities/File_controller.hpp
         core/Entities/LineParser.cpp
         core/Entities/LineParser.hpp
         core/Entities/Test_Artifact_Fabric.cpp
         core/Entities/Test_Artifact_Fabric.hpp
-        core/Exceptions/Base_exception.hpp
-        core/Exceptions/FileControllerException.hpp
-        core/Exceptions/LineInterpreterException.hpp
-        core/Exceptions/MainException.hpp
-        core/Exceptions/StrategyException.hpp
 
-        core/Strategies/declaration/High_prior_strat.hpp
-        core/Strategies/declaration/Parallel_strat.hpp
-        core/Strategies/declaration/Random_run_strat.hpp
+        #        core/Strategies/declaration/Choose_prior_strat.hpp
+        #        core/Strategies/declaration/High_prior_strat.hpp
+        #        core/Strategies/declaration/Parallel_strat.hpp
+        #        core/Strategies/declaration/Random_run_strat.hpp
+
         core/Strategies/declaration/Strat.hpp
         core/Strategies/declaration/StratContex.hpp
-        core/Strategies/declaration/Usual_strat.hpp
-        core/Strategies/realization/High_prior_strat.cpp
-        core/Strategies/realization/Parallel_strat.cpp
-        core/Strategies/realization/Random_run_strat.cpp
-        core/Strategies/realization/Usual_strat.cpp
 
+        core/Strategies/declaration/Usual_strat.hpp
+        core/Strategies/realization/Usual_strat.cpp
+        #        core/Strategies/realization/Choose_prior_strat.cpp
+        #        core/Strategies/realization/High_prior_strat.cpp
+        #        core/Strategies/realization/Parallel_strat.cpp
+        #        core/Strategies/realization/Random_run_strat.cpp
+
+        core/Test_artifacts/declaration/Test_artifact.hpp
         core/Test_artifacts/declaration/Bug.hpp
         core/Test_artifacts/declaration/Check_list.hpp
-        core/Test_artifacts/declaration/Test_artifact.hpp
         core/Test_artifacts/declaration/Test_case.hpp
         core/Test_artifacts/declaration/Test_result.hpp
         core/Test_artifacts/declaration/Test_suit.hpp
@@ -47,14 +53,10 @@ add_executable(Check_runner
         core/Test_artifacts/realization/Test_case.cpp
         core/Test_artifacts/realization/Test_result.cpp
         libio.cppm
-        Load_parameters.hpp
-        main.cpp
-        termcolor.hpp
-        Tests/run_tests.sh
-        Tests/Tests.cpp
-        Tests/Test_dependencies/catch_amalgamated.cpp
-        Tests/Test_dependencies/catch_amalgamated.hpp
         Util_funcs.cppm
+        main.cpp
+        Load_parameters.hpp
+        termcolor.hpp
 )
 
 target_sources(Check_runner

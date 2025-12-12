@@ -1,9 +1,9 @@
 #ifndef BASE_EXCEPTION_HPP
 #define BASE_EXCEPTION_HPP
 
-import UtilFuncs_mod;
-
 #include <exception>
+
+import UtilFuncs_mod;
 
 /**
  * Namespace for exceptions in check runner

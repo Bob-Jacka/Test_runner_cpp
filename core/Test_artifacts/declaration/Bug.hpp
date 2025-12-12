@@ -1,6 +1,5 @@
 #ifndef BUG_HPP
 #define BUG_HPP
-#include <string>
 
 #include "Test_artifact.hpp"
 
@@ -32,7 +31,13 @@ namespace Check_runner {
 
             [[nodiscard]] Severity get_severity() const;
 
-            Bug operator<=>(Bug &other) const;
+            bool operator<(const Bug &rhs) const;
+
+            bool operator<=(const Bug &rhs) const;
+
+            bool operator>(const Bug &rhs) const;
+
+            bool operator>=(const Bug &rhs) const;
 
             [[nodiscard]] std::string to_string() const override;
         };

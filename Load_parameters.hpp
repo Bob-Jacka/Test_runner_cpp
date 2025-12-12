@@ -30,6 +30,7 @@ namespace LP {
         bool is_high_priority{}; ///runs only high priority test cases
         bool is_everything_now{}; ///usually prints all tests in console or anything
         bool is_usual_run{};
+        bool is_choose_run{};
 
     public:
         Load_parameters();
@@ -53,6 +54,8 @@ namespace LP {
         [[nodiscard]] bool get_is_everything_now() const;
 
         [[nodiscard]] bool get_is_usual_run() const;
+
+        [[nodiscard]] bool get_is_choose_run() const;
 
         [[nodiscard]] std::string get_devices_entry_point() const;
 
@@ -83,6 +86,8 @@ namespace LP {
         void set_is_everything_now(bool);
 
         void set_is_usual_strat(bool);
+
+        void set_is_choose_strat(bool);
 
         void set_is_file_write(bool);
 
@@ -125,6 +130,10 @@ namespace LP {
 
     inline bool Load_parameters::get_is_usual_run() const {
         return is_usual_run;
+    }
+
+    inline bool Load_parameters::get_is_choose_run() const {
+        return is_choose_run;
     }
 
     inline std::string Load_parameters::get_devices_entry_point() const {
@@ -179,6 +188,10 @@ namespace LP {
         this->is_usual_run = usual;
     }
 
+    inline void Load_parameters::set_is_choose_strat(const bool choose) {
+        this->is_usual_run = choose;
+    }
+
     inline void Load_parameters::set_is_file_write(const bool get_devices) {
         this->is_file_write = get_devices;
     }
@@ -210,6 +223,7 @@ namespace LP {
         static constexpr std::string parallel_strat = "parallel";
         static constexpr std::string everything_now = "everything_now"; ///not presented in main check cli
         static constexpr std::string usual_strat = "usual";
+        static constexpr std::string choose_strat = "choose";
     };
 }
 

@@ -7,32 +7,38 @@
 #include <concepts>
 
 #include "Load_parameters.hpp"
-#include "core/Entities/LineParser.hpp"
 #include "core/Entities/File_controller.hpp"
 #include "core/Entities/LineParser.hpp"
-#include "core/Exceptions/MainException.hpp"
 #include "core/Entities/Test_artifact_fabric.hpp"
 #include "core/Exceptions/FileControllerException.hpp"
-#include "core/Strategies/declaration/Random_run_strat.hpp"
+#include "core/Exceptions/MainException.hpp"
+#include "core/Strategies/declaration/Usual_strat.hpp"
+#ifdef EXPERIMENTAL
 #include "core/Strategies/declaration/High_prior_strat.hpp"
 #include "core/Strategies/declaration/Parallel_strat.hpp"
+#include "core/Strategies/declaration/Choose_prior_strat.hpp"
+#include "core/Strategies/declaration/Random_run_strat.hpp"
+#endif
 #include "core/Strategies/declaration/StratContex.hpp"
-#include "core/Strategies/declaration/Usual_strat.hpp"
 #include "core/Test_artifacts/declaration/Test_result.hpp"
 
 import UtilFuncs_mod;
+import Libio;
 
-template<typename T>
-using Vec_t = std::vector<T>; ///short type for vector
 
 // #define EXPERIMENTAL
 
-int arg_count = 0; //count of arguments in utility
+int arg_count = 0; //count of arguments in utility input
 
 /**
  * Special namespace for functions that used in Main function
  */
 namespace Check_runner {
+    template<typename T>
+    using Vec_t = std::vector<T>; ///short type for vector
+
+    using String = std::string; ///short version of std::string
+
     /**
     * Structure for entities data in this utility.
     * Contains entities for functionality and data for test artifacts.
@@ -48,8 +54,9 @@ namespace Check_runner {
         static Vec_t<TA::Test_case> vts; ///vector for test cases, that created in utility
     };
 
-    consteval auto EXIT_SYM = "exit"; ///symbol for exit in test result input
-    consteval auto INPUT_SYM = ">> "; ///symbol for user input
+    constexpr auto EXIT_SYM = "exit"; ///symbol for exit in test result input
+    constexpr auto INPUT_SYM = ">> "; ///symbol for user input
+
 
     /**
      * Low level functionality (filesystem actions) in utility
@@ -58,9 +65,9 @@ namespace Check_runner {
         /**
         * Write down test results to file.
         * @param test_results vector with test results.
-        * @throw FileControllerException if unknown bug severity
+        * @raise FileControllerException if unknown bug severity
         */
-        void write_test_results_2file(const Vec_t<TA::Test_result> &test_results) -> void {
+        void write_test_results_2file(const Vec_t<TA::Test_result> &test_results) {
             if (auto file_test_results = File_controller::create_test_result_file(); file_test_results.is_open()) {
                 for (auto &test_result: test_results) {
                     file_test_results << test_result.get_name() << "\n";
@@ -73,27 +80,7 @@ namespace Check_runner {
                             file_test_results << counter << ") " << "\n";
                             file_test_results << "\tBug name: " << bug.get_name() << "\n";
                             file_test_results << "\tBug description: " << bug.get_description() << "\n";
-                            auto test_severity = ""; ///tmp variable for severity string value
-                            switch (bug.get_severity()) {
-                                case TA::Severity::Low:
-                                    test_severity = "Low";
-                                    break;
-                                case TA::Severity::Medium:
-                                    test_severity = "Medium";
-                                    break;
-                                case TA::Severity::High:
-                                    test_severity = "High";
-                                    break;
-                                case TA::Severity::Critical:
-                                    test_severity = "Critical";
-                                    break;
-                                case TA::Severity::Blocker:
-                                    test_severity = "Blocker";
-                                    break;
-                                default:
-                                    throw Check_exceptions::FileControllerException("Error in checking for enum value.");
-                            }
-                            file_test_results << "\tBug severity: " << test_severity << "\n";
+                            file_test_results << "\tBug severity: " << TA::object_to_severity(bug.get_severity()) << "\n";
                             ++counter;
                         }
                     } else {
@@ -102,11 +89,14 @@ namespace Check_runner {
                     }
                 }
             } else {
-                throw Check_exceptions::FileControllerException("Error in open file for test results.");
+                raise Check_exceptions::FileControllerException("Error in open file for test results.");
             }
             Utility::colored_txt_output("Results written to test results file");
         }
 
+        /**
+         * Save current progress during utility stop menu
+         */
         void save_current_progress();
 
         void load_current_progress();
@@ -116,7 +106,7 @@ namespace Check_runner {
          * @param _Code exit code.
          * @param system_msg optional message for message before exit (due to error in utility work)
          */
-        void exit_utility(const int _Code, const std::string &system_msg = "") -> void {
+        void exit_utility(const int _Code, const String &system_msg = "") {
             Entities::vtr.clear();
             Entities::vts.clear();
 
@@ -137,7 +127,7 @@ namespace Check_runner {
         * Function for checking if file exists in filesystem.
         * @param file_name name of the file to check.
         */
-        bool check_file_existence(const std::string &file_name) {
+        bool check_file_existence(const String &file_name) {
             return std::filesystem::exists(file_name);
         }
 
@@ -146,28 +136,27 @@ namespace Check_runner {
          * @param file_name name of the file to check.
          * @return bool value of checking.
          */
-        bool check_file_extension(const std::string &file_name) {
+        bool check_file_extension(const String &file_name) {
             if (file_name.ends_with(".txt") or file_name.contains(".")) {
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
         /**
         * Function for checking command line arguments.
         * @param cont_to_check constant string vector to check for flag value.
-        * @throw unknown_compiler_flag if undefined compiler flag occurred.
+        * @raise unknown_compiler_flag if undefined compiler flag occurred.
         */
-        void check_flags(const Vec_t<std::string> &cont_to_check) {
-            const auto check_func_full = [&](const std::string &str) -> bool {
+        void check_flags(const Vec_t<String> &cont_to_check) {
+            const auto check_func_full = [&](const String &str) -> bool {
                 return str.contains("=") and str.contains("--");
             }; ///lambda for checking if string is a flag or not.
-            using con_string_ref = const std::string &; ///short version of type for string values
+            using con_string_ref = const String &; ///short version of type for string values
             using con_bool_ref = const bool &; ///short version of type for boolean values
 
             if (cont_to_check.empty()) {
-                throw Check_exceptions::MainException("flags vector is empty");
+                raise Check_exceptions::MainException("flags vector is empty");
             } else {
                 for (auto &cli_param: cont_to_check) {
                     if (check_func_full(cli_param)) {
@@ -186,38 +175,49 @@ namespace Check_runner {
                                 if (check_file_existence(entry_point)) {
                                     Entities::load_parameters->set_entry_point(entry_point);
                                 } else {
-                                    throw Check_exceptions::MainException("Entry point file does not exists in filesystem");
+                                    raise Check_exceptions::MainException("Entry point file does not exists in filesystem");
                                 }
                             } else {
-                                throw Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
+                                raise Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
                             }
                             break;
                         }
                         //strategies for utility execution
                         if (flag_name == LP::Static_load_parameters_names::strat) {
                             const auto val = reinterpret_cast<con_string_ref>(flag_value);
+
+#ifdef EXPERIMENTAL //strategies disables due to errors
                             if (val == LP::Static_load_parameters_names::high_prior_strat) {
                                 Utility::colored_txt_output("Using 'high priority' strategy.");
                                 Entities::context->set_strategy(
-                                    std::make_unique<auto>(new Strategy::High_prior_strat())
+                                    std::make_unique<Strategy::High_prior_strat>()
                                 );
                             } else if (val == LP::Static_load_parameters_names::random_strat) {
                                 Utility::colored_txt_output("Using 'pseudo run' strategy.");
                                 Entities::context->set_strategy(
-                                    std::make_unique<auto>(new Strategy::Random_run_strat())
+                                    std::make_unique<Strategy::Random_run_strat>()
                                 );
-                            } else if (val == LP::Static_load_parameters_names::parallel_strat) {
+                            } else if (val == LP::Static_load_parameters_names::parallel_strat) [[unlikely]] {
                                 Utility::colored_txt_output("Using 'parallel' strategy.");
                                 Entities::context->set_strategy(
-                                    std::make_unique<auto>(new Strategy::Parallel_strat())
+                                    std::make_unique<Strategy::Parallel_strat>()
                                 );
-                            } else if (val == LP::Static_load_parameters_names::usual_strat) {
+                            } else if (val == LP::Static_load_parameters_names::choose_strat) {
+                                Utility::colored_txt_output("Using 'choose' strategy.");
+                                Entities::context->set_strategy(
+                                    std::make_unique<Strategy::Choose_prior_strat>()
+                                );
+                            }
+
+                            else
+#endif
+                            if (val == LP::Static_load_parameters_names::usual_strat) [[likely]] {
                                 Utility::colored_txt_output("Using 'usual' strategy.");
                                 Entities::context->set_strategy(
-                                    std::make_unique<auto>(new Strategy::Usual_strat())
+                                    std::make_unique<Strategy::Usual_strat>()
                                 );
                             } else {
-                                throw Check_exceptions::MainException("No strategy selected for value: " + val);
+                                raise Check_exceptions::MainException("No strategy selected for value: " + val);
                             }
                         }
                         //other utility flags block
@@ -238,17 +238,17 @@ namespace Check_runner {
                             }
 
                             //colored flag
-                            if (flag_name == LP::Static_load_parameters_names::colored) {
+                            if (flag_name == LP::Static_load_parameters_names::colored) [[likely]] {
                                 Entities::load_parameters->set_is_colored(reinterpret_cast<con_bool_ref>(flag_value));
                             }
 
                             //comments flag
-                            if (flag_name == LP::Static_load_parameters_names::comments) {
+                            if (flag_name == LP::Static_load_parameters_names::comments) [[likely]] {
                                 Entities::load_parameters->set_is_comments(reinterpret_cast<con_bool_ref>(flag_value));
                             }
                         }
                     } else {
-                        throw Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
+                        raise Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
                     }
                 }
             }
@@ -267,17 +267,17 @@ namespace Check_runner {
             int counter = 1;
             for (const auto &res: vec) {
                 //elem = Test result object
-                Utility::print(counter);
+                Utility::println("№" + counter);
                 Utility::colored_txt_output("Test name: " + res.get_name());
                 Utility::colored_txt_output("Test result: " + res.get_result());
                 if (const auto &bugs_vec = res.get_bugs(); !bugs_vec.empty()) {
                     for (const auto &bug: bugs_vec) {
                         Utility::colored_txt_output("\tBug name: " + bug.get_name());
                         Utility::colored_txt_output("\tBug description: " + bug.get_description());
-                        Utility::colored_txt_output("\tBug severity: " + reinterpret_cast<auto>(bug.get_severity()));
+                        Utility::colored_txt_output("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
                     }
                 } else {
-                    Utility::colored_txt_output("No bugs in this test case");
+                    Utility::colored_txt_output("No bugs in " + res.get_name());
                 }
                 ++counter;
             }
@@ -286,14 +286,19 @@ namespace Check_runner {
         /**
         * Function for printing help to user.
         */
-        void print_help() -> void {
+        void print_help() {
             Utility::println("Test runner C++ edition");
             Utility::println("Utility description: - utility is using for test cycles\n");
             Utility::println("Utility parameters:");
             Utility::println("\t1. 'strategy' - used for specifying run strategy");
+#ifdef EXPERIMENTAL
             Utility::println("\t\t1.1 'high_prior' - for only high priority test run");
             Utility::println("\t\t1.2 'parallel' - for parallel random adding test");
             Utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
+            Utility::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
+#endif
+            Utility::println("\t\t1.5 'usual' - usual mode");
+            Utility::println("\t\t1.6 'choose' - choose test cases with which severity to run");
             Utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
             Utility::println("\t3. 'time_record' - for record time, during test case execution");
             Utility::println("\t4. 'colored' - for color text output");
@@ -302,8 +307,9 @@ namespace Check_runner {
             Utility::println("\t1. 'Group_start' - directive for indication for test suit start,");
             Utility::println("\t2. 'Group_end' - directive for indication for test suit end,");
             Utility::println("\t3. 'If' - usual if operator for branching in many programming languages,");
-            Utility::println("\t4. 'Else' - additional directive for if");
-            Utility::println("\t5. 'End_if' - closes if condition");
+            Utility::println("\t4. 'Else_if' - alternative branch,");
+            Utility::println("\t5. 'Else' - additional directive for if");
+            Utility::println("\t6. 'End_if' - closes if condition");
         }
 
         /**
@@ -315,7 +321,7 @@ namespace Check_runner {
                 for (const auto &bug: elem.get_bugs()) {
                     Utility::colored_txt_output("\tBug name: " + bug.get_name());
                     Utility::colored_txt_output("\tBug description: " + bug.get_description());
-                    Utility::colored_txt_output("\tBug severity: " + reinterpret_cast<auto>(bug.get_severity()));
+                    Utility::colored_txt_output("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
                 }
             }
         }
@@ -332,7 +338,7 @@ namespace Check_runner {
         */
         [[noreturn]] void stop_menu() {
             int user_action;
-            while (true) {
+            repeat_forever {
                 Utility::println("Stop menu, choose action number to continue:");
                 Utility::println("1. Save current progress (create file with progress)");
                 Utility::println("2. Load current progress");
@@ -357,9 +363,22 @@ namespace Check_runner {
                 }
             }
         }
-
 #ifdef EXPERIMENTAL
+        /**
+         * Menu for bug entering
+         */
+        [[noreturn]] void bug_menu() {
+            //
+        }
+
         [[noreturn]] void run_menu() {
+            int user_action;
+        }
+
+        /**
+         * Menu for save or load functionality
+         */
+        [[noreturn]] void save_load_menu() {
             int user_action;
         }
 #endif
@@ -372,20 +391,20 @@ namespace Check_runner {
         /**
         * Get cli arguments and add them to vector entity.
         * @param argv string value to scan
+        * @raise MainException if cannot resolve arguments in command line interface
         * @return vector with generic objects.
         */
-        template<typename T>
-        Vec_t<T> resolve_cli_args(const char *argv) {
+        Vec_t<String> resolve_cli_args(const char *argv) {
             if (argv != nullptr) {
-                auto vec = Vec_t(arg_count);
-                auto split_line = Vec_t<std::string>(arg_count);
+                auto vec = Vec_t<String>(arg_count);
+                auto split_line = Vec_t<String>(arg_count);
                 Utility::split(argv, split_line, ' ');
                 for (int i = 1; i < arg_count; ++i) {
                     vec.emplace_back(split_line[i]);
                 }
                 return vec;
             }
-            return Vec_t<T>();
+            raise Check_exceptions::MainException("Cannot resolve CLI arguments");
         }
 
         /**
@@ -394,8 +413,8 @@ namespace Check_runner {
          @param length len of the array
          @return vector with strings
          */
-        Vec_t<std::string> *convert_from_str_2vector(const char *char_array, const int length) {
-            const auto str_array = new Vec_t(length);
+        Vec_t<String> *convert_from_str_2vector(const char *char_array, const int length) {
+            const auto str_array = new Vec_t<String>(length);
             for (int i = 0; i < length; ++i) {
                 str_array[i].emplace_back(&char_array[i]);
             }
@@ -410,11 +429,11 @@ namespace Check_runner {
     * @param device optional device name.
     * @tparam A type of container with test cases
     * @tparam B type of container with test results
-    * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
+    * @raises MainException("Unknown test result."), MainException("Unknown test severity.")
     */
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
-    void main_utility_cycle(const A &vts, B &vtr, const std::string &device = "Single_device_mode") {
+    void main_utility_cycle(const A &vts, B &vtr, const String &device = "Single_device_mode") {
         std::chrono::steady_clock::time_point start; //start time of ts execution
         std::chrono::steady_clock::time_point end; //end time of ts execution
 
@@ -430,7 +449,7 @@ namespace Check_runner {
             }
         Back_label:
             //ask user about result block
-            std::string action; {
+            String action; {
                 Utility::colored_txt_output("Is test case successful?");
                 Utility::colored_txt_output("You can write 'fluggegecheimen' word to stop utility for actions");
                 Utility::colored_txt_output("Enter 'yes' (y), 'no' (n) or 'skip' for test result");
@@ -441,7 +460,7 @@ namespace Check_runner {
             }
 
             //result forever loop, if user has not watched "eurotrip" film
-            while (true) {
+            repeat_forever {
                 if (action == stop_word) {
                     Menu::stop_menu();
                     goto Back_label;
@@ -459,43 +478,43 @@ namespace Check_runner {
                     Utility::println("To exit enter 'exit' word");
                     Utility::println("Write down bugs attributes:");
 
-                    std::string bug_name;
-                    std::string bug_description;
-                    std::string maybe_bug_severity;
+                    String bug_name;
+                    String bug_description;
+                    String maybe_bug_severity;
 
-                    while (true) {
+                    repeat_forever {
                         Utility::print("Enter bug name: ");
-                        bug_name = Utility::userInput<std::string>();
+                        bug_name = Utility::userInput<String>();
                         if (bug_name == EXIT_SYM) {
                             break;
                         }
 
                         Utility::print("\nEnter bug description (shortly, if you can): ");
-                        bug_description = Utility::userInput<std::string>();
+                        bug_description = Utility::userInput<String>();
                         if (bug_description == EXIT_SYM) {
                             break;
                         }
 
                         Utility::print("\nEnter bug severity: ");
-                        maybe_bug_severity = Utility::userInput<std::string>();
+                        maybe_bug_severity = Utility::userInput<String>();
                         if (maybe_bug_severity == EXIT_SYM) {
                             break;
                         }
                         Utility::println(); //simple new line
 
                         TA::Severity severity;
-                        // maybe_bug_severity = TODO строку с большой буквы сделать
-                        if (maybe_bug_severity == "Low") {
+                        maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
+                        if (maybe_bug_severity == "low") {
                             severity = TA::Severity::Low;
-                        } else if (maybe_bug_severity == "Medium") {
+                        } else if (maybe_bug_severity == "medium") {
                             severity = TA::Severity::Medium;
-                        } else if (maybe_bug_severity == "High") {
+                        } else if (maybe_bug_severity == "high") {
                             severity = TA::Severity::High;
-                        } else if (maybe_bug_severity == "Blocker") {
+                        } else if (maybe_bug_severity == "blocker") {
                             severity = TA::Severity::Blocker;
                         } else {
                             //you can write endless loop to not terminate program
-                            throw Check_exceptions::MainException("Unknown test severity.");
+                            raise Check_exceptions::MainException("Unknown test severity.");
                         }
 
                         const auto bug = TA::Bug(bug_name, bug_description, severity);
@@ -506,8 +525,8 @@ namespace Check_runner {
                     vtr.push_back(result);
                     break;
                 } else {
-                    //it can be no exception, if you want to not terminate program
-                    throw Check_exceptions::MainException("Unknown test result.");
+                    //it can be no exception, if you want to not terminate the program
+                    raise Check_exceptions::MainException("Unknown test result.");
                 }
             }
             if (Entities::load_parameters->get_is_time_record()) {
@@ -522,88 +541,92 @@ namespace Check_runner {
 /**
  * Program entry point
  * @param argc count of arguments in utility cli
- * @param args given arguments
- * @throw MainException if necessary files not found
+ * @param args given arguments to utility
+ * @raise MainException if necessary files not found
  */
-void main(const int argc, const char *args) {
+int main(const int argc, const char *args) {
+    using namespace Check_runner;
+
     if (argc > 1) {
         ///Entity init block
         arg_count = argc; {
-            Check_runner::Entities::load_parameters = std::make_unique<LP::Load_parameters>();
-            Check_runner::Check::check_flags(Check_runner::Other::resolve_cli_args<auto>(args)); //proceed flags to load_parameters structure
-            Check_runner::Entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
+            Entities::load_parameters = std::make_unique<LP::Load_parameters>();
+            Check::check_flags(Other::resolve_cli_args(args)); //proceed flags first, before parser
+            Entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
         }
 
         //Pre strategy actions block
         {
             //Modified vector with ts, after all transformations:
             //1) Get data from entry point file
-            auto lines_from_file = File_controller::readlines(Check_runner::Entities::load_parameters->get_entry_point());
-            Check_runner::Entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
-            if (!Check_runner::Entities::load_parameters->get_parameters().empty()) {
+            auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
+            Entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
+            if (!Entities::load_parameters->get_parameters().empty()) {
                 //2.25 Parse given in console parameters
-                Check_runner::Entities::parser->parse_parameters(Check_runner::Entities::load_parameters->get_parameters());
+                Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
             }
-            Check_runner::Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
+            Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
 
-            if (Check_runner::Entities::load_parameters->get_is_everything_now() && Check_runner::Entities::context->get_strat() == nullptr) {
-                Check_runner::Entities::vts = Check_runner::Entities::test_case_fabric->create_test_cases(lines_from_file);
-            } else if (!Check_runner::Entities::load_parameters->get_is_everything_now()) {
+            if (Entities::load_parameters->get_is_everything_now() && Entities::context->get_strat() == nullptr) {
+                Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
+            } else if (!Entities::load_parameters->get_is_everything_now()) {
                 //3) Create test cases objects
-                Check_runner::Entities::vts = Check_runner::Entities::context->get_strat()->doAlgorithm(
-                    Check_runner::Entities::test_case_fabric->create_test_cases(lines_from_file)
+                Entities::vts = Entities::context->get_strat()->doAlgorithm(
+                    Entities::test_case_fabric->create_test_cases(lines_from_file)
                 );
             } else {
-                Check_runner::Low_level::exit_utility(1, "Error in strategy");
+                Low_level::exit_utility(1, "Error in strategy");
             }
-            Check_runner::Entities::vtr = Vec_t<Check_runner::TA::Test_result>();
+            Entities::vtr = Vec_t<TA::Test_result>();
         }
 
         //Strategy block
         {
-            if (!Check_runner::Entities::load_parameters->get_is_everything_now()) {
+            if (!Entities::load_parameters->get_is_everything_now()) {
                 //Execute main cycle of the utility
-                if (!Check_runner::Entities::load_parameters->get_devices_entry_point().empty()) {
-                    if (Check_runner::Check::check_file_existence(devices_static_file_name)) {
-                        const Vec_t devices = File_controller::readlines(Check_runner::Entities::load_parameters->get_devices_entry_point());
+                if (!Entities::load_parameters->get_devices_entry_point().empty()) {
+                    if (Check::check_file_existence(devices_static_file_name)) {
+                        const Vec_t devices = File_controller::readlines(Entities::load_parameters->get_devices_entry_point());
                         for (const auto &device: devices) {
                             //get devices from file
                             Utility::colored_txt_output("Device name: " + device);
-                            Check_runner::main_utility_cycle(Check_runner::Entities::vts, Check_runner::Entities::vtr, device);
+                            main_utility_cycle(Entities::vts, Entities::vtr, device);
                         }
                     } else {
-                        throw Check_exceptions::MainException("No device entry point file was found.");
+                        raise Check_exceptions::MainException("No device entry point file was found.");
                     }
                 } else {
                     Utility::colored_txt_output("Device name: Single device mode running");
-                    Check_runner::main_utility_cycle(Check_runner::Entities::vts, Check_runner::Entities::vtr);
+                    main_utility_cycle(Entities::vts, Entities::vtr);
                 }
             } else {
+#ifdef EXPERIMENTAL
                 Utility::println("Using 'everything_now strategy' of execution");
-                for (const auto &elem: Check_runner::Entities::vts) {
+                for (const auto &elem: Entities::vts) {
                     // Utility::println(elem); //TODO
                 }
+#endif
             }
         }
 
         //After strategy block
         {
             //proceed vector with test results at the end of cycle
-            Check_runner::Print::print_test_results_2console(Check_runner::Entities::vtr);
+            Print::print_test_results_2console(Entities::vtr);
 
             //write test results to file if parameter is true
-            if (Check_runner::Entities::load_parameters->get_is_file_write()) {
-                Check_runner::Low_level::write_test_results_2file(Check_runner::Entities::vtr);
+            if (Entities::load_parameters->get_is_file_write()) {
+                Low_level::write_test_results_2file(Entities::vtr);
             }
             Utility::colored_txt_output("Out utility, bye");
         }
-    } else if (const std::string conv_arg = args; arg_count == 2 and conv_arg.contains("--help")) {
+    } else if (const String conv_arg = args; arg_count == 2 and conv_arg.contains("--help")) {
         //print help to user if user wants help printed
-        Check_runner::Print::print_help();
-        Check_runner::Low_level::exit_utility(EXIT_SUCCESS);
+        Print::print_help();
+        Low_level::exit_utility(EXIT_SUCCESS);
     } else {
         //anyway, print help to user
-        Check_runner::Print::print_help();
-        Check_runner::Low_level::exit_utility(EXIT_FAILURE);
+        Print::print_help();
+        Low_level::exit_utility(EXIT_FAILURE);
     }
 }

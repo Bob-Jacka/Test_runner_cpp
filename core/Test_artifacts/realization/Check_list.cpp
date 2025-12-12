@@ -1,15 +1,23 @@
 #include "../declaration/Check_list.hpp"
 
 Check_runner::TA::Check_list::Check_list(const std::string &name, const std::string &description) {
-    this->name = name;
-    this->description = description;
-    this->steps = std::vector<std::string>();
+    if (!name.empty() and !description.empty()) {
+        this->name = name;
+        this->description = description;
+        this->steps = std::vector<std::string>();
+    } else {
+        throw Check_exceptions::TestArtifactException("Name or description cannot be empty string");
+    }
 }
 
 Check_runner::TA::Check_list::Check_list(const std::string &name, const std::string &description, const std::vector<std::string> &steps) {
-    this->name = name;
-    this->description = description;
-    this->steps = steps;
+    if (!name.empty() and !description.empty()) {
+        this->name = name;
+        this->description = description;
+        this->steps = steps;
+    } else {
+        throw Check_exceptions::TestArtifactException("Name or description cannot be empty string");
+    }
 }
 
 std::string Check_runner::TA::Check_list::get_name() const {

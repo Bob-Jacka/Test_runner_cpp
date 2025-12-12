@@ -13,18 +13,20 @@ Example of utility with flags usage: ./Check_runner --suit="some-test-suit.txt" 
 
 ### Available utility flags:
 
-Just write flag in command line interface and provide parameter
+Just write flag in command line interface and provide parameter:
 
 1) strategy - using for determining execution strategy, can take one of the following values:
-    1) high_prior - runs only test cases with priority that equal to High
-    2) random - pseudo random strategy, shuffle test cases and execute them
-    3) parallel - parallel test case search
-    4) everything_now - print all tests cases in console for fully manual mode
-    5) usual - usually test case execution (do nothing with ts)
-2) devices - provide text file with devices to test on
-3) time_record - bool value, if set to true then each test case will count of execution
-4) colored - bool value, if set to true then utility output text will be colored in colors
-5) comments - bool value, if set to true then enables comments in test cases
+    1) **high_prior** - runs only test cases with priority that equal to High;
+    2) **random** - pseudo random strategy, shuffle test cases and execute them;
+    3) **parallel** - parallel test case search;
+    4) **everything_now** - print all tests cases in console for fully manual mode;
+    5) **usual** - usually test case execution (do nothing with ts);
+    6) **choose**<> - you can enter strat name, by default it will be all tests (if you do not write triangular brackets) or
+       you may enter brackets and utility give test cases only with chosen priority, other will be ignored.
+2) **devices** - provide text file with devices to test on,
+3) **time_record** - bool value, if set to true then each test case will count of execution,
+4) **colored** - bool value, if set to true then utility output text will be colored in colors,
+5) **comments** - bool value, if set to true then enables comments in test cases.
 
 ## Symbols meaning:
 
@@ -103,6 +105,8 @@ These symbols are using in simple text file,
 #End_if
 ```
 
+*If "elif" statement executes to true then next tests are added to suit
+
 #### Else operator
 
 ```
@@ -123,7 +127,7 @@ These symbols are using in simple text file,
 #End_if
 ```
 
-*If "elif" statement executes to true then next tests are added to suit
+*Last tests
 
 ### Other directives:
 
