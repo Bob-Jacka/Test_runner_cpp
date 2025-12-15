@@ -1,32 +1,20 @@
 #include <any>
 #include <chrono>
-#include <filesystem>
-#include <memory>
-#include <vector>
-
 #include <concepts>
 
-#include "Load_parameters.hpp"
-#include "core/Entities/File_controller.hpp"
-#include "core/Entities/LineParser.hpp"
-#include "core/Entities/Test_artifact_fabric.hpp"
+#include "Entities_pack.hpp"
 #include "core/Exceptions/FileControllerException.hpp"
 #include "core/Exceptions/MainException.hpp"
 #include "core/Strategies/declaration/Usual_strat.hpp"
-#ifdef EXPERIMENTAL
+#ifdef EXTENDED_FUNCTIONALITY
 #include "core/Strategies/declaration/High_prior_strat.hpp"
 #include "core/Strategies/declaration/Parallel_strat.hpp"
 #include "core/Strategies/declaration/Choose_prior_strat.hpp"
 #include "core/Strategies/declaration/Random_run_strat.hpp"
 #endif
-#include "core/Strategies/declaration/StratContex.hpp"
-#include "core/Test_artifacts/declaration/Test_result.hpp"
 
 import UtilFuncs_mod;
 import Libio;
-
-
-// #define EXPERIMENTAL
 
 int arg_count = 0; //count of arguments in utility input
 
@@ -34,29 +22,8 @@ int arg_count = 0; //count of arguments in utility input
  * Special namespace for functions that used in Main function
  */
 namespace Check_runner {
-    template<typename T>
-    using Vec_t = std::vector<T>; ///short type for vector
-
-    using String = std::string; ///short version of std::string
-
-    /**
-    * Structure for entities data in this utility.
-    * Contains entities for functionality and data for test artifacts.
-    */
-    struct Entities {
-        static std::unique_ptr<LP::Load_parameters> load_parameters; ///load parameters of the utility
-        static std::unique_ptr<Test_artifact_fabric> test_case_fabric; ///test artifacts fabric entity
-        static std::unique_ptr<Strategy::StratContext> context; ///context for determining utility strategy
-        static std::unique_ptr<Line_interpreter_ns::DirectiveInterpreter> parser; ///entity for text parsing in suit
-
-        //Vectors with test artifacts
-        static Vec_t<TA::Test_result> vtr; ///vector for test results after test case run
-        static Vec_t<TA::Test_case> vts; ///vector for test cases, that created in utility
-    };
-
     constexpr auto EXIT_SYM = "exit"; ///symbol for exit in test result input
     constexpr auto INPUT_SYM = ">> "; ///symbol for user input
-
 
     /**
      * Low level functionality (filesystem actions) in utility
@@ -91,16 +58,17 @@ namespace Check_runner {
             } else {
                 raise Check_exceptions::FileControllerException("Error in open file for test results.");
             }
-            Utility::colored_txt_output("Results written to test results file");
+            libio::output::println("Results written to test results file");
         }
 
+#ifdef EXTENDED_FUNCTIONALITY
         /**
          * Save current progress during utility stop menu
          */
         void save_current_progress();
 
         void load_current_progress();
-
+#endif
         /**
          * Function for gracefully exit from utility.
          * @param _Code exit code.
@@ -128,7 +96,13 @@ namespace Check_runner {
         * @param file_name name of the file to check.
         */
         bool check_file_existence(const String &file_name) {
-            return std::filesystem::exists(file_name);
+            std::ifstream file(file_name);
+            if (file.is_open()) {
+                file.close();
+                return true;
+            }
+            file.close();
+            return false;
         }
 
         /**
@@ -157,53 +131,53 @@ namespace Check_runner {
 
             if (cont_to_check.empty()) {
                 raise Check_exceptions::MainException("flags vector is empty");
-            } else {
-                for (auto &cli_param: cont_to_check) {
-                    if (check_func_full(cli_param)) {
-                        auto split_line = Utility::line_splitter(cli_param, '=');
-                        const auto flag_name = Utility::replace_string_all(split_line[0], "--", "");
-                        const std::any flag_value = split_line[1]; //because zero index is flag name
+            }
+            for (auto &cli_param: cont_to_check) {
+                if (check_func_full(cli_param)) {
+                    auto split_line = Utility::line_splitter(cli_param, '=');
+                    const auto flag_name = Utility::replace_string_all(split_line[0], "--", "");
+                    const std::any flag_value = split_line[1]; //because zero index is flag name
 
-                        //get entry point of utility working
-                        if (flag_name == LP::Static_load_parameters_names::entry) {
-                            auto entry_point = reinterpret_cast<con_string_ref>(flag_value);
-                            //check for file extension
-                            if (!check_file_extension(entry_point)) {
-                                //TODO может быть проблема в логике
-                                //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
-                                entry_point += ".txt";
-                                if (check_file_existence(entry_point)) {
-                                    Entities::load_parameters->set_entry_point(entry_point);
-                                } else {
-                                    raise Check_exceptions::MainException("Entry point file does not exists in filesystem");
-                                }
+                    //get entry point of utility working
+                    if (flag_name == LP::Static_load_parameters_names::entry) {
+                        auto entry_point = reinterpret_cast<con_string_ref>(flag_value);
+                        //check for file extension
+                        if (!check_file_extension(entry_point)) {
+                            //TODO может быть проблема в логике
+                            //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
+                            entry_point += ".txt";
+                            if (check_file_existence(entry_point)) {
+                                Entities::load_parameters->set_entry_point(entry_point);
                             } else {
-                                raise Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
+                                raise Check_exceptions::MainException("Entry point file does not exists in filesystem");
                             }
-                            break;
+                        } else {
+                            raise Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
                         }
-                        //strategies for utility execution
-                        if (flag_name == LP::Static_load_parameters_names::strat) {
-                            const auto val = reinterpret_cast<con_string_ref>(flag_value);
+                        break;
+                    }
+                    //strategies for utility execution
+                    if (flag_name == LP::Static_load_parameters_names::strat) {
+                        const auto val = reinterpret_cast<con_string_ref>(flag_value);
 
-#ifdef EXPERIMENTAL //strategies disables due to errors
+#ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors
                             if (val == LP::Static_load_parameters_names::high_prior_strat) {
-                                Utility::colored_txt_output("Using 'high priority' strategy.");
+                                libio::output::println("Using 'high priority' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::High_prior_strat>()
                                 );
                             } else if (val == LP::Static_load_parameters_names::random_strat) {
-                                Utility::colored_txt_output("Using 'pseudo run' strategy.");
+                                libio::output::println("Using 'pseudo run' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Random_run_strat>()
                                 );
                             } else if (val == LP::Static_load_parameters_names::parallel_strat) [[unlikely]] {
-                                Utility::colored_txt_output("Using 'parallel' strategy.");
+                                libio::output::println("Using 'parallel' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Parallel_strat>()
                                 );
                             } else if (val == LP::Static_load_parameters_names::choose_strat) {
-                                Utility::colored_txt_output("Using 'choose' strategy.");
+                                libio::output::println("Using 'choose' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Choose_prior_strat>()
                                 );
@@ -211,45 +185,44 @@ namespace Check_runner {
 
                             else
 #endif
-                            if (val == LP::Static_load_parameters_names::usual_strat) [[likely]] {
-                                Utility::colored_txt_output("Using 'usual' strategy.");
-                                Entities::context->set_strategy(
-                                    std::make_unique<Strategy::Usual_strat>()
-                                );
-                            } else {
-                                raise Check_exceptions::MainException("No strategy selected for value: " + val);
-                            }
+                        if (val == LP::Static_load_parameters_names::usual_strat) [[likely]] {
+                            libio::output::println("Using 'usual' strategy.");
+                            Entities::context->set_strategy(
+                                std::make_unique<Strategy::Usual_strat>()
+                            );
+                        } else {
+                            raise Check_exceptions::MainException("No strategy selected for value: " + val);
                         }
-                        //other utility flags block
-                        {
-                            //set utility usage parameters
-                            if (flag_name == LP::Static_load_parameters_names::parameters) {
-                                Entities::load_parameters->set_parameters(flag_name);
-                            }
-
-                            //need for more devices than one
-                            if (flag_name == LP::Static_load_parameters_names::devices) {
-                                Entities::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
-                            }
-
-                            //time check flag
-                            if (flag_name == LP::Static_load_parameters_names::time_check) {
-                                Entities::load_parameters->set_is_time_record(reinterpret_cast<con_bool_ref>(flag_value));
-                            }
-
-                            //colored flag
-                            if (flag_name == LP::Static_load_parameters_names::colored) [[likely]] {
-                                Entities::load_parameters->set_is_colored(reinterpret_cast<con_bool_ref>(flag_value));
-                            }
-
-                            //comments flag
-                            if (flag_name == LP::Static_load_parameters_names::comments) [[likely]] {
-                                Entities::load_parameters->set_is_comments(reinterpret_cast<con_bool_ref>(flag_value));
-                            }
-                        }
-                    } else {
-                        raise Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
                     }
+                    //other utility flags block
+                    {
+                        //set utility usage parameters
+                        if (flag_name == LP::Static_load_parameters_names::parameters) {
+                            Entities::load_parameters->set_parameters(flag_name);
+                        }
+
+                        //need for more devices than one
+                        if (flag_name == LP::Static_load_parameters_names::devices) {
+                            Entities::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
+                        }
+
+                        //time check flag
+                        if (flag_name == LP::Static_load_parameters_names::time_check) {
+                            Entities::load_parameters->set_is_time_record(reinterpret_cast<con_bool_ref>(flag_value));
+                        }
+
+                        //colored flag
+                        if (flag_name == LP::Static_load_parameters_names::colored) [[likely]] {
+                            Entities::load_parameters->set_is_colored(reinterpret_cast<con_bool_ref>(flag_value));
+                        }
+
+                        //comments flag
+                        if (flag_name == LP::Static_load_parameters_names::comments) [[likely]] {
+                            Entities::load_parameters->set_is_comments(reinterpret_cast<con_bool_ref>(flag_value));
+                        }
+                    }
+                } else {
+                    raise Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
                 }
             }
         }
@@ -268,16 +241,16 @@ namespace Check_runner {
             for (const auto &res: vec) {
                 //elem = Test result object
                 Utility::println("№" + counter);
-                Utility::colored_txt_output("Test name: " + res.get_name());
-                Utility::colored_txt_output("Test result: " + res.get_result());
+                libio::output::println("Test name: " + res.get_name());
+                libio::output::println("Test result: " + res.get_result());
                 if (const auto &bugs_vec = res.get_bugs(); !bugs_vec.empty()) {
                     for (const auto &bug: bugs_vec) {
-                        Utility::colored_txt_output("\tBug name: " + bug.get_name());
-                        Utility::colored_txt_output("\tBug description: " + bug.get_description());
-                        Utility::colored_txt_output("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
+                        libio::output::println("\tBug name: " + bug.get_name());
+                        libio::output::println("\tBug description: " + bug.get_description());
+                        libio::output::println("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
                     }
                 } else {
-                    Utility::colored_txt_output("No bugs in " + res.get_name());
+                    libio::output::println("No bugs in " + res.get_name());
                 }
                 ++counter;
             }
@@ -291,7 +264,7 @@ namespace Check_runner {
             Utility::println("Utility description: - utility is using for test cycles\n");
             Utility::println("Utility parameters:");
             Utility::println("\t1. 'strategy' - used for specifying run strategy");
-#ifdef EXPERIMENTAL
+#ifdef EXTENDED_FUNCTIONALITY
             Utility::println("\t\t1.1 'high_prior' - for only high priority test run");
             Utility::println("\t\t1.2 'parallel' - for parallel random adding test");
             Utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
@@ -319,9 +292,9 @@ namespace Check_runner {
             for (const auto &elem: Entities::vtr) {
                 Utility::println(elem.get_name());
                 for (const auto &bug: elem.get_bugs()) {
-                    Utility::colored_txt_output("\tBug name: " + bug.get_name());
-                    Utility::colored_txt_output("\tBug description: " + bug.get_description());
-                    Utility::colored_txt_output("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
+                    libio::output::println("\tBug name: " + bug.get_name());
+                    libio::output::println("\tBug description: " + bug.get_description());
+                    libio::output::println("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
                 }
             }
         }
@@ -340,18 +313,22 @@ namespace Check_runner {
             int user_action;
             repeat_forever {
                 Utility::println("Stop menu, choose action number to continue:");
+#ifdef EXTENDED_FUNCTIONALITY
                 Utility::println("1. Save current progress (create file with progress)");
                 Utility::println("2. Load current progress");
+#endif
                 Utility::println("3. See bugs");
                 Utility::println("4. Close menu");
                 Utility::userInput(user_action);
                 switch (user_action) {
+#ifdef EXTENDED_FUNCTIONALITY
                     case 1:
                         Low_level::save_current_progress();
                         break;
                     case 2:
                         Low_level::load_current_progress();
                         break;
+#endif
                     case 3:
                         Print::see_bugs();
                         break;
@@ -363,7 +340,7 @@ namespace Check_runner {
                 }
             }
         }
-#ifdef EXPERIMENTAL
+#ifdef EXTENDED_FUNCTIONALITY
         /**
          * Menu for bug entering
          */
@@ -394,13 +371,13 @@ namespace Check_runner {
         * @raise MainException if cannot resolve arguments in command line interface
         * @return vector with generic objects.
         */
-        Vec_t<String> resolve_cli_args(const char *argv) {
+        Vec_t<String> resolve_cli_args(char *argv[]) {
             if (argv != nullptr) {
-                auto vec = Vec_t<String>(arg_count);
+                auto vec = Vec_t<String>(2);
                 auto split_line = Vec_t<String>(arg_count);
-                Utility::split(argv, split_line, ' ');
+                split_line = libio::string::split(std::string(*argv), " ");
                 for (int i = 1; i < arg_count; ++i) {
-                    vec.emplace_back(split_line[i]);
+                    vec.push_back(split_line[i]);
                 }
                 return vec;
             }
@@ -424,7 +401,7 @@ namespace Check_runner {
 
     /**
     * Main cycle of the utility execution - proceed test cases.
-    * @param vts vector for test cases.
+    * @param vtc vector for test cases.
     * @param vtr vector for test results.
     * @param device optional device name.
     * @tparam A type of container with test cases
@@ -433,15 +410,15 @@ namespace Check_runner {
     */
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
-    void main_utility_cycle(const A &vts, B &vtr, const String &device = "Single_device_mode") {
+    void main_utility_cycle(const A &vtc, B &vtr, const String &device = "Single_device_mode") {
         std::chrono::steady_clock::time_point start; //start time of ts execution
         std::chrono::steady_clock::time_point end; //end time of ts execution
 
-        for (const auto &ts: vts) {
+        for (const auto &ts: vtc) {
             //proceed test case one by one
-            Utility::colored_txt_output("Name: " + Utility::trim(ts.get_name()));
+            libio::output::println("Name: " + Utility::trim(ts.get_name()));
             if (Entities::load_parameters->get_is_comments()) {
-                Utility::colored_txt_output("Comment: " + ts.get_comment()); //output comments to console
+                libio::output::println("Comment: " + ts.get_comment()); //output comments to console
             }
             //get start time of the test case execution
             if (Entities::load_parameters->get_is_time_record()) {
@@ -450,9 +427,9 @@ namespace Check_runner {
         Back_label:
             //ask user about result block
             String action; {
-                Utility::colored_txt_output("Is test case successful?");
-                Utility::colored_txt_output("You can write 'fluggegecheimen' word to stop utility for actions");
-                Utility::colored_txt_output("Enter 'yes' (y), 'no' (n) or 'skip' for test result");
+                libio::output::println("Is test case successful?");
+                libio::output::println("You can write 'fluggegecheimen' word to stop utility for actions");
+                libio::output::println("Enter 'yes' (y), 'no' (n) or 'skip' for test result");
 
                 Utility::print(INPUT_SYM);
                 Utility::userInput(action);
@@ -532,7 +509,7 @@ namespace Check_runner {
             if (Entities::load_parameters->get_is_time_record()) {
                 end = std::chrono::steady_clock::now();
                 std::chrono::duration<double> elapsed_seconds = end - start;
-                Utility::colored_txt_output("Elapsed seconds for this test case: " + std::to_string(elapsed_seconds.count()));
+                libio::output::println("Elapsed seconds for this test case: " + std::to_string(elapsed_seconds.count()));
             }
         }
     }
@@ -541,17 +518,17 @@ namespace Check_runner {
 /**
  * Program entry point
  * @param argc count of arguments in utility cli
- * @param args given arguments to utility
+ * @param argv given arguments to utility
  * @raise MainException if necessary files not found
  */
-int main(const int argc, const char *args) {
+int main(const int argc, char *argv[]) {
     using namespace Check_runner;
 
     if (argc > 1) {
         ///Entity init block
         arg_count = argc; {
             Entities::load_parameters = std::make_unique<LP::Load_parameters>();
-            Check::check_flags(Other::resolve_cli_args(args)); //proceed flags first, before parser
+            Check::check_flags(Other::resolve_cli_args(argv)); //proceed flags first, before parser
             Entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
         }
 
@@ -589,18 +566,18 @@ int main(const int argc, const char *args) {
                         const Vec_t devices = File_controller::readlines(Entities::load_parameters->get_devices_entry_point());
                         for (const auto &device: devices) {
                             //get devices from file
-                            Utility::colored_txt_output("Device name: " + device);
+                            libio::output::println("Device name: " + device);
                             main_utility_cycle(Entities::vts, Entities::vtr, device);
                         }
                     } else {
                         raise Check_exceptions::MainException("No device entry point file was found.");
                     }
                 } else {
-                    Utility::colored_txt_output("Device name: Single device mode running");
+                    libio::output::println("Device name: Single device mode running");
                     main_utility_cycle(Entities::vts, Entities::vtr);
                 }
             } else {
-#ifdef EXPERIMENTAL
+#ifdef EXTENDED_FUNCTIONALITY
                 Utility::println("Using 'everything_now strategy' of execution");
                 for (const auto &elem: Entities::vts) {
                     // Utility::println(elem); //TODO
@@ -618,9 +595,9 @@ int main(const int argc, const char *args) {
             if (Entities::load_parameters->get_is_file_write()) {
                 Low_level::write_test_results_2file(Entities::vtr);
             }
-            Utility::colored_txt_output("Out utility, bye");
+            libio::output::println("Out utility, bye");
         }
-    } else if (const String conv_arg = args; arg_count == 2 and conv_arg.contains("--help")) {
+    } else if (const String conv_arg = *argv; arg_count == 2 and conv_arg.contains("--help")) {
         //print help to user if user wants help printed
         Print::print_help();
         Low_level::exit_utility(EXIT_SUCCESS);

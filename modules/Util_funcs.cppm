@@ -5,8 +5,9 @@
 module;
 
 #include <filesystem>
+#include <iostream>
 #include <regex>
-#include "termcolor.hpp"
+
 #include <source_location>
 
 /**
@@ -48,63 +49,49 @@ namespace Utility {
     }
 
     /**
-     Data object with useful ansi things
+     * Print given string in red color
+     * @param value const string representing value to print
      */
-    export struct [[maybe_unused]] Ansi_utils {
-    private:
-        std::string red_start = "\033[91m";
+    export void prRed(const std::string &value) {
+        print("\033[91m" + value + "\033[00m");
+    }
 
-        std::string color_end = "\033[00m";
+    /**
+     * Print given string in green color
+     * @param value const string representing value to print
+     */
+    export void prGreen(const std::string &value) {
+        print("\033[92m" + value + "\033[00m");
+    }
 
-        std::string green_start = "\033[92m";
+    /**
+    * Print given string in yellow color
+    * @param value const string representing value to print
+    */
+    export void prYellow(const std::string &value) {
+        print("\033[93m" + value + "\033[00m");
+    }
 
-        std::string yellow_start = "\033[93m";
+    /**
+    * Print given string in cyan color
+    * @param value const string representing value to print
+    */
+    export void prCyan(const std::string &value) {
+        print("\033[96m" + value + "\033[00m");
+    }
 
-        std::string cyan_start = "\033[96m";
+    /**
+    * Print given string in light gray color
+    * @param value const string representing value to print
+    */
+    export void prLightGray(const std::string &value) {
+        print("\033[97m" + value + "\033[00m");
+    }
 
-        std::string gray_start = "\033[97m";
+    export void prWhite(const std::string &value) {
+        print("\033[107m" + value + "\033[00m");
+    }
 
-    public:
-        /**
-         * Print given string in red color
-         * @param value const string representing value to print
-         */
-        void prRed(const std::string &value) const {
-            print(red_start + value + color_end);
-        }
-
-        /**
-         * Print given string in green color
-         * @param value const string representing value to print
-         */
-        void prGreen(const std::string &value) const {
-            print(green_start + value + color_end);
-        }
-
-        /**
-        * Print given string in yellow color
-        * @param value const string representing value to print
-        */
-        void prYellow(const std::string &value) const {
-            print(yellow_start + value + color_end);
-        }
-
-        /**
-        * Print given string in cyan color
-        * @param value const string representing value to print
-        */
-        void prCyan(const std::string &value) const {
-            print(cyan_start + value + color_end);
-        }
-
-        /**
-        * Print given string in light gray color
-        * @param value const string representing value to print
-        */
-        void prLightGray(const std::string &value) const {
-            print(gray_start + value + color_end);
-        }
-    };
 
     /**
      * Function for searching string in source string
@@ -117,39 +104,11 @@ namespace Utility {
     }
 
     /**
-     Function for text output into standard output with color.
-     Color provided by termcolor library.
-     @param str string for output in console
-     @param color color value from Color enum
-     */
-    export [[maybe_unused]] inline void colored_txt_output(const std::string &str, const Color &color = Color::WHITE) {
-        switch (color) {
-                [[likely]] case Color::WHITE:
-                std::cout << termcolor::white;
-                break;
-            case Color::RED:
-                std::cout << termcolor::red;
-                break;
-            case Color::BLUE:
-                std::cout << termcolor::blue;
-                break;
-            case Color::GREEN:
-                std::cout << termcolor::green;
-                break;
-                [[unlikely]] default:
-                std::cerr << "Color do not specified";
-                throw std::exception();
-        }
-        std::cout << str;
-        std::cout << termcolor::nocolorize;
-    }
-
-    /**
-    Function for printing message in red
-    @param error error to print
+     * Function for printing message in red
+     * @param error error to print
      */
     export [[maybe_unused]] inline void print_error(const std::string &error) {
-        std::cout << termcolor::red << error;
+        std::cout << "\033[91m" << error << "\033[00m";
     }
 
     /**
@@ -157,7 +116,7 @@ namespace Utility {
     @param success msg to print
     */
     export [[maybe_unused]] inline void print_success(const std::string &success) {
-        std::cout << termcolor::green << success;
+        std::cout << "\033[92m" << success << "\033[00m";
     }
 
     /**
@@ -179,7 +138,7 @@ namespace Utility {
         if (string_to_scan == "False") {
             return false;
         }
-        colored_txt_output("Error occurred in atob function", Color::RED);
+        println("Error occurred in atob function");
         return false;
     }
 

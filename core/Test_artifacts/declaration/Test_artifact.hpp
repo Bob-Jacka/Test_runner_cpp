@@ -128,9 +128,9 @@ namespace Check_runner {
             std::string name;
 
         public:
-            Test_artifact();
+            Test_artifact() = default;
 
-            virtual ~Test_artifact();
+            virtual ~Test_artifact() = default;
 
             [[nodiscard]] virtual std::string get_name() const = 0;
 

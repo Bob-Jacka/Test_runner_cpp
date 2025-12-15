@@ -25,7 +25,7 @@ std::vector<Check_runner::TA::Test_case> &Test_artifact_fabric::create_test_case
         }
         return *tmp_test_cases;
     }
-    Utility::colored_txt_output("Input vector with strings might not be empty");
+    printf("Input vector with strings might not be empty");
     throw;
 }
 

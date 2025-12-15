@@ -188,7 +188,7 @@ std::vector<std::string> Line_interpreter_ns::DirectiveInterpreter::directive_im
         const auto imported_lines = File_controller::readlines(import_arguments);
         return imported_lines;
     } catch (...) {
-        //
+        throw;
     }
 }
 

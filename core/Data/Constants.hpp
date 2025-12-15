@@ -13,6 +13,8 @@ JUST_CONSTANT test_case_separator = "|"; ///symbol for separating modified strin
 JUST_CONSTANT stop_word = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
 #define repeat_forever while (true)
 #define raise throw
+// #define EXPERIMENTAL //to turn on lib experimental functionality
+// #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality
 
 /**
  * triggers suit creation if : symbol is standing at the end of line and not contain | symbol.

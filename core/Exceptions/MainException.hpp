@@ -7,8 +7,6 @@ namespace Check_exceptions {
     class MainException final : public BaseException {
     public:
         explicit MainException(const std::string &);
-
-        ~MainException() override;
     };
 
     inline MainException::MainException(const std::string &msg) {

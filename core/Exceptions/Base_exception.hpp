@@ -13,9 +13,9 @@ namespace Check_exceptions {
     public:
         [[nodiscard]] const char *what() const noexcept override;
 
-        BaseException();
+        BaseException() = default;
 
-        ~BaseException() override;
+        ~BaseException() override = default;
     };
 
     inline const char *BaseException::what() const noexcept {

@@ -7,8 +7,6 @@
 #include "../Test_artifacts/declaration/Test_case.hpp"
 #include "../Test_artifacts/declaration/Test_suit.hpp"
 
-import UtilFuncs_mod;
-
 /**
  * Styles for decompose test cases
  */
@@ -43,7 +41,8 @@ public:
 
     [[nodiscard]] Check_runner::TA::Check_list *create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
 
-    [[nodiscard]] Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *create_test_suit(const std::vector<std::string> &, const std::string &) const;
+    [[nodiscard]] Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *create_test_suit(
+        const std::vector<std::string> &, const std::string &) const;
 
     //Other actions
 

@@ -27,6 +27,9 @@ add_executable(Check_runner
         core/Entities/Test_Artifact_Fabric.cpp
         core/Entities/Test_Artifact_Fabric.hpp
 
+        Entities_pack.cpp
+        Entities_pack.hpp
+
         #        core/Strategies/declaration/Choose_prior_strat.hpp
         #        core/Strategies/declaration/High_prior_strat.hpp
         #        core/Strategies/declaration/Parallel_strat.hpp
@@ -52,16 +55,15 @@ add_executable(Check_runner
         core/Test_artifacts/realization/Check_list.cpp
         core/Test_artifacts/realization/Test_case.cpp
         core/Test_artifacts/realization/Test_result.cpp
-        libio.cppm
-        Util_funcs.cppm
+        modules/libio.cppm
+        modules/Util_funcs.cppm
         main.cpp
         Load_parameters.hpp
-        termcolor.hpp
 )
 
 target_sources(Check_runner
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
-        Util_funcs.cppm
-        libio.cppm
+        modules/Util_funcs.cppm
+        modules/libio.cppm
 )
