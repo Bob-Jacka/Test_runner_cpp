@@ -21,7 +21,7 @@ namespace Line_interpreter_ns {
 
         mutable std::map<std::string, std::string> suit_parameters; ///variables of suit
 
-        mutable std::vector<std::string> input_vector_to_proceed; ///main vector with lines
+        mutable std::vector<std::string> inner_vector_to_proceed; ///main vector with lines
 
         mutable std::vector<std::string> output_vector; ///vector that will be output result of parse directives
 
@@ -35,8 +35,6 @@ namespace Line_interpreter_ns {
         void directive_group(const std::string &) const;
 
         void parse_parameters(const std::string &) const;
-
-        std::vector<std::string> directive_import(const std::string &) const;
 
         //constructor and destructor:
         DirectiveInterpreter();
@@ -56,7 +54,7 @@ namespace Line_interpreter_ns {
 
         //Other methods:
 
-        void parse_directives(const std::vector<std::string> &) const;
+        std::vector<std::string> parse_directives(const std::vector<std::string> &) const;
 
         void parse_lines_empty(std::vector<std::string> &) const; ///delete comments elements from vector
 

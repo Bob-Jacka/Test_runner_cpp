@@ -4,17 +4,20 @@
 #define DIRECTIVE constexpr auto ///special type for directives in utility
 #define JUST_CONSTANT constexpr auto ///special type for constants
 
+#define REPEAT_FOREVER while (true)
+
 //File with utility constants / settings
 
-JUST_CONSTANT version = "0.0.5"; ///version of the app
-JUST_CONSTANT comment = "*"; ///use for mark line in suit as a comment
-JUST_CONSTANT directive_start = "#"; ///use for mark line in suit as a utility directive
-JUST_CONSTANT test_case_separator = "|"; ///symbol for separating modified string line to test case
+JUST_CONSTANT version = "0.1.0"; ///version of the app
+JUST_CONSTANT comment_sym = "*"; ///use for mark line in suit as a comment
+JUST_CONSTANT directive_start_sym = "#"; ///use for mark line in suit as a utility directive
+JUST_CONSTANT test_case_separator_sym = "|"; ///symbol for separating modified string line to test case
 JUST_CONSTANT stop_word = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
-#define repeat_forever while (true)
-#define raise throw
+
+//Uncomment above macros to turn on special features:
 // #define EXPERIMENTAL //to turn on lib experimental functionality
 // #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality
+// #define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
 
 /**
  * triggers suit creation if : symbol is standing at the end of line and not contain | symbol.

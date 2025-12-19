@@ -1,6 +1,6 @@
 #include "LineParser.hpp"
 
-import UtilFuncs_mod;
+import Libio;
 
 class File_controller;
 
@@ -27,7 +27,7 @@ bool Line_interpreter_ns::DirectiveInterpreter::interpret_logical_expression(con
     } else if (arguments[1] == "!=") {
         result = arguments[0] != arguments[2];
     } else {
-        throw Check_exceptions::LineInterpreterException("Unknown parameter form given: " + parameters);
+        throw Check_exceptions::LineInterpreterException(__LINE__, "Unknown parameter form given: " + parameters, __FILE_NAME__);
     }
     return result;
 }
@@ -38,10 +38,10 @@ bool Line_interpreter_ns::DirectiveInterpreter::interpret_logical_expression(con
  * @return bool value of directive next position, return true if directive is found, false if directive not found
  */
 bool Line_interpreter_ns::DirectiveInterpreter::jmp_to(const std::string &directive_to_jump) const {
-    const auto it = std::ranges::find(input_vector_to_proceed, directive_to_jump);
+    const auto it = std::ranges::find(inner_vector_to_proceed, directive_to_jump);
     size_t directive_index = 0;
-    const auto current_position_iter = input_vector_to_proceed.begin() + interpreter_position;
-    if (it != input_vector_to_proceed.end()) {
+    const auto current_position_iter = inner_vector_to_proceed.begin() + interpreter_position;
+    if (it != inner_vector_to_proceed.end()) {
         directive_index = std::distance(current_position_iter, it);
     } else {
         return false;
@@ -71,22 +71,25 @@ void Line_interpreter_ns::DirectiveInterpreter::increment_interpreter_position()
 
 /**
  * Proceed test cases in group by attaching hash to ts line.
- * @param directive_name name of the directive (its name).
+ * @param directive_args name of the directive (its name).
  * @throw LineInterpreterException if line not end with semicolon
 */
-void Line_interpreter_ns::DirectiveInterpreter::directive_group(const std::string &directive_name) const {
-    if (directive_name.ends_with(group_indicator)) {
+void Line_interpreter_ns::DirectiveInterpreter::directive_group(const std::string &directive_args) const {
+    if (directive_args.ends_with(group_indicator)) {
         //check for directive ending and process inner test cases in group if they exist
         while (true) {
-            if (const auto inner_line = input_vector_to_proceed[this->interpreter_position]; !inner_line.ends_with(suit_directive_end)) {
-                output_vector.push_back(Utility::hash(inner_line)); //add hash identifier to line and push it
-                this->increment_interpreter_position();
+            auto inner_line = inner_vector_to_proceed[this->interpreter_position];
+            if (!inner_line.contains(suit_directive_end)) {
+                //add hash identifier to line and push it
+                output_vector.push_back(Utility::hash<1>(libio::string::delete_whitespaces(inner_line), directive_args));
+                increment_interpreter_position();
             } else {
                 break;
             }
         }
     } else {
-        throw Check_exceptions::LineInterpreterException("Expected group ending in line with semicolon (:)");
+        throw Check_exceptions::LineInterpreterException(__LINE__, "Expected group ending in line with semicolon (:), but given " + directive_args,
+                                                         __FILE_NAME__);
     }
 }
 
@@ -105,9 +108,9 @@ void Line_interpreter_ns::DirectiveInterpreter::parse_parameters(const std::stri
         if (check_lambda(parameter)) {
             auto name_and_value = Utility::split(parameter, '=');
             suit_parameters[name_and_value[0]] = name_and_value[1];
-            // this->suit_parameters.insert(name_and_value[0], name_and_value[1]); //insert name and value of parameter into map
         } else {
-            throw Check_exceptions::LineInterpreterException("Suit parameters should contain equal sign (=), but given " + parameter);
+            throw Check_exceptions::LineInterpreterException(__LINE__, "Suit parameters should contain equal sign (=), but given " + parameter,
+                                                             __FILE_NAME__);
         }
     }
     //It can be an error, because no parameters are given, but on the other hand it is just a message and user might not provide any parameters
@@ -157,11 +160,10 @@ bool Line_interpreter_ns::DirectiveInterpreter::high_level_branch_wrapper(const 
     };
 
     if (check_func_full(_arguments) or check_func_short(_arguments)) {
-        const auto branch_result = interpret_logical_expression(_arguments);
-        if (branch_result) {
+        if (interpret_logical_expression(_arguments)) {
             while (true) {
-                if (const auto inner_line = input_vector_to_proceed[this->interpreter_position];
-                    !inner_line.starts_with(directive_start) or !inner_line.starts_with(endif_directive)
+                if (const auto inner_line = inner_vector_to_proceed[this->interpreter_position];
+                    !inner_line.starts_with(directive_start_sym) or !inner_line.starts_with(endif_directive)
                 ) {
                     output_vector.push_back(inner_line);
                     this->increment_interpreter_position();
@@ -173,24 +175,10 @@ bool Line_interpreter_ns::DirectiveInterpreter::high_level_branch_wrapper(const 
         } // else branch is not success
         return false;
     }
-    throw Check_exceptions::LineInterpreterException("Unknown if directive state: " + _arguments);
+    throw Check_exceptions::LineInterpreterException(__LINE__, "Unknown if directive state: " + _arguments, __FILE_NAME__);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Import another test suit into main suit
- * @param import_arguments name of the test suit to import. Can be with file extension or without extension.
- * @return vector with strings
- */
-std::vector<std::string> Line_interpreter_ns::DirectiveInterpreter::directive_import(const std::string &import_arguments) const {
-    try {
-        const auto imported_lines = File_controller::readlines(import_arguments);
-        return imported_lines;
-    } catch (...) {
-        throw;
-    }
-}
 
 int Line_interpreter_ns::DirectiveInterpreter::get_interpreter_position() const {
     return this->interpreter_position;
@@ -205,36 +193,43 @@ void Line_interpreter_ns::DirectiveInterpreter::set_interpreter_position(const i
  * Proceed directives in input vector object one by one.
  * @throw LineInterpreterException if group directive is not valid ending.
  */
-void Line_interpreter_ns::DirectiveInterpreter::parse_directives(const std::vector<std::string> &input_vector) const {
+std::vector<std::string> Line_interpreter_ns::DirectiveInterpreter::parse_directives(const std::vector<std::string> &input_vector) const {
+    inner_vector_to_proceed = input_vector;
     while (interpreter_position != input_vector.size() - 1) {
-        input_vector_to_proceed = input_vector;
-        if (const auto &line = input_vector_to_proceed[interpreter_position]; line.starts_with(directive_start)) {
-            const auto split_string_line = Utility::split(line, ' '); //split directive line, 0 - dir name, 1 - param
-            const auto directive_name = split_string_line[0].substr(1, split_string_line[0].length() - 2); //current directive name
+        if (const auto &line = inner_vector_to_proceed[interpreter_position++]; line.starts_with(directive_start_sym)) {
+            const auto split_string_line = Utility::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
+            const auto directive_name = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
+
+            const auto directive_value = libio::string::delete_whitespaces(split_string_line[1]);
+
+            if (directive_value.contains("\"")) {
+                throw Check_exceptions::LineInterpreterException(__LINE__, "Value should not contain \" symbol", __FILE_NAME__);
+            }
 
             if (directive_name == group_directive_start) {
-                directive_group(split_string_line[1]);
+                directive_group(directive_value);
             } else if (directive_name == if_directive) {
-                if (!high_level_branch_wrapper(split_string_line[1])) {
+                if (not high_level_branch_wrapper(directive_value)) {
                     if (jmp_to(elif_directive)) {
-                        if (!high_level_branch_wrapper(split_string_line[1])) {
+                        if (not high_level_branch_wrapper(directive_value)) {
                             if (jmp_to(else_directive)) {
-                                high_level_branch_wrapper(split_string_line[1]);
+                                high_level_branch_wrapper(directive_value);
                             } //TODO капец как не уверен в этой лестнице, потом переписать на что то более элегантное
                         }
                     }
                 }
             } else if (directive_name == import_directive) {
-                for (const auto &enter_line: directive_import(split_string_line[1])) {
+                for (const auto &enter_line: File_controller::readlines(directive_value)) {
                     output_vector.push_back(enter_line); //push lines into this
                 }
             } else if (directive_name == parameters_directive) {
-                parse_parameters(split_string_line[1]);
+                parse_parameters(directive_value);
             } else {
-                throw Check_exceptions::LineInterpreterException("Invalid line directive detected: " + directive_name);
+                throw Check_exceptions::LineInterpreterException(__LINE__, "Invalid line directive detected: " + directive_name, __FILE_NAME__);
             }
         }
     }
+    return output_vector;
 }
 
 /**
@@ -243,7 +238,8 @@ void Line_interpreter_ns::DirectiveInterpreter::parse_directives(const std::vect
  */
 void Line_interpreter_ns::DirectiveInterpreter::parse_lines_empty(std::vector<std::string> &input_vector) const {
     for (int i = 0; i < input_vector.size(); ++i) {
-        if (auto &line = input_vector[i]; line.starts_with(comment) or line.starts_with(ignore_directive)) {
+        //TODO не удаляет комментарии
+        if (auto &line = input_vector[i]; line.starts_with(comment_sym) or line.starts_with(ignore_directive) or line.empty()) {
             input_vector.erase(input_vector.begin() + i);
         }
     }

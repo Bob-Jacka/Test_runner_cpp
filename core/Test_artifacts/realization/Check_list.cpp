@@ -6,7 +6,7 @@ Check_runner::TA::Check_list::Check_list(const std::string &name, const std::str
         this->description = description;
         this->steps = std::vector<std::string>();
     } else {
-        throw Check_exceptions::TestArtifactException("Name or description cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "Name or description cannot be empty string",__FILE_NAME__);
     }
 }
 
@@ -16,7 +16,7 @@ Check_runner::TA::Check_list::Check_list(const std::string &name, const std::str
         this->description = description;
         this->steps = steps;
     } else {
-        throw Check_exceptions::TestArtifactException("Name or description cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "Name or description cannot be empty string",__FILE_NAME__);
     }
 }
 

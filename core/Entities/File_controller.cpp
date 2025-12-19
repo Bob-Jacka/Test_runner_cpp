@@ -2,12 +2,21 @@
 
 #include "../Exceptions/FileControllerException.hpp"
 
+std::tuple<std::ifstream, bool> File_controller::open_file(const std::string &file_name) {
+    if (auto file = std::ifstream(file_name); file.is_open()) {
+        return std::make_tuple<std::ifstream, bool>(std::move(file), true);
+    }
+    throw Check_exceptions::FileControllerException(__LINE__, "File not exist with name " + file_name, __FILE_NAME__);
+}
+
 /**
  * Static read lines file, open another file and read strings (lines).
+ * @throw FileControllerException - input file not opened
  * @return vector with strings (lines)
  */
 std::vector<std::string> File_controller::readlines(const std::string &file_name, const int line_count) {
-    if (auto file = std::ifstream(file_name); file.is_open()) {
+    auto [file, cond] = open_file(file_name);
+    if (cond) {
         auto lines = std::vector<std::string>(line_count);
         for (int i = 0; i < line_count; ++i) {
             std::string line;
@@ -17,30 +26,41 @@ std::vector<std::string> File_controller::readlines(const std::string &file_name
         file.close();
         return lines;
     }
-    throw Check_exceptions::FileControllerException("Input file not opened");
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name with name " + file_name,__FILE_NAME__);
 }
 
 /**
  * Static function for reading file.
  * Read file till end of the file.
  * @param file_name file name
+ * @throws FileControllerException - input file not opened or FileControllerException - wrong file extension
  * @return vector with lines (strings)
  */
 std::vector<std::string> File_controller::readlines(const std::string &file_name) {
-    if (auto file = std::ifstream(file_name); file.is_open()) {
-        auto lines = std::vector<std::string>();
-        std::string line;
-        while (getline(file, line)) {
-            lines.push_back(line);
+    if (check_file_extension(file_name) == 1) {
+        //TODO возникает проблема, когда через эту функцию проходит основной файл из --suit будет ошибка, но при импорте нет, так как там нет расширения
+        auto [file, cond] = open_file(file_name);
+        if (cond) {
+            auto lines = std::vector<std::string>();
+            std::string line;
+            while (getline(file, line)) {
+                lines.push_back(line);
+            }
+            file.close();
+            return lines;
         }
-        file.close();
-        return lines;
+        throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name " + file_name, __FILE_NAME__);
     }
-    throw Check_exceptions::FileControllerException("Input file not opened");
+    if (check_file_extension(file_name) == 2) {
+        const auto fake_string = file_name + ".txt";
+        return readlines(fake_string);
+    }
+    throw Check_exceptions::FileControllerException(__LINE__, "Wrong file extension " + file_name, __FILE_NAME__);
 }
 
 /**
  * Static file operation for reading multiple lines.
+ * @throw FileControllerException input file not opened.
  * @return vector with strings
  */
 std::vector<std::string> File_controller::readlines(std::ifstream &file_descriptor, const int line_count) {
@@ -54,27 +74,30 @@ std::vector<std::string> File_controller::readlines(std::ifstream &file_descript
         file_descriptor.close();
         return lines;
     }
-    throw Check_exceptions::FileControllerException("Input file not opened");
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with file descriptor", __FILE_NAME__);
 }
 
 /**
  * Static file operation for reading line.
  * @param file_descriptor name of the file to open.
+ * @throw FileControllerException input file not opened.
  * @return line from file.
  */
 std::string File_controller::readline(const std::string &file_descriptor) {
-    if (auto file = std::ifstream(file_descriptor); file.is_open()) {
+    auto [file, cond] = open_file(file_descriptor);
+    if (cond) {
         std::string line;
         getline(file, line);
         file.close();
         return line;
     }
-    throw Check_exceptions::FileControllerException("Input file not opened");
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with string file descriptor " + file_descriptor, __FILE_NAME__);
 }
 
 /**
  * Static file operation for reading line.
  * @param file_descriptor file object to read from file.
+ * @throw FileControllerException input file not opened.
  * @return line from file.
  */
 std::string File_controller::readline(std::ifstream &file_descriptor) {
@@ -84,19 +107,50 @@ std::string File_controller::readline(std::ifstream &file_descriptor) {
         file_descriptor.close();
         return line;
     }
-    throw Check_exceptions::FileControllerException("Input file not opened");
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with ifstream file descrtiptor", __FILE_NAME__);
 }
 
 /**
  * Function for creating test result file.
  * @param results_file_name string value for file name.
+ * @throw FileControllerException cannot create test result file.
  * @return file descriptor.
  */
 std::fstream File_controller::create_test_result_file(const std::string &results_file_name) {
-    if (auto file = std::ifstream(results_file_name); file.is_open()) {
+    auto [file, cond] = open_file(results_file_name);
+    if (cond) {
         //
     }
-    throw Check_exceptions::FileControllerException("Cannot create test result file");
+    throw Check_exceptions::FileControllerException(__LINE__, "Cannot create test result file", __FILE_NAME__);
+}
+
+/**
+* Check for file extension.
+* @param file_name name of the file to check.
+* @return bool value of checking state.
+*/
+int File_controller::check_file_extension(const std::string &file_name) {
+    if (file_name.ends_with(".txt") and not file_name.ends_with(".")) {
+        return 1;
+    }
+    if (file_name.ends_with("")) {
+        return 2;
+    }
+    return 0;
+}
+
+/**
+* Function for checking if file exists in filesystem.
+* @param file_name name of the file to check.
+*/
+bool File_controller::check_file_existence(const std::string &file_name) {
+    auto [file, cond] = open_file(file_name);
+    if (cond) {
+        file.close();
+        return true;
+    }
+    file.close();
+    return false;
 }
 
 #ifdef LINUX

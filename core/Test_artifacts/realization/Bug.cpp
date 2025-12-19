@@ -12,7 +12,7 @@ Check_runner::TA::Bug::Bug(const std::string &name, const std::string &descripti
         this->description = description;
         this->severity = severity;
     } else {
-        throw Check_exceptions::TestArtifactException("Name or description should not be empty");
+        throw Check_exceptions::TestArtifactException(__LINE__, "Name or description should not be empty", __FILE_NAME__);
     }
 }
 

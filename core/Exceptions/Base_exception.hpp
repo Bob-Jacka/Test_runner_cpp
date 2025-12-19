@@ -2,6 +2,7 @@
 #define BASE_EXCEPTION_HPP
 
 #include <exception>
+#include <iostream>
 
 import UtilFuncs_mod;
 

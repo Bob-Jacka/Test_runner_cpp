@@ -1,4 +1,3 @@
-#include <any>
 #include <chrono>
 #include <concepts>
 
@@ -11,17 +10,22 @@
 #include "core/Strategies/declaration/Parallel_strat.hpp"
 #include "core/Strategies/declaration/Choose_prior_strat.hpp"
 #include "core/Strategies/declaration/Random_run_strat.hpp"
+
+#elifdef EXTENDED_FUNCTIONALITY_GUI
+#include <QGuiApplication>
+#include <QApplication>
+#include <QQmlApplicationEngine>
+#include <QCommandLineParser>
 #endif
 
 import UtilFuncs_mod;
 import Libio;
 
-int arg_count = 0; //count of arguments in utility input
-
 /**
  * Special namespace for functions that used in Main function
  */
 namespace Check_runner {
+    int arg_count = 0; //count of arguments in utility input
     constexpr auto EXIT_SYM = "exit"; ///symbol for exit in test result input
     constexpr auto INPUT_SYM = ">> "; ///symbol for user input
 
@@ -32,7 +36,7 @@ namespace Check_runner {
         /**
         * Write down test results to file.
         * @param test_results vector with test results.
-        * @raise FileControllerException if unknown bug severity
+        * @throw FileControllerException if unknown bug severity
         */
         void write_test_results_2file(const Vec_t<TA::Test_result> &test_results) {
             if (auto file_test_results = File_controller::create_test_result_file(); file_test_results.is_open()) {
@@ -56,7 +60,7 @@ namespace Check_runner {
                     }
                 }
             } else {
-                raise Check_exceptions::FileControllerException("Error in open file for test results.");
+                throw Check_exceptions::FileControllerException(__LINE__, "Error in open file for test results.", __FILE_NAME__);
             }
             libio::output::println("Results written to test results file");
         }
@@ -92,69 +96,45 @@ namespace Check_runner {
      */
     namespace Check {
         /**
-        * Function for checking if file exists in filesystem.
-        * @param file_name name of the file to check.
-        */
-        bool check_file_existence(const String &file_name) {
-            std::ifstream file(file_name);
-            if (file.is_open()) {
-                file.close();
-                return true;
-            }
-            file.close();
-            return false;
-        }
-
-        /**
-         * Check for file extension.
-         * @param file_name name of the file to check.
-         * @return bool value of checking.
-         */
-        bool check_file_extension(const String &file_name) {
-            if (file_name.ends_with(".txt") or file_name.contains(".")) {
-                return true;
-            }
-            return false;
-        }
-
-        /**
         * Function for checking command line arguments.
         * @param cont_to_check constant string vector to check for flag value.
-        * @raise unknown_compiler_flag if undefined compiler flag occurred.
+        * @throw unknown_compiler_flag if undefined compiler flag occurred.
         */
-        void check_flags(const Vec_t<String> &cont_to_check) {
+        void check_flags(String *cont_to_check) {
+            ///lambda for checking if string is a flag or not.
             const auto check_func_full = [&](const String &str) -> bool {
-                return str.contains("=") and str.contains("--");
-            }; ///lambda for checking if string is a flag or not.
-            using con_string_ref = const String &; ///short version of type for string values
+                return (str.contains("=") and str.contains("--")) and !str.empty();
+            };
+            using con_string_ref = const std::string &; ///short version of type for string values
             using con_bool_ref = const bool &; ///short version of type for boolean values
 
-            if (cont_to_check.empty()) {
-                raise Check_exceptions::MainException("flags vector is empty");
+            if (libio::array::get_dynamic_array_size<std::string>(cont_to_check) != 0) {
+                throw Check_exceptions::MainException(__LINE__, "flags array is empty", __FILE_NAME__);
             }
-            for (auto &cli_param: cont_to_check) {
-                if (check_func_full(cli_param)) {
-                    auto split_line = Utility::line_splitter(cli_param, '=');
+
+            //start from 1, because zero index is fullpath to utility executable file
+            for (int i = 1; i < arg_count; ++i) {
+                if (auto cli_param = cont_to_check[i]; check_func_full(cli_param)) {
+                    auto split_line = libio::string::split(cli_param, "=");
                     const auto flag_name = Utility::replace_string_all(split_line[0], "--", "");
-                    const std::any flag_value = split_line[1]; //because zero index is flag name
+                    con_string_ref flag_value = split_line[1]; //because zero index is flag name
 
                     //get entry point of utility working
                     if (flag_name == LP::Static_load_parameters_names::entry) {
-                        auto entry_point = reinterpret_cast<con_string_ref>(flag_value);
-                        //check for file extension
-                        if (!check_file_extension(entry_point)) {
-                            //TODO может быть проблема в логике
+                        auto entry_point = flag_value;
+
+                        //check for file extension existence
+                        if (File_controller::check_file_extension(entry_point) == 2) {
                             //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
                             entry_point += ".txt";
-                            if (check_file_existence(entry_point)) {
-                                Entities::load_parameters->set_entry_point(entry_point);
-                            } else {
-                                raise Check_exceptions::MainException("Entry point file does not exists in filesystem");
-                            }
-                        } else {
-                            raise Check_exceptions::MainException("Wrong file extension in file name: " + entry_point);
                         }
-                        break;
+
+                        if (File_controller::check_file_existence(entry_point)) {
+                            Entities::load_parameters->set_entry_point(entry_point);
+                        } else {
+                            throw Check_exceptions::MainException(
+                                __LINE__, "Entry point file does not exists in filesystem with name: " + entry_point, __FILE_NAME__);
+                        }
                     }
                     //strategies for utility execution
                     if (flag_name == LP::Static_load_parameters_names::strat) {
@@ -191,7 +171,7 @@ namespace Check_runner {
                                 std::make_unique<Strategy::Usual_strat>()
                             );
                         } else {
-                            raise Check_exceptions::MainException("No strategy selected for value: " + val);
+                            throw Check_exceptions::MainException(__LINE__, "No strategy selected for value: " + val, __FILE_NAME__);
                         }
                     }
                     //other utility flags block
@@ -222,7 +202,8 @@ namespace Check_runner {
                         }
                     }
                 } else {
-                    raise Check_exceptions::MainException("Unknown compiler flag selected: " + cli_param); //kill utility if unknown flag detected
+                    throw Check_exceptions::MainException(__LINE__, "Unknown compiler flag selected: " + cli_param, __FILE_NAME__);
+                    //kill utility if unknown flag detected
                 }
             }
         }
@@ -271,11 +252,14 @@ namespace Check_runner {
             Utility::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
 #endif
             Utility::println("\t\t1.5 'usual' - usual mode");
+#ifdef EXTENDED_FUNCTIONALITY
             Utility::println("\t\t1.6 'choose' - choose test cases with which severity to run");
+#endif
             Utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
             Utility::println("\t3. 'time_record' - for record time, during test case execution");
             Utility::println("\t4. 'colored' - for color text output");
             Utility::println("\t5. 'comments' - for test case comment output\n");
+            Utility::println("\t6. 'inter' - for utility interface (can be 'gui' or 'console')\n");
             Utility::println("Available utility directives in files with tests:");
             Utility::println("\t1. 'Group_start' - directive for indication for test suit start,");
             Utility::println("\t2. 'Group_end' - directive for indication for test suit end,");
@@ -311,7 +295,7 @@ namespace Check_runner {
         */
         [[noreturn]] void stop_menu() {
             int user_action;
-            repeat_forever {
+            REPEAT_FOREVER {
                 Utility::println("Stop menu, choose action number to continue:");
 #ifdef EXTENDED_FUNCTIONALITY
                 Utility::println("1. Save current progress (create file with progress)");
@@ -368,20 +352,18 @@ namespace Check_runner {
         /**
         * Get cli arguments and add them to vector entity.
         * @param argv string value to scan
-        * @raise MainException if cannot resolve arguments in command line interface
+        * @throw MainException if cannot resolve arguments in command line interface
         * @return vector with generic objects.
         */
-        Vec_t<String> resolve_cli_args(char *argv[]) {
+        String *resolve_cli_args(char *argv[]) {
             if (argv != nullptr) {
-                auto vec = Vec_t<String>(2);
-                auto split_line = Vec_t<String>(arg_count);
-                split_line = libio::string::split(std::string(*argv), " ");
-                for (int i = 1; i < arg_count; ++i) {
-                    vec.push_back(split_line[i]);
+                auto *str_arr = libio::array::create1DArray<std::string>(arg_count);
+                for (int i = 0; i < arg_count; ++i) {
+                    str_arr[i] = argv[i];
                 }
-                return vec;
+                return str_arr;
             }
-            raise Check_exceptions::MainException("Cannot resolve CLI arguments");
+            throw Check_exceptions::MainException(__LINE__, "Cannot resolve CLI arguments, given arguments - " + std::string(*argv), __FILE_NAME__);
         }
 
         /**
@@ -406,7 +388,7 @@ namespace Check_runner {
     * @param device optional device name.
     * @tparam A type of container with test cases
     * @tparam B type of container with test results
-    * @raises MainException("Unknown test result."), MainException("Unknown test severity.")
+    * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
     */
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
@@ -436,8 +418,8 @@ namespace Check_runner {
                 Utility::println(); //just new line symbol
             }
 
-            //result forever loop, if user has not watched "eurotrip" film
-            repeat_forever {
+            //result - forever loop, if user has not watched "eurotrip" film
+            REPEAT_FOREVER {
                 if (action == stop_word) {
                     Menu::stop_menu();
                     goto Back_label;
@@ -459,7 +441,7 @@ namespace Check_runner {
                     String bug_description;
                     String maybe_bug_severity;
 
-                    repeat_forever {
+                    REPEAT_FOREVER {
                         Utility::print("Enter bug name: ");
                         bug_name = Utility::userInput<String>();
                         if (bug_name == EXIT_SYM) {
@@ -491,7 +473,7 @@ namespace Check_runner {
                             severity = TA::Severity::Blocker;
                         } else {
                             //you can write endless loop to not terminate program
-                            raise Check_exceptions::MainException("Unknown test severity.");
+                            throw Check_exceptions::MainException(__LINE__, "Unknown test severity.", __FILE_NAME__);
                         }
 
                         const auto bug = TA::Bug(bug_name, bug_description, severity);
@@ -503,7 +485,7 @@ namespace Check_runner {
                     break;
                 } else {
                     //it can be no exception, if you want to not terminate the program
-                    raise Check_exceptions::MainException("Unknown test result.");
+                    throw Check_exceptions::MainException(__LINE__, "Unknown test result.", __FILE_NAME__);
                 }
             }
             if (Entities::load_parameters->get_is_time_record()) {
@@ -519,9 +501,14 @@ namespace Check_runner {
  * Program entry point
  * @param argc count of arguments in utility cli
  * @param argv given arguments to utility
- * @raise MainException if necessary files not found
+ * @param envp environmental arguments
+ * @throw MainException if necessary files not found
  */
-int main(const int argc, char *argv[]) {
+int main(const int argc, char *argv[]
+#ifdef EXTENDED_FUNCTIONALITY
+, char *envp[]
+#endif
+) {
     using namespace Check_runner;
 
     if (argc > 1) {
@@ -537,16 +524,37 @@ int main(const int argc, char *argv[]) {
             //Modified vector with ts, after all transformations:
             //1) Get data from entry point file
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
+
+#ifdef EXTENDED_FUNCTIONALITY_GUI
+            if (Entities::load_parameters->get_gui()) {
+                QGuiApplication app(argc, argv);
+                QCoreApplication::setOrganizationName("QtProject"_L1);
+                QCoreApplication::setApplicationName("DocumentViewer"_L1);
+                QCoreApplication::setApplicationVersion("1.0"_L1);
+
+                QQmlApplicationEngine engine;
+                PageController p_controller;
+                QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app, []() {
+                    QCoreApplication::exit(-1);
+                },
+                    Qt::QueuedConnection);
+                engine.loadFromModule("appmain.ui", "Main");
+
+                return app.exec();
+
+            }
+#endif
+
             Entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
-            if (!Entities::load_parameters->get_parameters().empty()) {
+            if (not Entities::load_parameters->get_parameters().empty()) {
                 //2.25 Parse given in console parameters
                 Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
             }
-            Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
+            lines_from_file = Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
 
-            if (Entities::load_parameters->get_is_everything_now() && Entities::context->get_strat() == nullptr) {
+            if (Entities::load_parameters->get_is_everything_now() and Entities::context->get_strat() == nullptr) {
                 Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
-            } else if (!Entities::load_parameters->get_is_everything_now()) {
+            } else if (not Entities::load_parameters->get_is_everything_now()) {
                 //3) Create test cases objects
                 Entities::vts = Entities::context->get_strat()->doAlgorithm(
                     Entities::test_case_fabric->create_test_cases(lines_from_file)
@@ -559,31 +567,32 @@ int main(const int argc, char *argv[]) {
 
         //Strategy block
         {
-            if (!Entities::load_parameters->get_is_everything_now()) {
+            if (not Entities::load_parameters->get_is_everything_now()) {
                 //Execute main cycle of the utility
-                if (!Entities::load_parameters->get_devices_entry_point().empty()) {
-                    if (Check::check_file_existence(devices_static_file_name)) {
-                        const Vec_t devices = File_controller::readlines(Entities::load_parameters->get_devices_entry_point());
-                        for (const auto &device: devices) {
+                if (not Entities::load_parameters->get_devices_entry_point().empty()) {
+                    if (File_controller::check_file_existence(devices_static_file_name)) {
+                        for (const auto &device: File_controller::readlines(Entities::load_parameters->get_devices_entry_point())) {
                             //get devices from file
                             libio::output::println("Device name: " + device);
                             main_utility_cycle(Entities::vts, Entities::vtr, device);
                         }
                     } else {
-                        raise Check_exceptions::MainException("No device entry point file was found.");
+                        throw Check_exceptions::MainException(
+                            __LINE__, "No device entry point file was found - " + std::string(devices_static_file_name), __FILE_NAME__);
                     }
                 } else {
                     libio::output::println("Device name: Single device mode running");
                     main_utility_cycle(Entities::vts, Entities::vtr);
                 }
-            } else {
+            }
 #ifdef EXTENDED_FUNCTIONALITY
+            else {
                 Utility::println("Using 'everything_now strategy' of execution");
                 for (const auto &elem: Entities::vts) {
-                    // Utility::println(elem); //TODO
+                    libio::output::println(elem);
                 }
-#endif
             }
+#endif
         }
 
         //After strategy block
@@ -598,7 +607,7 @@ int main(const int argc, char *argv[]) {
             libio::output::println("Out utility, bye");
         }
     } else if (const String conv_arg = *argv; arg_count == 2 and conv_arg.contains("--help")) {
-        //print help to user if user wants help printed
+        //print help to user if user wants help to be printed
         Print::print_help();
         Low_level::exit_utility(EXIT_SUCCESS);
     } else {

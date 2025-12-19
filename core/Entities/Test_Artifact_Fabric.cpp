@@ -15,7 +15,7 @@ std::vector<Check_runner::TA::Test_case> &Test_artifact_fabric::create_test_case
     if (!string_lines.empty()) {
         auto tmp_test_cases = new std::vector<Check_runner::TA::Test_case>();
         for (auto &test_case_line: string_lines) {
-            auto split_string = Utility::line_splitter(test_case_line, *test_case_separator);
+            auto split_string = Utility::line_splitter(test_case_line, *test_case_separator_sym);
             const auto created_tc = new Check_runner::TA::Test_case(
                 split_string[0],
                 split_string[2],

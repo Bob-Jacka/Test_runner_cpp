@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <tuple>
 
 class File_controller {
 public:
@@ -39,6 +40,12 @@ public:
     //Test result document file
 
     static std::fstream create_test_result_file(const std::string & = "results.txt"); //for test results output
+
+    static int check_file_extension(const std::string &);
+
+    static bool check_file_existence(const std::string &);
+
+    static std::tuple<std::ifstream, bool> open_file(const std::string &);
 };
 
 #endif

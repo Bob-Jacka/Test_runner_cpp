@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.19.0
+ Version - 1.20.0
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 */
@@ -10,9 +10,11 @@ module;
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <cstring>
 
 // #define LIBIO_EXPERIMENTAL //uncomment/comment this line to turn on/off LIBIO_EXPERIMENTAL library features
-#define LIBIO_TEST //uncomment/comment this line to turn on/off library test
+// #define LIBIO_TEST //uncomment/comment this line to turn on/off library test
+// #define UNSTABLE //turns on unstable versions of very popular functions
 
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #include <filesystem>
@@ -83,6 +85,33 @@ namespace libio {
             }
         }
 
+
+#ifdef UNSTABLE
+        /**
+         * Print given generic message in console with new line. By default, equal to "".
+         * @warning If using C++23 - use std::println.
+         * @param str string to output
+         * @tparam T generic parameter of type to console print
+         */
+        export template<typename T = std::string>
+        void println(const T &str = "\n") {
+            std::cout << str << std::endl;
+        }
+
+        /**
+         * Print given generic message in console without new line.
+         * @warning If using C++23 - use std::print.
+         * @tparam T generic type
+         * @param str string to output
+         * @param separator text separator
+         */
+        export template<typename T>
+        void print(const T &str, std::string separator = "") {
+            std::cout << str << separator;
+        }
+
+#elifndef UNSTABLE
+
         /**
          * Print given generic message in console with new line. By default, equal to "".
          * @warning If using C++23 - use std::println.
@@ -109,6 +138,8 @@ namespace libio {
                 std::cout << str << separator;
             }
         }
+
+#endif
 
         /**
          * Function for array output with separator.
@@ -276,28 +307,13 @@ namespace libio {
          * @param s source string.
          * @return string object without whitespaces.
          */
-        std::string delete_whitespaces(std::string &s) {
-            int i = 0, first = 0, last = 0;
-            const int n = static_cast<int>(s.size());
-            while (s[i]) {
-                if (s[i] != '.') {
-                    first = i;
-                    break;
-                }
-                ++i;
+        std::string delete_whitespaces(const std::string &s) {
+            const size_t first_char_pos = s.find_first_not_of(" \t\n\r\f\v");
+            std::string output_string = s;
+            if (first_char_pos != std::string::npos) {
+                output_string.erase(0, first_char_pos);
             }
-
-            i = n - 1;
-            while (i != -1) {
-                if (s[i] != '.') {
-                    last = i;
-                    break;
-                }
-                --i;
-            }
-
-            s = s.substr(first, last - first + 1);
-            return s;
+            return output_string;
         }
 
         /**
@@ -314,6 +330,24 @@ namespace libio {
                 result += func(ch, loc);
             }
             return result;
+        }
+
+        /**
+         Function for replacing all strings in string
+         @param str source string
+         @param replace replace this in source
+         @param with replace with this string
+         @return string with replacements
+         */
+        [[maybe_unused]] inline std::string &replace_string_all(std::string &str, const std::string &replace, const std::string &with) {
+            if (!replace.empty()) {
+                std::size_t pos = 0;
+                while ((pos = str.find(replace, pos)) != std::string::npos) {
+                    str.replace(pos, replace.length(), with);
+                    pos += with.length();
+                }
+            }
+            return str;
         }
     }
 
@@ -407,17 +441,28 @@ namespace libio {
             delete[] array;
         }
 
-        /**
-         * Create one dimensional array of generic type
-         * @tparam T type for values in array
-         * @param rows rows count
-         * @return constructed array of generic type
-         */
+        template<typename T>
+        T *create1DArray(int);
+
         template<typename T>
         T *create1DArray(const int rows) {
             const auto dyn_array = new T[rows];
             for (int i = 0; i < rows; ++i) {
                 dyn_array[i] = 0;
+            }
+            return dyn_array;
+        }
+
+        /**
+         * Create one dimensional array of generic type
+         * @param rows rows count
+         * @return constructed array of generic type
+         */
+        template<>
+        std::string *create1DArray(const int rows) {
+            const auto dyn_array = new std::string[rows];
+            for (int i = 0; i < rows; ++i) {
+                dyn_array[i] = "";
             }
             return dyn_array;
         }
@@ -456,6 +501,17 @@ namespace libio {
             return static_cast<std::vector<T>>(result);
         }
 
+        /**
+         * Resolve old string (c-style) string and return its size.
+         * @param old_string c-style string
+         * @return int value of size
+         */
+        template<typename T>
+        int get_dynamic_array_size([[maybe_unused]] T *old_string) {
+            constexpr int count = sizeof(old_string) / sizeof(old_string[0]);
+            return count;
+        }
+
 #ifdef LIBIO_EXPERIMENTAL
         /**
          *
@@ -479,21 +535,19 @@ namespace libio {
             return;
         }
 
-
-
-            std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
-                if (arr != nullptr) {
-                    actual_size *= 2;
-                    auto new_arr = new int[actual_size];
-                    for (int i = 0; i < logical_size; ++i) {
-                        new_arr[i] = arr[i];
-                    }
-                    delete[] arr;
-                    return {new_arr, logical_size, actual_size};
+        std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
+            if (arr != nullptr) {
+                actual_size *= 2;
+                auto new_arr = new int[actual_size];
+                for (int i = 0; i < logical_size; ++i) {
+                    new_arr[i] = arr[i];
                 }
-                std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
-                throw;
+                delete[] arr;
+                return {new_arr, logical_size, actual_size};
             }
+            std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
+            throw;
+        }
 #endif
     }
     /**

@@ -317,7 +317,7 @@ namespace Utility {
      */
     export void message_with_location(const std::string &message, const std::source_location location = std::source_location::current()) {
         std::cout << location.file_name() << ":" << location.line() << ":" << location.column() << " (" << location.function_name() << "): " <<
-                message << "." << "\n";
+                message << "\n";
     }
 
     /**
@@ -352,15 +352,25 @@ namespace Utility {
     }
 
     /**
-     * Function for receiving element from vector and its position.
-     * @param vec vector with elements
-     * @param elem element to find in vector or part of element in vector to search
-     * @return tuple, where first element its position and second element full value
+     * Split string into vector and return changed string.
+     * @param s source string to split
+     * @param delim delimiter to split on
+     * @return vector if you want to assign to variable.
      */
-    export template<typename Vec_type = std::string>
-    std::tuple<int, Vec_type> get_elem_from_vector(const std::vector<Vec_type> &vec, const Vec_type &elem) {
-        return {};
-        //TODO
+    export std::vector<std::string> split_by_first_delim(const std::string &s, const char delim = ' ') {
+        size_t pos = s.find(delim);
+        if (pos != std::string::npos) {
+            std::stringstream ss(s);
+            std::string item;
+            std::vector<std::string> elems;
+
+            const std::string firstPart = s.substr(0, pos);
+            const std::string secondPart = s.substr(pos + 1);
+            elems.push_back(firstPart);
+            elems.push_back(secondPart);
+            return elems;
+        }
+        throw std::runtime_error("split_by_first_delim: delimiter not found");
     }
 
     /**
@@ -368,10 +378,11 @@ namespace Utility {
      * Get 5 first characters from source string into "hash"
      * @tparam hash_len_mod length modifier of hash
      * @param str source string object to "count" hash on it.
+     * @param group_id name of the group
      * @return "hashed" string
      */
     export template<std::size_t hash_len_mod = 1>
-    std::string hash(const std::string &str) {
-        return "#" + str.substr(0, 0 + 5 + hash_len_mod);
+    std::string hash(const std::string &str, const std::string &group_id = "abcdefg") {
+        return "#" + group_id.substr(0, 0 + 5 + hash_len_mod) + "-" + str;
     }
 }

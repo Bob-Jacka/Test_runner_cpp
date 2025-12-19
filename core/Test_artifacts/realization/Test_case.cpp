@@ -16,7 +16,7 @@ Check_runner::TA::Test_case::Test_case(const std::string &name, const std::strin
         this->severity = given_sev;
         this->steps = std::vector<std::string>();
     } else {
-        throw Check_exceptions::TestArtifactException("Name cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "Name cannot be empty string", __FILE_NAME__);
     }
 }
 

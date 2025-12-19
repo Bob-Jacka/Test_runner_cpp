@@ -12,30 +12,33 @@ namespace LP {
      */
     struct Load_parameters {
     private:
-        //main utility parameters, part of it is required
+        //main utility parameters, part of it is required:
         std::string entry_point; ///entry point of utility use.
-        std::string devices_entry_point; ///file with devices to test on
-        std::string parameters; ///main parameters in utility
+        std::string devices_entry_point; ///file with devices to test on.
+        std::string parameters; ///main parameters in utility.
         int check_device_count{}; ///count of devices for test on.
+        bool is_gui{}; ///is need to run in graphics user interface. true - 'gui', false - 'console' (default).
 
-        //other utility parameters
-        bool is_colored{}; ///is need for colored output
-        bool is_comments{}; ///is need for comments in utility
-        bool is_time_record{}; ///for each test case to record time
-        bool is_file_write{}; ///is need for file write at the end of test run
+        //other utility parameters:
+        bool is_colored{}; ///is need for colored output.
+        bool is_comments{}; ///is need for comments in utility.
+        bool is_time_record{}; ///for each test case to record time.
+        bool is_file_write{}; ///is need for file write at the end of test run.
 
-        //strategies to run
-        bool is_random_run{}; ///randomly run test cases
-        bool is_parallel_run{}; ///strategy for parallel adding tests
-        bool is_high_priority{}; ///runs only high priority test cases
-        bool is_everything_now{}; ///usually prints all tests in console or anything
-        bool is_usual_run{};
-        bool is_choose_run{};
+        //strategies to run:
+        bool is_random_run{}; ///randomly run test cases.
+        bool is_parallel_run{}; ///strategy for parallel adding tests.
+        bool is_high_priority{}; ///runs only high priority test cases.
+        bool is_everything_now{}; ///usually prints all tests in console or anything.
+        bool is_usual_run{}; ///simple get test cases without actions.
+        bool is_choose_run{}; ///choose severity of test cases.
 
     public:
-        Load_parameters();
+        Load_parameters() = default;
 
         ~Load_parameters() = default;
+
+        ////////////////////////getter
 
         [[nodiscard]] std::string get_entry_point() const;
 
@@ -67,6 +70,10 @@ namespace LP {
 
         [[nodiscard]] std::string get_parameters() const;
 
+        [[nodiscard]] bool get_gui() const;
+
+        ////////////////////////setters
+
         void set_entry_point(const std::string &);
 
         void set_devices_entry_point(const std::string &);
@@ -92,9 +99,11 @@ namespace LP {
         void set_is_file_write(bool);
 
         void set_parameters(const std::string &);
+
+        void set_is_gui(bool);
     };
 
-    inline Load_parameters::Load_parameters() = default;
+    ////////////////////////realizations
 
     inline int Load_parameters::get_check_device_count() const {
         return check_device_count;
@@ -148,12 +157,16 @@ namespace LP {
         return parameters;
     }
 
-    inline void Load_parameters::set_entry_point(const std::string &) {
-        this->entry_point = entry_point;
+    inline bool Load_parameters::get_gui() const {
+        return is_gui;
     }
 
-    inline void Load_parameters::set_check_device_count(const int) {
-        this->check_device_count = check_device_count;
+    inline void Load_parameters::set_entry_point(const std::string &new_entry_point) {
+        this->entry_point = new_entry_point;
+    }
+
+    inline void Load_parameters::set_check_device_count(const int new_check_device_count) {
+        this->check_device_count = new_check_device_count;
     }
 
     inline void Load_parameters::set_devices_entry_point(const std::string &devices_entry_point) {
@@ -200,6 +213,10 @@ namespace LP {
         this->parameters = parameters;
     }
 
+    inline void Load_parameters::set_is_gui(const bool new_gui) {
+        this->is_gui = new_gui;
+    }
+
     /**
      * Static names of utility parameters.
      * Ex. --suit=<filename> or --strategy=high_prior
@@ -209,7 +226,8 @@ namespace LP {
         // main options
         static constexpr std::string entry = "suit"; ///usually string value, include test suit (required)
         static constexpr std::string devices = "devices"; ///devices on which start utility (optional)
-        static constexpr std::string strat = "strategy"; ///for use strategy
+        static constexpr std::string strat = "strategy"; ///for use strategy in utility
+        static constexpr std::string inter = "interface"; ///for interface - can be 'gui' or 'console'
 
         // special options, can be not specified (optional)
         static constexpr std::string time_check = "time_record";

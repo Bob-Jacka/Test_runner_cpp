@@ -41,7 +41,7 @@ void Check_runner::TA::Test_result::add_bug(const Bug &bug) {
     if (!bug.get_name().empty() and !bug.get_description().empty()) {
         this->bugs.push_back(bug);
     } else {
-        throw Check_exceptions::TestArtifactException("bug name cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "bug name cannot be empty string", __FILE_NAME__);
     }
 }
 
@@ -53,7 +53,7 @@ void Check_runner::TA::Test_result::set_device_name(const std::string &device_na
     if (!device_name.empty()) {
         this->device_name = device_name;
     } else {
-        throw Check_exceptions::TestArtifactException("device name cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "device name cannot be empty string", __FILE_NAME__);
     }
 }
 
@@ -61,7 +61,7 @@ void Check_runner::TA::Test_result::set_name(const std::string &name) {
     if (!name.empty()) {
         this->name = name;
     } else {
-        throw Check_exceptions::TestArtifactException("name cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "name cannot be empty string", __FILE_NAME__);
     }
 }
 
@@ -69,6 +69,6 @@ void Check_runner::TA::Test_result::set_result(const std::string &result) {
     if (!result.empty()) {
         this->result = result;
     } else {
-        throw Check_exceptions::TestArtifactException("result cannot be empty string");
+        throw Check_exceptions::TestArtifactException(__LINE__, "result cannot be empty string", __FILE_NAME__);
     }
 }

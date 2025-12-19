@@ -7,11 +7,11 @@
 namespace Check_exceptions {
     class StrategyException final : public BaseException {
     public:
-        explicit StrategyException(const std::string &);
+        explicit StrategyException(int, const std::string &, const char *);
     };
 
-    inline StrategyException::StrategyException(const std::string &msg) {
-        Utility::message_with_location(msg);
+    inline StrategyException::StrategyException(const int line, const std::string &msg, const char *filename) {
+        std::cout << "Error: " << msg << " at line " << line << " at file " << filename << std::endl;
     }
 }
 #endif

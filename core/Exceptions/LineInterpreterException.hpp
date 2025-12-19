@@ -6,11 +6,11 @@
 namespace Check_exceptions {
     class LineInterpreterException final : public BaseException {
     public:
-        explicit LineInterpreterException(const std::string &);
+        explicit LineInterpreterException(int line, const std::string &msg, const char *filename);
     };
 
-    inline LineInterpreterException::LineInterpreterException(const std::string &msg) {
-        Utility::message_with_location(msg);
+    inline LineInterpreterException::LineInterpreterException(const int line, const std::string &msg, const char *filename) {
+        std::cout << "Error: " << msg << " at line " << line << " at file " << filename << std::endl;
     }
 }
 
