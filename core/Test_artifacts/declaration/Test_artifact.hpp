@@ -47,7 +47,7 @@ namespace Check_runner {
             if (priority == "Critical") {
                 return Priority::Critical;
             }
-            throw;
+            throw std::invalid_argument("Invalid priority given - " + priority);
         }
 
         /**
@@ -71,7 +71,7 @@ namespace Check_runner {
             if (severity == "Blocker") {
                 return Severity::Blocker;
             }
-            throw;
+            throw std::invalid_argument("Invalid severity given - " + severity);
         }
 
         /**
@@ -92,7 +92,7 @@ namespace Check_runner {
             if (priority == Priority::Critical) {
                 return "Critical";
             }
-            throw;
+            throw std::invalid_argument("Invalid priority object was given");
         }
 
         /**
@@ -116,7 +116,7 @@ namespace Check_runner {
             if (severity == Severity::Blocker) {
                 return "Blocker";
             }
-            throw;
+            throw std::invalid_argument("Invalid severity object was given");
         }
 
         /**

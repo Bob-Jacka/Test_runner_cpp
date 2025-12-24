@@ -24,6 +24,9 @@ namespace Strategy {
         }
 
         std::unique_ptr<Strat> get_strat() {
+            if (strategy_ == nullptr) {
+                //
+            }
             return std::move(strategy_);
         }
     };

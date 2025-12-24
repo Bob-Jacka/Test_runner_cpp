@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.20.0
+ Version - 1.21.0
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 */
@@ -15,6 +15,7 @@ module;
 // #define LIBIO_EXPERIMENTAL //uncomment/comment this line to turn on/off LIBIO_EXPERIMENTAL library features
 // #define LIBIO_TEST //uncomment/comment this line to turn on/off library test
 // #define UNSTABLE //turns on unstable versions of very popular functions
+#define LIBIO_TRANSLATION
 
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #include <filesystem>
@@ -136,6 +137,44 @@ namespace libio {
         void print(const T &str, std::string separator = "") {
             if (std::cout.good()) {
                 std::cout << str << separator;
+            }
+        }
+
+#ifdef LIBIO_TRANSLATION
+        /**
+         * Convert usual string object to wide string.
+         * @param str source std::string object
+         * @return wide string object
+         */
+        export std::wstring toWstring(const std::string &str) {
+            std::vector<wchar_t> buf(str.size());
+            std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
+                                                                      str.data() + str.size(),
+                                                                      buf.data());
+            return std::wstring(buf.data(), buf.size());
+        }
+#endif
+
+        /**
+         * Print given wide string message in console with new line.
+         * @warning If using C++23 - use std::println.
+         * @param str string to output
+         */
+        export void println_w(const std::wstring &str) {
+            if (std::wcout.good()) {
+                std::wcout << str << std::endl;
+            }
+        }
+
+        /**
+         * Print given wide string message in console without new line.
+         * @warning If using C++23 - use std::print.
+         * @param str string to output
+         * @param separator text separator
+         */
+        export void print_w(const std::wstring &str, const std::wstring &separator) {
+            if (std::wcout.good()) {
+                std::wcout << str << separator;
             }
         }
 
@@ -309,7 +348,7 @@ namespace libio {
          */
         std::string delete_whitespaces(const std::string &s) {
             const size_t first_char_pos = s.find_first_not_of(" \t\n\r\f\v");
-            std::string output_string = s;
+            std::string output_string = s; //copy source string
             if (first_char_pos != std::string::npos) {
                 output_string.erase(0, first_char_pos);
             }
@@ -349,6 +388,46 @@ namespace libio {
             }
             return str;
         }
+
+        /**
+         * Another unuseful function for string actions
+         * @param str source string to trim
+         * @return trimmed string
+         */
+        std::string trim(const std::string &str) {
+            const size_t first = str.find_first_not_of(" \t\n\r\f\v");
+            if (first == std::string::npos) {
+                return "";
+            }
+            const size_t last = str.find_last_not_of(" \t\n\r\f\v");
+            return str.substr(first, last - first + 1);
+        }
+
+        template<typename T>
+        T convert_to_t(const std::string &source);
+
+        template<>
+        int convert_to_t<int>(const std::string &source) {
+            try {
+                return std::stoi(source);
+            } catch (const std::exception &e) {
+                throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
+            }
+        }
+
+        template<>
+        std::string convert_to_t<std::string>(const std::string &source) {
+            return source.empty() ? "0" : source;
+        }
+
+#ifdef LIBIO_EXPERIMENTAL
+        /**
+         *
+         */
+        inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
+            //
+        }
+#endif
     }
 
     /**

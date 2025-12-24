@@ -382,7 +382,7 @@ namespace Utility {
      * @return "hashed" string
      */
     export template<std::size_t hash_len_mod = 1>
-    std::string hash(const std::string &str, const std::string &group_id = "abcdefg") {
-        return "#" + group_id.substr(0, 0 + 5 + hash_len_mod) + "-" + str;
+    std::string hash(const std::string &group_id) {
+        return std::string("#") + group_id.substr(0, (hash_len_mod % 2 == 0) ? hash_len_mod + 2 : hash_len_mod - 1) + std::string("-");
     }
 }

@@ -12,7 +12,7 @@
 /**
  * Namespace for directive interpreter and other things
  */
-namespace Line_interpreter_ns {
+namespace Interpreter_ns {
     /**
      * Class for directive interpreter
      */
@@ -56,7 +56,9 @@ namespace Line_interpreter_ns {
 
         std::vector<std::string> parse_directives(const std::vector<std::string> &) const;
 
-        void parse_lines_empty(std::vector<std::string> &) const; ///delete comments elements from vector
+        std::vector<std::string> preprocess_lines(std::vector<std::string> &) const; ///delete comments elements from vector
+
+        void add_to_output_vector(const std::vector<std::string> &) const;
 
         //interpreter other actions
         [[nodiscard]] int get_interpreter_position() const;
@@ -64,8 +66,6 @@ namespace Line_interpreter_ns {
         void set_interpreter_position(const int &) const;
 
         void increment_interpreter_position() const;
-
-        void add_till_line_starts(const std::string &) const;
     };
 }
 

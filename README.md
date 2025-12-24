@@ -15,13 +15,14 @@ Example of utility with flags usage: ./Check_runner --suit="some-test-suit.txt" 
 
 Just write flag in command line interface and provide parameter:
 
-1) strategy - using for determining execution strategy, can take one of the following values:
-    1) **high_prior** - runs only test cases with priority that equal to High;
-    2) **random** - pseudo random strategy, shuffle test cases and execute them;
-    3) **parallel** - parallel test case search;
-    4) **everything_now** - print all tests cases in console for fully manual mode;
-    5) **usual** - usually test case execution (do nothing with ts);
-    6) **choose**<> - you can enter strat name, by default it will be all tests (if you do not write triangular brackets) or
+1) **strategy** - using for determining execution strategy, can take one of the following values:
+    1) _high_prior_ - runs only test cases with priority that equal to High;
+    2) _random_ - pseudo random strategy, shuffle test cases and execute them;
+    3) _parallel_ - parallel test case search;
+    4) _everything_now_ - print all tests cases in console for fully manual mode;
+    5) _usual_ - usually test case execution (do nothing with ts);
+    6) _choose<>_ - you can enter strat name, by default it will be all tests (if you do not write triangular
+       brackets) or
        you may enter brackets and utility give test cases only with chosen priority, other will be ignored.
 2) **devices** - provide text file with devices to test on,
 3) **time_record** - bool value, if set to true then each test case will count of execution,
@@ -30,28 +31,28 @@ Just write flag in command line interface and provide parameter:
 
 ## Symbols meaning:
 
-These symbols are using in simple text file,
+These symbols are using in simple text file (just .txt),
 
 ### Available special symbols:
 
 1. '*' - for comments in your suit
 2. '#' - for directive start
 3. '|' - test case separator, separate name, priority and check comment
-4. ':' - for group directive start
+4. ':' - for group directive start, also using in other directives
 
 ## Allowed directives:
 
-1) Group_start - start group of test cases
-2) Group_end - end directive for group start directive
-3) If - same as 'if' operator in programming languages
-4) Elif - another (alternative) way of 'if' operator
-5) Else - default way of 'if' operator execute
-6) End_if - end directive for 'if' operators
-7) Import - import another suit into suit
-8) Steps_start - add steps to test case
-9) Steps_end - end directive for steps
-10) Ignore - ignore test case from execution (not add test to suit)
-11) Parameters - special directive for adding parameters into suit, can be in several files, if one suit include into
+1) _Group_start_ - start group of test cases
+2) _Group_end_ - end directive for group start directive
+3) _If_ - same as 'if' operator in programming languages
+4) _Elif_ - another (alternative) way of 'if' operator
+5) _Else_ - default way of 'if' operator execute
+6) _End_if_ - end directive for 'if' operators
+7) _Import_ - import another suit into suit
+8) _Steps_start_ - add steps to test case
+9) _Steps_end_ - end directive for steps
+10) _Ignore_ - ignore test case from execution (not add test to suit)
+11) _Parameters_ - special directive for adding parameters into suit, can be in several files, if one suit include into
     another, then parameters accumulate; parse parameters till the line end
 
 ## Rules of writing:
@@ -134,3 +135,29 @@ These symbols are using in simple text file,
 #Ignore - will not add test to suit,
 #Parameters - add variables to suit,
 #Import - add suit to another suit
+
+## Config file in utility:
+
+### What is it?
+
+Utility allowed to have settings in .ini files, it means that you can not provide arguments in command line interface,
+but provide by .ini file
+
+### Example of usage:
+
+Here is example of usage .ini file in setting utility parameters.
+It is important to use same names in your .ini config file. You can not provide any of these parameters.
+
+```
+[LoadParameters]
+colored=true
+comments=true
+time_record=true ; or it can be false if you not want to record time
+
+[FilePointers] ; files names
+suit=one-time-test.txt
+devices=devices.txt
+
+[Strategy]
+strategy=usual
+```

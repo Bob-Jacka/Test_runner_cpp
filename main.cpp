@@ -5,6 +5,7 @@
 #include "core/Exceptions/FileControllerException.hpp"
 #include "core/Exceptions/MainException.hpp"
 #include "core/Strategies/declaration/Usual_strat.hpp"
+
 #ifdef EXTENDED_FUNCTIONALITY
 #include "core/Strategies/declaration/High_prior_strat.hpp"
 #include "core/Strategies/declaration/Parallel_strat.hpp"
@@ -25,9 +26,10 @@ import Libio;
  * Special namespace for functions that used in Main function
  */
 namespace Check_runner {
+#ifdef EXTENDED_FUNCTIONALITY_GUI
+    namespace Console {
+#endif
     int arg_count = 0; //count of arguments in utility input
-    constexpr auto EXIT_SYM = "exit"; ///symbol for exit in test result input
-    constexpr auto INPUT_SYM = ">> "; ///symbol for user input
 
     /**
      * Low level functionality (filesystem actions) in utility
@@ -66,12 +68,12 @@ namespace Check_runner {
         }
 
 #ifdef EXTENDED_FUNCTIONALITY
-        /**
-         * Save current progress during utility stop menu
-         */
-        void save_current_progress();
+            /**
+             * Save current progress during utility stop menu
+             */
+            void save_current_progress();
 
-        void load_current_progress();
+            void load_current_progress();
 #endif
         /**
          * Function for gracefully exit from utility.
@@ -139,8 +141,9 @@ namespace Check_runner {
                     //strategies for utility execution
                     if (flag_name == LP::Static_load_parameters_names::strat) {
                         const auto val = reinterpret_cast<con_string_ref>(flag_value);
+                        Entities::context = std::make_unique<Strategy::StratContext>();
 
-#ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors
+#ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors in import
                             if (val == LP::Static_load_parameters_names::high_prior_strat) {
                                 libio::output::println("Using 'high priority' strategy.");
                                 Entities::context->set_strategy(
@@ -183,7 +186,7 @@ namespace Check_runner {
 
                         //need for more devices than one
                         if (flag_name == LP::Static_load_parameters_names::devices) {
-                            Entities::load_parameters->set_devices_entry_point(reinterpret_cast<con_string_ref>(flag_value));
+                            Entities::load_parameters->set_devices_entry_point(flag_value);
                         }
 
                         //time check flag
@@ -206,6 +209,17 @@ namespace Check_runner {
                     //kill utility if unknown flag detected
                 }
             }
+            //Apply default strategy if no strategy was given
+#ifdef USUALSTRAT_HPP
+            if (Entities::context == nullptr) {
+                Entities::context = std::make_unique<Strategy::StratContext>();
+                Entities::context->set_strategy(
+                    std::make_unique<Strategy::Usual_strat>()
+                );
+            }
+#elifndef USUALSTRAT_HPP
+#error "Usual strategy should be defined in utility context"
+#endif
         }
     }
 
@@ -246,14 +260,14 @@ namespace Check_runner {
             Utility::println("Utility parameters:");
             Utility::println("\t1. 'strategy' - used for specifying run strategy");
 #ifdef EXTENDED_FUNCTIONALITY
-            Utility::println("\t\t1.1 'high_prior' - for only high priority test run");
-            Utility::println("\t\t1.2 'parallel' - for parallel random adding test");
-            Utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
-            Utility::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
+                Utility::println("\t\t1.1 'high_prior' - for only high priority test run");
+                Utility::println("\t\t1.2 'parallel' - for parallel random adding test");
+                Utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
+                Utility::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
 #endif
             Utility::println("\t\t1.5 'usual' - usual mode");
 #ifdef EXTENDED_FUNCTIONALITY
-            Utility::println("\t\t1.6 'choose' - choose test cases with which severity to run");
+                Utility::println("\t\t1.6 'choose' - choose test cases with which severity to run");
 #endif
             Utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
             Utility::println("\t3. 'time_record' - for record time, during test case execution");
@@ -298,20 +312,20 @@ namespace Check_runner {
             REPEAT_FOREVER {
                 Utility::println("Stop menu, choose action number to continue:");
 #ifdef EXTENDED_FUNCTIONALITY
-                Utility::println("1. Save current progress (create file with progress)");
-                Utility::println("2. Load current progress");
+                    Utility::println("1. Save current progress (create file with progress)");
+                    Utility::println("2. Load current progress");
 #endif
                 Utility::println("3. See bugs");
                 Utility::println("4. Close menu");
                 Utility::userInput(user_action);
                 switch (user_action) {
 #ifdef EXTENDED_FUNCTIONALITY
-                    case 1:
-                        Low_level::save_current_progress();
-                        break;
-                    case 2:
-                        Low_level::load_current_progress();
-                        break;
+                        case 1:
+                            Low_level::save_current_progress();
+                            break;
+                        case 2:
+                            Low_level::load_current_progress();
+                            break;
 #endif
                     case 3:
                         Print::see_bugs();
@@ -325,23 +339,41 @@ namespace Check_runner {
             }
         }
 #ifdef EXTENDED_FUNCTIONALITY
-        /**
-         * Menu for bug entering
-         */
-        [[noreturn]] void bug_menu() {
-            //
-        }
+            /**
+             * Menu for bug entering
+             */
+            [[noreturn]] void bug_menu() {
+                int user_action;
+                REPEAT_FOREVER {
+                    libio::output::println();
+                    switch (user_action) {
+                        //
+                    }
+                }
+            }
 
-        [[noreturn]] void run_menu() {
-            int user_action;
-        }
+            [[noreturn]] void run_menu() {
+                int user_action;
+                REPEAT_FOREVER {
+                    libio::output::println();
+                    switch (user_action) {
+                        //
+                    }
+                }
+            }
 
-        /**
-         * Menu for save or load functionality
-         */
-        [[noreturn]] void save_load_menu() {
-            int user_action;
-        }
+            /**
+             * Menu for save or load functionality
+             */
+            [[noreturn]] void save_load_menu() {
+                int user_action;
+                REPEAT_FOREVER {
+                    libio::output::println();
+                    switch (user_action) {
+                        //
+                    }
+                }
+            }
 #endif
     }
 
@@ -363,7 +395,7 @@ namespace Check_runner {
                 }
                 return str_arr;
             }
-            throw Check_exceptions::MainException(__LINE__, "Cannot resolve CLI arguments, given arguments - " + std::string(*argv), __FILE_NAME__);
+            throw Check_exceptions::MainException(__LINE__, "Cannot resolve CLI arguments", __FILE_NAME__);
         }
 
         /**
@@ -388,7 +420,7 @@ namespace Check_runner {
     * @param device optional device name.
     * @tparam A type of container with test cases
     * @tparam B type of container with test results
-    * @throws MainException("Unknown test result."), MainException("Unknown test severity.")
+    * @throws MainException("Unknown test result"), MainException("Unknown test severity")
     */
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
@@ -397,42 +429,43 @@ namespace Check_runner {
         std::chrono::steady_clock::time_point end; //end time of ts execution
 
         for (const auto &ts: vtc) {
-            //proceed test case one by one
-            libio::output::println("Name: " + Utility::trim(ts.get_name()));
+            //proceed test case one by one:
+            libio::output::println_w(L"Name: " + libio::output::toWstring(ts.get_name()));
             if (Entities::load_parameters->get_is_comments()) {
-                libio::output::println("Comment: " + ts.get_comment()); //output comments to console
+                libio::output::println_w(L"Comment: " + libio::output::toWstring(ts.get_comment())); //output comments to console
             }
-            //get start time of the test case execution
+            //get start time of the test case execution:
             if (Entities::load_parameters->get_is_time_record()) {
                 start = std::chrono::steady_clock::now();
             }
-        Back_label:
+        Ask_again_label:
             //ask user about result block
-            String action; {
+            String result; {
                 libio::output::println("Is test case successful?");
                 libio::output::println("You can write 'fluggegecheimen' word to stop utility for actions");
                 libio::output::println("Enter 'yes' (y), 'no' (n) or 'skip' for test result");
 
                 Utility::print(INPUT_SYM);
-                Utility::userInput(action);
+                Utility::userInput(result);
                 Utility::println(); //just new line symbol
             }
 
             //result - forever loop, if user has not watched "eurotrip" film
             REPEAT_FOREVER {
-                if (action == stop_word) {
+                if (result == stop_word) {
                     Menu::stop_menu();
-                    goto Back_label;
+                    libio::output::println("After pause:");
+                    goto Ask_again_label;
                     //Edsger Wybe Dijkstra said that 'goto' statement is bad, I know, but it is some kind of reference to previous version of Test_runner
                 }
                 //test case result user input
-                auto result = TA::Test_result();
-                if (action == "yes" or action == "y" or action == "skip") {
-                    result.set_name(ts.get_name());
-                    result.set_result(action);
-                } else if (action == "no" or action == "n") {
-                    result.set_name(ts.get_name());
-                    result.set_result(action);
+                auto test_res = TA::Test_result();
+                if (result == "yes" or result == "y" or result == "skip") {
+                    test_res.set_name(ts.get_name());
+                    test_res.set_result(result);
+                } else if (result == "no" or result == "n") {
+                    test_res.set_name(ts.get_name());
+                    test_res.set_result(result);
 
                     Utility::println("To exit enter 'exit' word");
                     Utility::println("Write down bugs attributes:");
@@ -477,16 +510,21 @@ namespace Check_runner {
                         }
 
                         const auto bug = TA::Bug(bug_name, bug_description, severity);
-                        result.add_bug(bug);
-                        result.set_device_name(device); //set device name, if not provided - write single_device_mode constant
+                        test_res.add_bug(bug);
+                        test_res.set_device_name(device); //set device name, if not provided - write single_device_mode constant
                         break;
                     }
-                    vtr.push_back(result);
+                    vtr.push_back(test_res);
                     break;
                 } else {
                     //it can be no exception, if you want to not terminate the program
                     throw Check_exceptions::MainException(__LINE__, "Unknown test result.", __FILE_NAME__);
                 }
+                Entities::vtr.push_back(test_res);
+#ifdef DEBUG
+                libio::output::println("Pushed back");
+#endif
+                break;
             }
             if (Entities::load_parameters->get_is_time_record()) {
                 end = std::chrono::steady_clock::now();
@@ -496,6 +534,14 @@ namespace Check_runner {
         }
     }
 }
+
+#ifdef EXTENDED_FUNCTIONALITY_GUI
+    namespace GUI {
+        //
+    }
+}
+#endif
+
 
 /**
  * Program entry point
@@ -510,13 +556,14 @@ int main(const int argc, char *argv[]
 #endif
 ) {
     using namespace Check_runner;
+    bool global_strat_state = false; //global state of everything_now strategy to not use load_parameters
 
     if (argc > 1) {
         ///Entity init block
         arg_count = argc; {
             Entities::load_parameters = std::make_unique<LP::Load_parameters>();
             Check::check_flags(Other::resolve_cli_args(argv)); //proceed flags first, before parser
-            Entities::parser = std::make_unique<Line_interpreter_ns::DirectiveInterpreter>();
+            Entities::parser = std::make_unique<Interpreter_ns::DirectiveInterpreter>();
         }
 
         //Pre strategy actions block
@@ -526,10 +573,11 @@ int main(const int argc, char *argv[]
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
+            using namespace Check_runner::GUI;
             if (Entities::load_parameters->get_gui()) {
                 QGuiApplication app(argc, argv);
-                QCoreApplication::setOrganizationName("QtProject"_L1);
-                QCoreApplication::setApplicationName("DocumentViewer"_L1);
+                QCoreApplication::setOrganizationName("Blackgames"_L1);
+                QCoreApplication::setApplicationName("Check_runner"_L1);
                 QCoreApplication::setApplicationVersion("1.0"_L1);
 
                 QQmlApplicationEngine engine;
@@ -541,33 +589,39 @@ int main(const int argc, char *argv[]
                 engine.loadFromModule("appmain.ui", "Main");
 
                 return app.exec();
-
             }
 #endif
 
-            Entities::parser->parse_lines_empty(lines_from_file); //2) Delete comments from file
+            global_strat_state = Entities::load_parameters->get_is_everything_now();
+
+            lines_from_file = Entities::parser->preprocess_lines(lines_from_file); //2) Delete comments from file
             if (not Entities::load_parameters->get_parameters().empty()) {
                 //2.25 Parse given in console parameters
                 Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
             }
             lines_from_file = Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
-
-            if (Entities::load_parameters->get_is_everything_now() and Entities::context->get_strat() == nullptr) {
+            if (global_strat_state and Entities::context->get_strat() == nullptr) {
                 Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
-            } else if (not Entities::load_parameters->get_is_everything_now()) {
+            } else if (not global_strat_state) {
                 //3) Create test cases objects
+#ifdef DEBUG
+                const auto strat = Entities::context->get_strat();
+                auto test_cases_unfiltered = Entities::test_case_fabric->create_test_cases(lines_from_file); //TODO падает если parameters
+                Entities::vts = strat->doAlgorithm(test_cases_unfiltered);
+#elifndef DEBUG
                 Entities::vts = Entities::context->get_strat()->doAlgorithm(
                     Entities::test_case_fabric->create_test_cases(lines_from_file)
                 );
+#endif
             } else {
-                Low_level::exit_utility(1, "Error in strategy");
+                Low_level::exit_utility(1, "Error in strategy execution");
             }
             Entities::vtr = Vec_t<TA::Test_result>();
         }
 
         //Strategy block
         {
-            if (not Entities::load_parameters->get_is_everything_now()) {
+            if (not global_strat_state) {
                 //Execute main cycle of the utility
                 if (not Entities::load_parameters->get_devices_entry_point().empty()) {
                     if (File_controller::check_file_existence(devices_static_file_name)) {
@@ -604,7 +658,6 @@ int main(const int argc, char *argv[]
             if (Entities::load_parameters->get_is_file_write()) {
                 Low_level::write_test_results_2file(Entities::vtr);
             }
-            libio::output::println("Out utility, bye");
         }
     } else if (const String conv_arg = *argv; arg_count == 2 and conv_arg.contains("--help")) {
         //print help to user if user wants help to be printed
@@ -615,4 +668,5 @@ int main(const int argc, char *argv[]
         Print::print_help();
         Low_level::exit_utility(EXIT_FAILURE);
     }
+    libio::output::println("Out utility, bye");
 }

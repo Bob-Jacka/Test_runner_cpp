@@ -13,6 +13,7 @@ endif ()
 
 add_executable(Check_runner
         core/Data/Constants.hpp
+        core/Data/Translation.hpp
         core/Exceptions/Base_exception.hpp
         core/Exceptions/FileControllerException.hpp
         core/Exceptions/LineInterpreterException.hpp
