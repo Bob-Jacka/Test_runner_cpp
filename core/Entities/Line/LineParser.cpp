@@ -1,4 +1,4 @@
-#include "LineParser.hpp"
+#include "../Line/LineParser.hpp"
 
 import Libio;
 
@@ -7,7 +7,7 @@ class File_controller;
 Interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
     this->interpreter_position = 0;
     this->output_vector = std::vector<std::string>();
-    this->suit_parameters = std::map<std::string, std::string>();
+    this->global_parameters = std::map<std::string, std::string>();
 }
 
 /**
@@ -55,7 +55,7 @@ bool Interpreter_ns::DirectiveInterpreter::jmp_to(const std::string &directive_t
 }
 
 std::map<std::string, std::string> Interpreter_ns::DirectiveInterpreter::get_suit_parameters() const {
-    return this->suit_parameters;
+    return this->global_parameters;
 }
 
 std::vector<std::string> Interpreter_ns::DirectiveInterpreter::get_output_vector() const {
@@ -108,7 +108,13 @@ void Interpreter_ns::DirectiveInterpreter::directive_group(const std::string &di
  * @throw LineInterpreterException if given parameters are in wrong form.
  */
 void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &parameters_line) const {
-    const auto split_line = Utility::split(parameters_line, ',');
+    using namespace libio::string;
+    auto split_line = Utility::split(parameters_line, ',');
+    if (split_line[0].contains(group_indicator)) {
+        split_line[0] = delete_whitespaces(replace_string_all(split_line[0], ":", ""));
+    } else if (split_line[1].contains(group_indicator)) {
+        split_line[1] = delete_whitespaces(replace_string_all(split_line[1], ":", ""));
+    }
     auto check_lambda = [&](const std::string &to_check) -> bool {
         return to_check.contains("=");
     };
@@ -116,14 +122,14 @@ void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &p
     for (const auto &parameter: split_line) {
         if (check_lambda(parameter)) {
             auto name_and_value = Utility::split(parameter, '=');
-            suit_parameters[name_and_value[0]] = name_and_value[1];
+            global_parameters[name_and_value[0]] = name_and_value[1];
         } else {
             throw Check_exceptions::LineInterpreterException(__LINE__, "Suit parameters should contain equal sign (=), but given " + parameter,
                                                              __FILE_NAME__);
         }
     }
     //It can be an error, because no parameters are given, but on the other hand it is just a message and user might not provide any parameters
-    if (this->suit_parameters.empty()) {
+    if (this->global_parameters.empty()) {
         Utility::println("Expected parameters directive with valid attributes");
     }
 }
@@ -236,7 +242,7 @@ std::vector<std::string> Interpreter_ns::DirectiveInterpreter::parse_directives(
             }
 #endif
             else if (directive_name == import_directive) [[likely]] {
-                add_to_output_vector(File_controller::readlines(directive_value));
+                add_to_output_vector(Check_runner::File_controller::readlines(directive_value));
             } else if (directive_name == parameters_directive) {
                 parse_parameters(directive_value);
             } else {

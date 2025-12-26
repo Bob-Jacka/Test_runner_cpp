@@ -10,6 +10,7 @@ Vec_t<Check_runner::TA::Test_result> Check_runner::Entities::vtr = {};
 #ifndef EXTENDED_FUNCTIONALITY
 Vec_t<Check_runner::TA::Test_case> Check_runner::Entities::vts = {};
 #elifdef EXTENDED_FUNCTIONALITY
+#message "Using TS group instead of vector with test cases"
 Vec_t<Check_runner::TS_group> Entities::vts = {};
 std::unique_ptr<IniParser> ini_parser = nullptr;
 #endif

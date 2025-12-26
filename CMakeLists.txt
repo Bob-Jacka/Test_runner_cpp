@@ -23,8 +23,8 @@ add_executable(Check_runner
 
         core/Entities/File_controller.cpp
         core/Entities/File_controller.hpp
-        core/Entities/LineParser.cpp
-        core/Entities/LineParser.hpp
+        core/Entities/Line/LineParser.cpp
+        core/Entities/Line/LineParser.hpp
         core/Entities/Test_Artifact_Fabric.cpp
         core/Entities/Test_Artifact_Fabric.hpp
 

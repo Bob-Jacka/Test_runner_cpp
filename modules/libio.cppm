@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.21.0
+ Version - 1.22.0
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 */
@@ -33,13 +33,14 @@ export module Libio;
 namespace libio {
     using cint [[maybe_unused]] = const int; ///constant custom integer type
     using cbool [[maybe_unused]] = const bool; ///constant custom bool type
+    using String [[maybe_unused]] = const std::string;
 
     /**
      * Namespace for constrains of types using concepts
      */
     export namespace type_constrains {
         template<typename T>
-        concept is_string = std::is_same_v<T, std::string>;
+        concept is_string_v = std::is_same_v<T, std::string>;
 
         /**
          * Check for standard library container
@@ -56,6 +57,12 @@ namespace libio {
             // Must have an end() method returning an iterator
             { t.end() } -> std::same_as<typename T::iterator>;
         };
+
+        template<typename T>
+        concept is_number_v = std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+        template<typename T>
+        concept is_bool_v = std::convertible_to<T, bool> && std::same_as<T, bool>;
     }
 
     /**
@@ -65,24 +72,39 @@ namespace libio {
         /**
          * Namespace for colored text output
          */
-        namespace colored {
-            /**
-            Enumerate class for compiler output colors
-            */
-            export enum Color {
-                WHITE,
-                RED,
-                BLUE,
-                GREEN
-            };
-
+        export namespace colored {
             struct Ansi_colors {
-                //
+                static const std::string _clear_color;
+                static const std::string _color_start;
+                static const std::string WHITE;
+                static const std::string RED;
+                static const std::string GREEN;
+                static const std::string YELLOW;
+                static const std::string MAGENTA;
+                static const std::string CYAN;
             };
 
-            export template<typename T>
-            void colored_print(const T &str, const std::string &separator = " ", Color color = WHITE) {
-                //
+            const std::string Ansi_colors::_color_start = "\033[";
+            const std::string Ansi_colors::_clear_color = "\033[0m";
+            const std::string Ansi_colors::WHITE = "\033[37m";
+            const std::string Ansi_colors::RED = "\033[31m";
+            const std::string Ansi_colors::GREEN = "\033[32m";
+            const std::string Ansi_colors::YELLOW = "\033[33m";
+            const std::string Ansi_colors::MAGENTA = "\033[35m";
+            const std::string Ansi_colors::CYAN = "\033[36m";
+
+            /**
+             * Print generic object in color to console.
+             * @tparam T generic type
+             * @param object generic type object to print.
+             * @param separator string separator
+             * @param color std::string object with ANSI color sequence
+             */
+            template<typename T>
+            void colored_print(const T &object, const std::string &separator = " ", const std::string &color = Ansi_colors::WHITE) {
+                if (std::cout.good()) {
+                    std::cout << color << object << Ansi_colors::_clear_color << separator;
+                }
             }
         }
 
@@ -140,7 +162,10 @@ namespace libio {
             }
         }
 
+#endif
+
 #ifdef LIBIO_TRANSLATION
+
         /**
          * Convert usual string object to wide string.
          * @param str source std::string object
@@ -153,7 +178,6 @@ namespace libio {
                                                                       buf.data());
             return std::wstring(buf.data(), buf.size());
         }
-#endif
 
         /**
          * Print given wide string message in console with new line.
@@ -177,7 +201,6 @@ namespace libio {
                 std::wcout << str << separator;
             }
         }
-
 #endif
 
         /**
@@ -359,7 +382,7 @@ namespace libio {
          * Change string register by invoking std functions
          * @param str source string value.
          * @param regis output string register, can be either false (upper) or true (lower).
-         * @param loc localization
+         * @param loc localization object
          * @return string in selected register.
          */
         std::string change_string_register(const std::string &str, const bool regis, const std::locale &loc = std::locale("en")) {
@@ -372,10 +395,10 @@ namespace libio {
         }
 
         /**
-         Function for replacing all strings in string
+         Function for replacing all strings occurrences in string
          @param str source string
          @param replace replace this in source
-         @param with replace with this string
+         @param with replace with this string in source
          @return string with replacements
          */
         [[maybe_unused]] inline std::string &replace_string_all(std::string &str, const std::string &replace, const std::string &with) {
@@ -407,7 +430,7 @@ namespace libio {
         T convert_to_t(const std::string &source);
 
         template<>
-        int convert_to_t<int>(const std::string &source) {
+        int convert_to_t(const std::string &source) {
             try {
                 return std::stoi(source);
             } catch (const std::exception &e) {
@@ -416,8 +439,19 @@ namespace libio {
         }
 
         template<>
-        std::string convert_to_t<std::string>(const std::string &source) {
+        std::string convert_to_t(const std::string &source) {
             return source.empty() ? "0" : source;
+        }
+
+        template<>
+        bool convert_to_t(const std::string &source) {
+            if (source == "false" || source == "False") {
+                return false;
+            }
+            if (source == "true" || source == "True") {
+                return true;
+            }
+            return false;
         }
 
 #ifdef LIBIO_EXPERIMENTAL
@@ -523,9 +557,9 @@ namespace libio {
         template<typename T>
         T *create1DArray(int);
 
-        template<typename T>
-        T *create1DArray(const int rows) {
-            const auto dyn_array = new T[rows];
+        template<>
+        int *create1DArray(const int rows) {
+            const auto dyn_array = new int[rows];
             for (int i = 0; i < rows; ++i) {
                 dyn_array[i] = 0;
             }
@@ -678,6 +712,35 @@ namespace libio {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
+        /**
+        * Open file and return condition variable of open
+        * @param file_name name of the file to open
+        * @return tuple with file handler and bool (true if file open)
+        */
+        std::tuple<std::ifstream, bool> open_file(const std::string &file_name) {
+            if (auto file = std::ifstream(file_name); file.is_open()) {
+                return std::make_tuple<std::ifstream, bool>(std::move(file), true);
+            } else {
+                return std::make_tuple<std::ifstream, bool>(std::move(nullptr), false);
+            }
+        }
+
+        /**
+        * Function for checking if file exists in filesystem.
+        * @param file_name name of the file to check.
+        */
+        bool check_file_existence(const std::string &file_name) {
+            auto [file, cond] = open_file(file_name);
+            if (cond) {
+                file.close();
+                return true;
+            }
+            file.close();
+            return false;
+        }
+#endif
+
+#ifdef LIBIO_EXPERIMENTAL
             /**
              * Function for receiving few lines from file.
              * @tparam T generic type.
@@ -738,4 +801,23 @@ namespace libio {
         }
 #endif
     }
+
+#ifdef LIBIO_EXPERIMENTAL
+    /**
+     * Namespace for inline assembler code and other
+     */
+    namespace other {
+        extern "C" int func(int x);
+        asm(R"(
+        .globl func
+        .type func, @function
+        func:
+        .cfi_startproc
+        movl %edi, %eax /* x is in RDI, see x86-64 calling convention */
+        addl $1, %eax
+        ret
+        .cfi_endproc
+    )");
+    }
+#endif
 }

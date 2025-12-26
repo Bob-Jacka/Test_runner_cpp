@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Load_parameters.hpp"
-#include "core/Entities/LineParser.hpp"
+#include "core/Entities/Line/LineParser.hpp"
 #include "core/Entities/Test_Artifact_Fabric.hpp"
 #ifdef EXTENDED_FUNCTIONALITY
 #include "core/Entities/Ini_parser.hpp"

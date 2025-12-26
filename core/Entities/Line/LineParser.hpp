@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "File_controller.hpp"
-#include "../Data/Constants.hpp"
-#include "../Exceptions/LineInterpreterException.hpp"
+#include "../File_controller.hpp"
+#include "../../Data/Constants.hpp"
+#include "../../Exceptions/LineInterpreterException.hpp"
 
 /**
  * Namespace for directive interpreter and other things
@@ -19,7 +19,7 @@ namespace Interpreter_ns {
     class DirectiveInterpreter {
         mutable int interpreter_position; ///position of interpreter in main suit of utility
 
-        mutable std::map<std::string, std::string> suit_parameters; ///variables of suit
+        mutable std::map<std::string, std::string> global_parameters; ///variables of suit
 
         mutable std::vector<std::string> inner_vector_to_proceed; ///main vector with lines
 

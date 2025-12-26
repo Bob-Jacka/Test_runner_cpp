@@ -13,73 +13,83 @@
  */
 namespace Translation {
 #ifdef RU_TRANSLATION
-        consteval auto found_bugs = "Найденные баги:";
-        consteval auto bug_name = "\tИмя бага: ";
-        consteval auto bug_desc = "\tОписание бага: ";
-        consteval auto bug_sev = "\tВажность бага: ";
+        //Bugs:
+        constexpr auto found_bugs = "Найденные баги:";
+        constexpr auto bug_name = "\tИмя бага: ";
+        constexpr auto bug_desc = "\tОписание бага: ";
+        constexpr auto bug_sev = "\tВажность бага: ";
+        constexpr auto no_bugs = "Багов нет";
 
         //Bug severity:
-        consteval auto low = "Низкий";
-        consteval auto medium = "Средний";
-        consteval auto high = "Высокий";
-        consteval auto critical = "Критический";
-        consteval auto blocker = "Блокирующий";
+        constexpr auto low = "Низкий";
+        constexpr auto medium = "Средний";
+        constexpr auto high = "Высокий";
+        constexpr auto critical = "Критический";
+        constexpr auto blocker = "Блокирующий";
 
-        //Other "bug" words
-        consteval auto enter_invite = "Введите аттрибуты бага:";
-        consteval auto input_exit = "To exit enter 'exit' word";
+        //Other "bug" words:
+        constexpr auto enter_invite = "Введите аттрибуты бага:";
+        constexpr auto input_exit = "Для того чтобы выйти введите 'exit' слово";
 
-        //user action
-        consteval auto accept = "да";
-        consteval auto disaccept = "нет";
-        consteval auto skip = "пропустить";
+        //user action:
+        constexpr auto accept = "да";
+        constexpr auto disaccept = "нет";
+        constexpr auto skip = "пропустить";
 
-        ////Test case
-        consteval auto ts_question = "Тест кейс пройден?";
-        consteval auto available_input = "Введите да (д), нет (н) или пропуск для результата проверки";
+        //Test case:
+        constexpr auto ts_question = "Тест кейс пройден?";
+        constexpr auto available_input = "Введите да (д), нет (н) или пропуск для результата проверки";
 
-        ////strategies strings
-        consteval auto high_prior_strat = "Blocker";
-        consteval auto random_strat = "Blocker";
-        consteval auto parallel_strat = "Blocker";
+        //strategies strings:
+        constexpr auto high_prior_strat = "Blocker";
+        constexpr auto random_strat = "Blocker";
+        constexpr auto parallel_strat = "Blocker";
 
-        ////other strings
-        consteval auto elapsed_sec = "Elapsed seconds for this test case: ";
+        //other strings:
+        constexpr auto elapsed_sec = "Потраченное время на тест кейс: ";
 
-#else
+#else // default localization (En)
+    constexpr auto device_name = "Device name: ";
     //Bugs
-    consteval auto found_bugs = "Found Bugs:";
-    consteval auto bug_name = "\tBug name: ";
-    consteval auto bug_desc = "\tBug description: ";
-    consteval auto bug_sev = "\tBug severity: ";
+    constexpr auto found_bugs = "Found Bugs:";
+    constexpr auto bug_name = "\tBug name: ";
+    constexpr auto bug_desc = "\tBug description: ";
+    constexpr auto bug_sev = "\tBug severity: ";
+    constexpr auto no_bugs = "No bugs";
 
     //Bug severity:
-    consteval auto low = "Low";
-    consteval auto medium = "Medium";
-    consteval auto high = "High";
-    consteval auto critical = "Critical";
-    consteval auto blocker = "Blocker";
+    constexpr auto low = "Low";
+    constexpr auto medium = "Medium";
+    constexpr auto high = "High";
+    constexpr auto critical = "Critical";
+    constexpr auto blocker = "Blocker";
 
     //Other "bug" words
-    consteval auto enter_invite = "Write down bugs attributes:";
-    consteval auto input_exit = "To exit enter 'exit' word";
+    constexpr auto enter_invite = "Write down bugs attributes:";
+    constexpr auto enter_invite_bug = "Enter bug name: ";
+    constexpr auto enter_invite_bug_sev = "\nEnter bug severity: ";
+    constexpr auto input_exit = "To exit enter 'exit' word";
 
-    //user action
-    consteval auto accept = "yes";
-    consteval auto disaccept = "no";
-    consteval auto skip = "skip";
+    //user action answer
+    constexpr auto accept = "yes";
+    constexpr auto disaccept = "no";
+    constexpr auto skip = "skip";
 
-    ////Test case
-    consteval auto ts_question = "Is test case successful?";
-    consteval auto available_input = "Enter yes (y), no (n) or skip for test result";
+    //Test case
+    constexpr auto ts_question = "Is test case successful?";
+    constexpr auto available_input = "Enter yes (y), no (n) or skip for test result";
 
-    ////strategies strings
-    consteval auto high_prior_strat = "high_prior";
-    consteval auto random_strat = "random";
-    consteval auto parallel_strat = "parallel";
+    //strategies strings
+    constexpr auto high_prior_strat = "high_prior";
+    constexpr auto random_strat = "random";
+    constexpr auto parallel_strat = "parallel";
 
-    ////other strings
-    consteval auto elapsed_sec = "Elapsed seconds for this test case: ";
+    //Menu:
+    constexpr auto load = "Load";
+    constexpr auto save = "Save";
+
+    //other strings
+    constexpr auto elapsed_sec = "Elapsed seconds for this test case: ";
 #endif
 }
 

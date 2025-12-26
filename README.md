@@ -1,4 +1,4 @@
-# Check runner (aka Test_runner)
+# Check runner (aka Test_runner CPP edition)
 
 ## What is it?:
 
@@ -132,32 +132,35 @@ These symbols are using in simple text file (just .txt),
 
 ### Other directives:
 
-#Ignore - will not add test to suit,
-#Parameters - add variables to suit,
-#Import - add suit to another suit
+_#Ignore_ - will not add test to suit,
+_#Parameters_ - add variables to suit,
+_#Import_ - add suit to another suit
 
 ## Config file in utility:
 
 ### What is it?
 
 Utility allowed to have settings in .ini files, it means that you can not provide arguments in command line interface,
-but provide by .ini file
+but provide by .ini file. Parameter might not be provided in .ini file, ex. comments might not be provided and utility
+starts without comments displaying.
 
 ### Example of usage:
 
 Here is example of usage .ini file in setting utility parameters.
-It is important to use same names in your .ini config file. You can not provide any of these parameters.
+**It is important to use same names in your .ini config file that in "Available utility flags" section of README.** You
+can not provide any of these parameters.
 
 ```
 [LoadParameters]
 colored=true
 comments=true
-time_record=true ; or it can be false if you not want to record time
+time_record=true ; or it can be false if you do not want to record time
 
-[FilePointers] ; files names
+[FilePointers] ; files names, might be with .txt or not
 suit=one-time-test.txt
 devices=devices.txt
 
 [Strategy]
+interface=gui ; runs graphical user interface or console - runs console app
 strategy=usual
 ```

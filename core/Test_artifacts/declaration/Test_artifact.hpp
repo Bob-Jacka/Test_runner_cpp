@@ -124,9 +124,6 @@ namespace Check_runner {
          * Base class for test cases, checklists, bugs, test results and test suit
          */
         class Test_artifact {
-        protected:
-            std::string name;
-
         public:
             Test_artifact() = default;
 

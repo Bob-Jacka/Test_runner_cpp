@@ -66,8 +66,6 @@ namespace LP {
 
         [[nodiscard]] std::string get_devices() const;
 
-        [[nodiscard]] std::vector<std::string> get_cli_parameters() const;
-
         [[nodiscard]] std::string get_parameters() const;
 
         [[nodiscard]] bool get_gui() const;
@@ -242,6 +240,9 @@ namespace LP {
         static constexpr std::string everything_now = "everything_now"; ///not presented in main check cli
         static constexpr std::string usual_strat = "usual";
         static constexpr std::string choose_strat = "choose";
+
+        //other
+        static constexpr std::string help = "--help";
     };
 }
 
