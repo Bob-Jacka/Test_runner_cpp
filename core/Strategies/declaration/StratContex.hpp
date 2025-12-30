@@ -1,8 +1,7 @@
 #ifndef STRATCONTEX_HPP
 #define STRATCONTEX_HPP
-#include <iostream>
+
 #include <memory>
-#include <bits/ostream.tcc>
 
 #include "Strat.hpp"
 
@@ -25,7 +24,7 @@ namespace Strategy {
 
         std::unique_ptr<Strat> get_strat() {
             if (strategy_ == nullptr) {
-                //
+                return nullptr;
             }
             return std::move(strategy_);
         }

@@ -1,7 +1,7 @@
 #include "Ini_parser.hpp"
 
 Interpreter_ns::Ini_parser::Ini_parser(const std::string &filename) {
-    const std::vector<std::string> lines = libio::file::readFile(filename);
+    const std::vector<std::string> lines = libio::file::read_file(filename);
     this->sections = parse_ini_from_vector(lines);
 }
 
@@ -23,7 +23,7 @@ int Interpreter_ns::Ini_parser::get_section_count() const {
  */
 char **Interpreter_ns::Ini_parser::convert_to_char_array(const int arg_count) const {
     int counter = 0;
-    const auto to_return = libio::array::create2DArray<char>(arg_count, 1);
+    const auto to_return = libio::array::create_2d_array<char>(arg_count, 1);
     for (const auto &section: this->sections) {
         for (const auto &[fst, snd]: section.second) {
             std::string word = "";

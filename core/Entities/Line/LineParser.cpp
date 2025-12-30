@@ -130,7 +130,7 @@ void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &p
     }
     //It can be an error, because no parameters are given, but on the other hand it is just a message and user might not provide any parameters
     if (this->global_parameters.empty()) {
-        Utility::println("Expected parameters directive with valid attributes");
+        libio::output::println("Expected parameters directive with valid attributes");
     }
 }
 

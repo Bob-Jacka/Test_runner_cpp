@@ -8,7 +8,7 @@
 #include "core/Strategies/declaration/Usual_strat.hpp"
 
 #ifdef EXTENDED_FUNCTIONALITY
-#message "Using extended strategies"
+#pragma message("Using extended strategies")
 
 #include "core/Strategies/declaration/High_prior_strat.hpp"
 #include "core/Strategies/declaration/Parallel_strat.hpp"
@@ -17,7 +17,7 @@
 #include "core/Entities/Ini/Ini_parser.hpp"
 
 #elifdef EXTENDED_FUNCTIONALITY_GUI
-#message "Using graphical user interface"
+#pragma message("Using graphical user interface mode")
 
 #include <QGuiApplication>
 #include <QApplication>
@@ -91,9 +91,9 @@ namespace Check_runner {
             Entities::vts.clear();
 
             if (!system_msg.empty()) {
-                Utility::println(system_msg);
+                libio::output::println(system_msg);
             } else {
-                Utility::println("Bye");
+                libio::output::println("Bye");
             }
             std::exit(_Code);
         }
@@ -111,7 +111,7 @@ namespace Check_runner {
         void check_flags(String *cont_to_check) {
             ///lambda for checking if string is a flag or not.
             const auto check_func_full = [&](const String &str) -> bool {
-                return (str.contains("=") and str.contains("--")) and !str.empty();
+                return str.contains("=") and str.contains("--") and !str.empty();
             };
             using con_string_ref = const std::string &; ///short version of type for string values
             using con_bool_ref = const bool &; ///short version of type for boolean values
@@ -146,28 +146,28 @@ namespace Check_runner {
                     }
                     //strategies for utility execution:
                     if (flag_name == LP::Static_load_parameters_names::strat) {
-                        const auto val = reinterpret_cast<con_string_ref>(flag_value);
+                        const auto strat_value = reinterpret_cast<con_string_ref>(flag_value);
                         Entities::context = std::make_unique<Strategy::StratContext>();
 
 #ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors in import
-#message "Using extended utility strategies"
+#pragma message("Using extended utility strategies")
 
-                            if (val == LP::Static_load_parameters_names::high_prior_strat) {
+                            if (strat_value == LP::Static_load_parameters_names::high_prior_strat) {
                                 libio::output::println("Using 'high priority' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::High_prior_strat>()
                                 );
-                            } else if (val == LP::Static_load_parameters_names::random_strat) {
+                            } else if (strat_value == LP::Static_load_parameters_names::random_strat) {
                                 libio::output::println("Using 'pseudo run' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Random_run_strat>()
                                 );
-                            } else if (val == LP::Static_load_parameters_names::parallel_strat) [[unlikely]] {
+                            } else if (strat_value == LP::Static_load_parameters_names::parallel_strat) [[unlikely]] {
                                 libio::output::println("Using 'parallel' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Parallel_strat>()
                                 );
-                            } else if (val == LP::Static_load_parameters_names::choose_strat) {
+                            } else if (strat_value == LP::Static_load_parameters_names::choose_strat) {
                                 libio::output::println("Using 'choose' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Choose_prior_strat>()
@@ -176,13 +176,13 @@ namespace Check_runner {
 
                             else
 #endif
-                        if (val == LP::Static_load_parameters_names::usual_strat) [[likely]] {
+                        if (strat_value == LP::Static_load_parameters_names::usual_strat) [[likely]] {
                             libio::output::println("Using 'usual' strategy.");
                             Entities::context->set_strategy(
                                 std::make_unique<Strategy::Usual_strat>()
                             );
                         } else {
-                            throw Check_exceptions::MainException(__LINE__, "No strategy selected for value: " + val, __FILE_NAME__);
+                            throw Check_exceptions::MainException(__LINE__, "No strategy selected for value: " + strat_value, __FILE_NAME__);
                         }
                     }
                     //other utility flags block
@@ -243,7 +243,7 @@ namespace Check_runner {
             int counter = 1;
             for (const auto &res: vec) {
                 //elem = Test result object
-                Utility::println("№" + counter);
+                libio::output::println("№ " + counter);
                 libio::output::println("Test name: " + res.get_name());
                 libio::output::println("Test result: " + res.get_result());
                 if (const auto &bugs_vec = res.get_bugs(); !bugs_vec.empty()) {
@@ -263,32 +263,32 @@ namespace Check_runner {
         * Function for printing help to user.
         */
         void print_help() {
-            Utility::println("Test runner C++ edition");
-            Utility::println("Utility description: - utility is using for test cycles\n");
-            Utility::println("Utility parameters:");
-            Utility::println("\t1. 'strategy' - used for specifying run strategy");
+            libio::output::println("Test runner C++ edition");
+            libio::output::println("Utility description: - utility is using for test cycles\n");
+            libio::output::println("Utility parameters:");
+            libio::output::println("\t1. 'strategy' - used for specifying run strategy");
 #ifdef EXTENDED_FUNCTIONALITY
-                Utility::println("\t\t1.1 'high_prior' - for only high priority test run");
-                Utility::println("\t\t1.2 'parallel' - for parallel random adding test");
-                Utility::println("\t\t1.3 'random' - for pseudo-random strategy mode");
-                Utility::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
+                libio::output::println("\t\t1.1 'high_prior' - for only high priority test run");
+                libio::output::println("\t\t1.2 'parallel' - for parallel random adding test");
+                libio::output::println("\t\t1.3 'random' - for pseudo-random strategy mode");
+                libio::output::println("\t\t1.4 'everything_now' - manual ts execution, print ts in console");
 #endif
-            Utility::println("\t\t1.5 'usual' - usual mode");
+            libio::output::println("\t\t1.5 'usual' - usual mode");
 #ifdef EXTENDED_FUNCTIONALITY
-                Utility::println("\t\t1.6 'choose' - choose test cases with which severity to run");
+                libio::output::println("\t\t1.6 'choose' - choose test cases with which severity to run");
 #endif
-            Utility::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
-            Utility::println("\t3. 'time_record' - for record time, during test case execution");
-            Utility::println("\t4. 'colored' - for color text output");
-            Utility::println("\t5. 'comments' - for test case comment output\n");
-            Utility::println("\t6. 'inter' - for utility interface (can be 'gui' or 'console')\n");
-            Utility::println("Available utility directives in files with tests:");
-            Utility::println("\t1. 'Group_start' - directive for indication for test suit start,");
-            Utility::println("\t2. 'Group_end' - directive for indication for test suit end,");
-            Utility::println("\t3. 'If' - usual if operator for branching in many programming languages,");
-            Utility::println("\t4. 'Else_if' - alternative branch,");
-            Utility::println("\t5. 'Else' - additional directive for if");
-            Utility::println("\t6. 'End_if' - closes if condition");
+            libio::output::println("\t2. 'devices' - (optional) for providing devices names to test cycle");
+            libio::output::println("\t3. 'time_record' - for record time, during test case execution");
+            libio::output::println("\t4. 'colored' - for color text output");
+            libio::output::println("\t5. 'comments' - for test case comment output\n");
+            libio::output::println("\t6. 'inter' - for utility interface (can be 'gui' or 'console')\n");
+            libio::output::println("Available utility directives in files with tests:");
+            libio::output::println("\t1. 'Group_start' - directive for indication for test suit start,");
+            libio::output::println("\t2. 'Group_end' - directive for indication for test suit end,");
+            libio::output::println("\t3. 'If' - usual if operator for branching in many programming languages,");
+            libio::output::println("\t4. 'Else_if' - alternative branch,");
+            libio::output::println("\t5. 'Else' - additional directive for if");
+            libio::output::println("\t6. 'End_if' - closes if condition");
         }
 
         /**
@@ -296,7 +296,7 @@ namespace Check_runner {
          */
         void see_bugs() {
             for (const auto &elem: Entities::vtr) {
-                Utility::println(elem.get_name());
+                libio::output::println(elem.get_name());
                 for (const auto &bug: elem.get_bugs()) {
                     libio::output::println("\tBug name: " + bug.get_name());
                     libio::output::println("\tBug description: " + bug.get_description());
@@ -321,11 +321,11 @@ namespace Check_runner {
                 libio::output::colored::colored_print("Stop menu, choose action number to continue:", "\n",
                                                       libio::output::colored::Ansi_colors::MAGENTA);
 #ifdef EXTENDED_FUNCTIONALITY
-                    Utility::println("1. Save / Load menu");
+                 Utility::println("1. Save / Load menu");
 #endif
-                Utility::println("2. See bugs");
-                Utility::println("3. Close menu");
-                Utility::userInput(user_action);
+                libio::output::println("2. See bugs");
+                libio::output::println("3. Close menu");
+                libio::input::user_input(user_action);
                 switch (user_action) {
 #ifdef EXTENDED_FUNCTIONALITY
                     case 1:
@@ -336,9 +336,9 @@ namespace Check_runner {
                         Print::see_bugs();
                         break;
                     case 3:
-                        return;
+                        break;
                     default:
-                        Utility::println("Wrong action number, try again.");
+                        libio::output::println("Wrong action number, try again.");
                         continue;
                 }
             }
@@ -348,12 +348,12 @@ namespace Check_runner {
              * Menu for bug entering
              */
             [[noreturn]] void bug_menu() {
-                int user_action;
-                REPEAT_FOREVER {
-                    libio::output::println();
-                    Utility::userInput(user_action);
-                    switch (user_action) {
-                        //
+            int user_action;
+            REPEAT_FOREVER {
+                libio::output::println();
+                Utility::userInput(user_action);
+                switch (user_action) {
+                    //
                     }
                 }
             }
@@ -406,7 +406,7 @@ namespace Check_runner {
         */
         String *resolve_cli_args(char *argv[]) {
             if (argv != nullptr) {
-                auto *str_arr = libio::array::create1DArray<std::string>(arg_count);
+                auto *str_arr = libio::array::create_1d_array<std::string>(arg_count);
                 for (int i = 0; i < arg_count; ++i) {
                     str_arr[i] = argv[i];
                 }
@@ -446,9 +446,9 @@ namespace Check_runner {
         std::chrono::steady_clock::time_point end; //end time of ts execution
         for (const auto &ts: vtc) {
             //proceed test case one by one:
-            libio::output::println_w(L"Name: " + libio::output::toWstring(ts.get_name()));
+            libio::output::println_w(L"Name: " + libio::output::to_wstring(ts.get_name()));
             if (Entities::load_parameters->get_is_comments()) {
-                libio::output::println_w(L"Comment: " + libio::output::toWstring(ts.get_comment())); //output comments to console
+                libio::output::println_w(L"Comment: " + libio::output::to_wstring(ts.get_comment())); //output comments to console
             }
             //get start time of the test case execution:
             if (Entities::load_parameters->get_is_time_record()) {
@@ -463,9 +463,9 @@ namespace Check_runner {
                 libio::output::colored::colored_print("Enter 'yes' (y), 'no' (n) or 'skip' for test result", "\n",
                                                       libio::output::colored::Ansi_colors::CYAN);
 
-                Utility::print(INPUT_SYM);
-                Utility::userInput(result);
-                Utility::println(); //just new line symbol
+                libio::output::print(INPUT_SYM);
+                libio::input::user_input(result);
+                libio::output::println(); //just new line symbol
             }
 
             //result - forever loop, if user has not watched "eurotrip" film
@@ -490,31 +490,31 @@ namespace Check_runner {
 
                     libio::output::colored::colored_print("To exit enter 'exit' word", "\n",
                                                           libio::output::colored::Ansi_colors::CYAN);
-                    Utility::println(Translation::enter_invite);
+                    libio::output::println(Translation::enter_invite);
 
                     String bug_name;
                     String bug_description;
                     String maybe_bug_severity;
 
                     REPEAT_FOREVER {
-                        Utility::print(Translation::enter_invite_bug);
-                        bug_name = Utility::userInput<String>();
+                        libio::output::print(Translation::enter_invite_bug);
+                        bug_name = libio::input::user_input();
                         if (bug_name == EXIT_SYM) {
                             break;
                         }
 
-                        Utility::print("\nEnter bug description (shortly, if you can): ");
-                        bug_description = Utility::userInput<String>();
+                        libio::output::print("\nEnter bug description (shortly, if you can): ");
+                        bug_description = libio::input::user_input();
                         if (bug_description == EXIT_SYM) {
                             break;
                         }
 
-                        Utility::print(Translation::enter_invite_bug_sev);
-                        maybe_bug_severity = Utility::userInput<String>();
+                        libio::output::print(Translation::enter_invite_bug_sev);
+                        maybe_bug_severity = libio::input::user_input();
                         if (maybe_bug_severity == EXIT_SYM) {
                             break;
                         }
-                        Utility::println(); //simple new line
+                        libio::output::println(); //simple new line
 
                         TA::Severity severity;
                         maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
@@ -579,6 +579,7 @@ int main(int argc, char *argv[]
 #ifdef EXTENDED_FUNCTIONALITY
 Begin_label:
 #endif
+
     if (argc > 1) {
         ///Entity init block
         arg_count = argc; {
@@ -625,12 +626,17 @@ Begin_label:
             if (global_strat_state and Entities::context->get_strat() == nullptr) {
                 Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
             } else if (not global_strat_state) {
-                //3) Create test cases objects
-                Entities::vts = Entities::context->get_strat()->doAlgorithm(
-                    Entities::test_case_fabric->create_test_cases(lines_from_file)
-                );
+                try {
+                    //3) Create test cases objects
+                    Entities::vts = Entities::context->get_strat()->doAlgorithm( //TODO убивает приложение
+                        Entities::test_case_fabric->create_test_cases(lines_from_file)
+                    );
+                } catch (...) {
+                    throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
+                }
             } else {
-                Low_level::exit_utility(1, "Error in strategy execution at line " + __LINE__);
+                //exit utility with strategy error
+                Low_level::exit_utility(EXIT_FAILURE, "Error in strategy execution at line: " + __LINE__);
             }
             Entities::vtr = Vec_t<TA::Test_result>();
         }

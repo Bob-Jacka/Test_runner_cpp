@@ -7,7 +7,7 @@ std::vector<Check_runner::TA::Test_case> Strategy::Choose_prior_strat::doAlgorit
         const auto severity = elem.get_severity();
         return (priority == Check_runner::TA::Priority::High or priority == Check_runner::TA::Priority::Critical) and (static_cast<int>(severity) >= 1);
     };
-    auto view = std::ranges::filter_view{input_ts, filter_func};
+    const auto view = std::ranges::filter_view{input_ts, filter_func};
     std::vector<Check_runner::TA::Test_case> to_return{};
     for (auto& elem: view) {
         to_return.push_back(elem);

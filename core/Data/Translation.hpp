@@ -13,6 +13,7 @@
  */
 namespace Translation {
 #ifdef RU_TRANSLATION
+#pragma message("Using Ru translation")
         //Bugs:
         constexpr auto found_bugs = "Найденные баги:";
         constexpr auto bug_name = "\tИмя бага: ";
@@ -49,6 +50,7 @@ namespace Translation {
         constexpr auto elapsed_sec = "Потраченное время на тест кейс: ";
 
 #else // default localization (En)
+#pragma message("Using default translation")
     constexpr auto device_name = "Device name: ";
     //Bugs
     constexpr auto found_bugs = "Found Bugs:";

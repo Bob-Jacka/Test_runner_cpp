@@ -50,30 +50,43 @@ Check_runner::TA::Bug *Check_runner::TA::Test_artifact_fabric::create_bug(const 
 Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_check_list(const std::string &name,
                                                                                         const std::string &description,
                                                                                         const std::vector<std::string> &steps) const {
-    const auto check_list = new Check_runner::TA::Check_list{name, description, steps};
+    const auto check_list = new Check_list{name, description, steps};
     return check_list;
 }
 
 /**
  * Decompose test cases into string line with given style.
  * @param style style to decompose test case.
- * @param tc test case to decompose
- * @return decomposed test case (string line with new line symbols)
+ * @param tc test case to decompose.
+ * @throw std::invalid_argument if wrong style or style not supported by method.
+ * @return decomposed test case (string line with new line symbols) to write into file or another or return "" if not implemented.
  */
-std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Test_case &tc,
-                                                                        const TS_style style = TS_style::TXT) const {
+std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Test_case &tc, const TS_style style = TS_style::TXT) const {
+    auto add_line = [&](const std::string &line) -> std::string {
+        return line + "\n";
+    };
+    std::string decomposed_test_case;
     switch (style) {
-        case TS_style::GOOGLE_STYLESHEET:
+            [[unlikely]] case TS_style::GOOGLE_STYLESHEET:
             return "";
-        case TS_style::JIRA:
+
+            [[unlikely]] case TS_style::JIRA:
             return "";
-        case TS_style::JSON:
+
+            [[unlikely]] case TS_style::JSON:
             return "";
-        case TS_style::TEST_RAIL:
+
+            [[unlikely]] case TS_style::TEST_RAIL:
             return "";
-        case TS_style::TXT: [[likely]]
-                    return "";
-        case TS_style::XML:
+
+            [[likely]] case TS_style::TXT:
+            decomposed_test_case += add_line(tc.get_name());
+            decomposed_test_case += add_line(priority_to_object(tc.get_priority()));
+            decomposed_test_case += add_line(tc.get_comment());
+            decomposed_test_case += add_line(""); //simply add new line
+            return std::move(decomposed_test_case);
+
+            [[unlikely]] case TS_style::XML:
             return "";
         default:
             throw std::invalid_argument("Invalid style");

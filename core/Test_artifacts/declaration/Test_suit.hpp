@@ -2,7 +2,6 @@
 #define TESTSUIT_HPP
 
 #include "Test_artifact.hpp"
-#include <map>
 
 namespace Check_runner {
     namespace TA {
@@ -13,8 +12,9 @@ namespace Check_runner {
         template<typename T>
             requires std::is_base_of_v<Test_artifact, T>
         class Test_suit final : public Test_artifact {
+            using Dummy_map = std::vector<std::pair<std::string, std::string> >; //it will be error if you add map header
             std::string suit_name; ///name of the suit
-            std::map<std::string, std::string> local_parameters; ///local parameters of the suit
+            Dummy_map local_parameters; ///local parameters of the suit
             std::vector<T> test_artifacts; ///vector with generic test artifacts
 
         public:
@@ -23,13 +23,13 @@ namespace Check_runner {
             explicit Test_suit(const std::string &suit_name) {
                 this->suit_name = suit_name;
                 this->test_artifacts = std::vector<T>();
-                this->local_parameters = std::map<std::string, std::string>();
+                this->local_parameters = Dummy_map();
             }
 
             Test_suit(const std::string &suit_name, std::vector<T> &tests) {
                 this->suit_name = suit_name;
                 this->test_artifacts = tests;
-                this->local_parameters = std::map<std::string, std::string>();
+                this->local_parameters = Dummy_map();
             }
 
             ~Test_suit() override {
@@ -62,7 +62,13 @@ namespace Check_runner {
              * @param value value of the parameter
              */
             void add_local_parameter(const std::string &key, const std::string &value) {
-                this->local_parameters[key] = value;
+                for (auto &dummy_map_pair: this->local_parameters) {
+                    if (dummy_map_pair.first == key) {
+                        dummy_map_pair.second = value;
+                        break;
+                    }
+                }
+                throw Check_exceptions::TestArtifactException(__LINE__, "No valid key found in local parameters of suit", __FILE_NAME__);
             }
         };
     }
