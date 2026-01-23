@@ -36,6 +36,8 @@ namespace Check_runner {
     namespace Console {
 #endif
     int arg_count = 0; //count of arguments in utility input
+    std::chrono::steady_clock::time_point start_util_work; //start time of utility working
+    std::chrono::steady_clock::time_point end_util_work; //end time of utility working
 
     /**
      * Low level functionality (filesystem actions) in utility
@@ -130,12 +132,6 @@ namespace Check_runner {
                     //get entry point of utility working
                     if (flag_name == LP::Static_load_parameters_names::entry) {
                         auto entry_point = flag_value;
-
-                        //check for file extension existence
-                        if (File_controller::check_file_extension(entry_point) == 2) {
-                            //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
-                            entry_point += ".txt";
-                        }
 
                         if (File_controller::check_file_existence(entry_point)) {
                             Entities::load_parameters->set_entry_point(entry_point);
@@ -257,6 +253,13 @@ namespace Check_runner {
                 }
                 ++counter;
             }
+            libio::output::println(); //just new line
+            const std::chrono::duration<double> util_work_time = end_util_work - start_util_work;
+            const auto minutes{std::chrono::duration_cast<std::chrono::minutes>(util_work_time)};
+            const auto hours{std::chrono::duration_cast<std::chrono::hours>(util_work_time)};
+
+            libio::output::println("Hours: " + std::to_string(hours.count()));
+            libio::output::println("Minutes: " + std::to_string(minutes.count()));
         }
 
         /**
@@ -442,8 +445,11 @@ namespace Check_runner {
     template<typename A, typename B>
         requires std::derived_from<std::vector<TA::Test_case>, A> and std::derived_from<std::vector<TA::Test_result>, B>
     void main_utility_cycle(const A &vtc, B &vtr, const String &device = "Single_device_mode") {
-        std::chrono::steady_clock::time_point start; //start time of ts execution
-        std::chrono::steady_clock::time_point end; //end time of ts execution
+        using namespace std::chrono;
+        steady_clock::time_point start; //start time of ts execution
+        steady_clock::time_point end; //end time of ts execution
+
+        start_util_work = steady_clock::now();
         for (const auto &ts: vtc) {
             //proceed test case one by one:
             libio::output::println_w(L"Name: " + libio::output::to_wstring(ts.get_name()));
@@ -452,7 +458,7 @@ namespace Check_runner {
             }
             //get start time of the test case execution:
             if (Entities::load_parameters->get_is_time_record()) {
-                start = std::chrono::steady_clock::now();
+                start = steady_clock::now();
             }
         Ask_again_label:
             //ask user about result block
@@ -546,11 +552,12 @@ namespace Check_runner {
                 break;
             }
             if (Entities::load_parameters->get_is_time_record()) {
-                end = std::chrono::steady_clock::now();
-                std::chrono::duration<double> elapsed_seconds = end - start;
+                end = steady_clock::now();
+                duration<double> elapsed_seconds = end - start;
                 libio::output::println(Translation::elapsed_sec + std::to_string(elapsed_seconds.count()));
             }
         }
+        end_util_work = steady_clock::now();
     }
 }
 
@@ -628,7 +635,7 @@ Begin_label:
             } else if (not global_strat_state) {
                 try {
                     //3) Create test cases objects
-                    Entities::vts = Entities::context->get_strat()->doAlgorithm( //TODO убивает приложение
+                    Entities::vts = Entities::context->get_strat()->doAlgorithm(
                         Entities::test_case_fabric->create_test_cases(lines_from_file)
                     );
                 } catch (...) {
@@ -645,8 +652,9 @@ Begin_label:
         {
             if (not global_strat_state) {
                 //Execute main cycle of the utility
-                if (not Entities::load_parameters->get_devices_entry_point().empty()) {
-                    if (File_controller::check_file_existence(devices_static_file_name)) {
+                auto devices_file_name = Entities::load_parameters->get_devices_entry_point();
+                if (not devices_file_name.empty()) {
+                    if (File_controller::check_file_existence(devices_file_name)) {
                         for (const auto &device: File_controller::readlines(Entities::load_parameters->get_devices_entry_point())) {
                             //get devices from file
                             libio::output::colored::colored_print(Translation::device_name + device, "\n",
@@ -655,7 +663,7 @@ Begin_label:
                         }
                     } else {
                         throw Check_exceptions::MainException(
-                            __LINE__, "No device entry point file was found - " + std::string(devices_static_file_name), __FILE_NAME__);
+                            __LINE__, "No device entry point file was found - " + std::string(devices_file_name), __FILE_NAME__);
                     }
                 } else {
                     libio::output::colored::colored_print(Translation::device_name + std::string("Single device mode running"), "\n",

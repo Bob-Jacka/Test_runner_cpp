@@ -40,7 +40,7 @@ namespace Check_runner {
 
             //Methods for creating test artifacts
 
-            [[nodiscard]] std::vector<Test_case> &create_test_cases(const std::vector<std::string> &) const;
+            [[nodiscard]] std::vector<Check_runner::TA::Test_case> &create_test_cases(const std::vector<std::string> &) const;
 
             [[nodiscard]] Bug *create_bug(const std::string &, const std::string &) const;
 

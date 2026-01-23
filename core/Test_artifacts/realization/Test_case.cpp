@@ -95,6 +95,14 @@ std::string Check_runner::TA::Test_case::to_string() const {
     return "";
 }
 
+std::string Check_runner::TA::Test_case::get_hash() const {
+    return ts_hash;
+}
+
+void Check_runner::TA::Test_case::set_hash(const std::string &new_hash) {
+    ts_hash = new_hash;
+}
+
 void Check_runner::TA::swap(Test_case &lhs, Test_case &rhs) noexcept {
     std::swap(lhs.name, rhs.name);
     std::swap(lhs.severity, rhs.severity);

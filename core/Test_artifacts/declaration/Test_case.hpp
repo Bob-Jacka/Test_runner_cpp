@@ -11,6 +11,7 @@ namespace Check_runner {
         class Test_case final : public Test_artifact {
             std::string name;
             std::string comment; ///comment or description in test case
+            std::string ts_hash;
             std::vector<std::string> steps; ///steps of the test case to execute
 
             Priority priority;
@@ -57,6 +58,10 @@ namespace Check_runner {
             [[nodiscard]] std::vector<std::string> get_steps() const;
 
             [[nodiscard]] std::string to_string() const override;
+
+            [[nodiscard]] std::string get_hash() const;
+
+            void set_hash(const std::string &);
 
             friend void swap(Test_case &lhs, Test_case &rhs) noexcept;
         };

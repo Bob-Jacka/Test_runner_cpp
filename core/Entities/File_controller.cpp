@@ -147,7 +147,12 @@ int Check_runner::File_controller::check_file_extension(const std::string &file_
 * Function for checking if file exists in filesystem.
 * @param file_name name of the file to check.
 */
-bool Check_runner::File_controller::check_file_existence(const std::string &file_name) {
+bool Check_runner::File_controller::check_file_existence(std::string &file_name) {
+    //check for file extension existence
+    if (check_file_extension(file_name) == 2) {
+        //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
+        file_name += ".txt";
+    }
     auto [file, cond] = open_file(file_name);
     if (cond) {
         file.close();

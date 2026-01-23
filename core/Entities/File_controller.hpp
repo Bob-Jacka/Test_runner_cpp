@@ -44,7 +44,7 @@ namespace Check_runner {
 
         static int check_file_extension(const std::string &);
 
-        static bool check_file_existence(const std::string &);
+        static bool check_file_existence(std::string &);
 
         static std::tuple<std::ifstream, bool> open_file(const std::string &);
     };

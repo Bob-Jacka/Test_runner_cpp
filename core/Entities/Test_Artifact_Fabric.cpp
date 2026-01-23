@@ -9,6 +9,7 @@ Check_runner::TA::Test_artifact_fabric::~Test_artifact_fabric() = default;
 /**
  * Create test cases with use of given vector strings to create.
  * @param string_lines string lines to create test cases
+ * @throw std::runtime_error in case of empty input vector
  * @return vector with test cases, instead of strings
  */
 std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric::create_test_cases(
@@ -17,6 +18,9 @@ std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric
         const auto tmp_test_cases = new std::vector<Test_case>();
         for (auto &test_case_line: string_lines) {
             auto split_string = Utility::split(test_case_line, *test_case_separator_sym);
+            if (split_string.size() == 2) { //in case of empty comment, just add empty string
+                split_string.emplace_back("");
+            }
             const auto created_tc = new Test_case(
                 split_string[0],
                 split_string[2],
@@ -93,6 +97,7 @@ std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Te
     }
 }
 
+#ifdef EXTENDED_FUNCTIONALITY
 /**
  * @param test_case_lines lines to create test cases.
  * @param name name of the test suit.
@@ -100,9 +105,10 @@ std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Te
  */
 Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *Check_runner::TA::Test_artifact_fabric::create_test_suit(
     const std::vector<std::string> &test_case_lines, const std::string &name) const {
-    const auto ts_suit = new Test_suit{
+    const auto ts_suit = new Test_suit<Test_case>{
         name,
         create_test_cases(test_case_lines),
     };
     return ts_suit;
 }
+#endif
