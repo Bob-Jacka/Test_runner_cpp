@@ -3,7 +3,7 @@
 #include <string>
 
 /**
- * Namespace for load parameters
+ * Namespace for load parameters in utility
  */
 namespace LP {
     /**
@@ -211,8 +211,8 @@ namespace LP {
         this->parameters = parameters;
     }
 
-    inline void Load_parameters::set_is_gui(const bool new_gui) {
-        this->is_gui = new_gui;
+    inline void Load_parameters::set_is_gui(const bool gui) {
+        this->is_gui = gui;
     }
 
     /**

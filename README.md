@@ -28,6 +28,7 @@ Just write flag in command line interface and provide parameter:
 3) **time_record** - bool value, if set to true then each test case will count of execution,
 4) **colored** - bool value, if set to true then utility output text will be colored in colors,
 5) **comments** - bool value, if set to true then enables comments in test cases.
+6) **interface** - bool value, if set to true starts graphical user interface
 
 ## Symbols meaning:
 
@@ -161,6 +162,6 @@ suit=one-time-test.txt
 devices=devices.txt
 
 [Strategy]
-interface=gui ; runs graphical user interface or console - runs console app
+interface=true ; runs graphical user interface or console - runs console app
 strategy=usual
 ```

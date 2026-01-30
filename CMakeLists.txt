@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.31)
 project(Check_runner)
 
 set(CMAKE_CXX_STANDARD 23)
+include(FetchContent)
+
+FetchContent_Declare(
+        fltk
+        GIT_REPOSITORY https://github.com/fltk/fltk.git
+        GIT_TAG release-1.4.4
+)
 
 if (DEFINED TEST_INCLUDE)
     add_executable(Check_runner
@@ -60,7 +67,13 @@ add_executable(Check_runner
         modules/Util_funcs.cppm
         main.cpp
         Load_parameters.hpp
+
+        core/GUI/realization/Main_window.cpp
+        core/GUI/declaration/Main_window.hpp
 )
+
+FetchContent_MakeAvailable(fltk)
+target_link_libraries(Check_runner PRIVATE fltk)
 
 target_sources(Check_runner
         PUBLIC

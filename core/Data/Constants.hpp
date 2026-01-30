@@ -5,7 +5,7 @@
 // #define LIBIO_EXPERIMENTAL //to turn on lib experimental functionality
 // #define DEBUG //to turn on debug mode in utility
 // #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e version 2.0
-// #define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
+#define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
 // #define EXTENDED_FUNCTIONALITY_IF //turn on if directive
 
 #define DIRECTIVE constexpr auto ///special type for directives in utility

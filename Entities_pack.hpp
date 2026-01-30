@@ -20,9 +20,9 @@ using String = std::string; ///short version of std::string
 
 namespace Check_runner {
     /**
-* Structure for entities data in this utility.
-* Contains entities for functionality and data for test artifacts.
-*/
+    * Structure for entities data in this utility.
+    * Contains entities for functionality and data for test artifacts.
+    */
     struct Entities {
         //Other entities:
         static std::unique_ptr<LP::Load_parameters> load_parameters; ///load parameters of the utility

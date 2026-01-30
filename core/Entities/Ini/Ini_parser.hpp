@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-
 #include <map>
 
 #include "../../Exceptions/IniParserException.hpp"
@@ -64,6 +63,7 @@ namespace Interpreter_ns {
  * Get value from section object
  * @tparam T generic param
  * @param section_param string value, ex - SectionName.sectionValue
+ * @throw IniParserException if no value exist
  * @return generic parameter value from section
  */
 template<typename T>
@@ -72,12 +72,12 @@ T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const 
     if (section_param.contains(".")) {
         const auto split_line = libio::string::split(section_param,
                                                      "."); //0 - name of the section and 1 - name of the value
-        for (const auto &section: sections) {
+        for (const auto &[fst, snd]: sections) {
             //key is section name, value is section
-            if (split_line[0] == section.first) {
+            if (split_line[0] == fst) {
                 try {
-                    if (section.second.contains(split_line[1])) {
-                        auto to_return = libio::string::convert_to_t<T>(section.second.at(split_line[1]));
+                    if (snd.contains(split_line[1])) {
+                        auto to_return = libio::string::convert_to_t<T>(snd.at(split_line[1]));
                         return to_return;
                     }
                 } catch (const std::exception &e) {
@@ -102,6 +102,7 @@ T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const 
  * @tparam T generic parameter
  * @param section_param string value (name of the section), ex - SectionName.sectionValue
  * @param default_value default value that will be given if no value found
+ * @throw IniParserException if error happens
  * @return section value or default if not found
  */
 template<typename T>
@@ -110,12 +111,12 @@ T Interpreter_ns::Ini_parser::get_value_or(const std::string &section_param, con
     if (section_param.contains(".")) {
         const auto split_line = libio::string::split(section_param,
                                                      "."); //0 - name of the section and 1 - name of the value
-        for (const auto &section: sections) {
+        for (const auto &[fst, snd]: sections) {
             //key is section name, value is section
-            if (split_line[0] == section.first) {
+            if (split_line[0] == fst) {
                 try {
-                    if (section.second.contains(split_line[1])) {
-                        auto to_return = libio::string::convert_to_t<T>(section.second.at(split_line[1]));
+                    if (snd.contains(split_line[1])) {
+                        auto to_return = libio::string::convert_to_t<T>(snd.at(split_line[1]));
                         return to_return;
                     }
                 } catch (const std::exception &e) {
