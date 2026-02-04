@@ -1,7 +1,5 @@
 //Uncomment "TEST" macros to turn on test functionality
 
-#define TEST
-
 #ifdef TEST
 #include "Test_dependencies/catch_amalgamated.hpp"
 

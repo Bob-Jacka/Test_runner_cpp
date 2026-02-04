@@ -63,11 +63,14 @@ add_executable(Check_runner
         core/Test_artifacts/realization/Check_list.cpp
         core/Test_artifacts/realization/Test_case.cpp
         core/Test_artifacts/realization/Test_result.cpp
+
         modules/libio.cppm
         modules/Util_funcs.cppm
+
         main.cpp
         Load_parameters.hpp
 
+        core/GUI/declaration/Gui_vars.hpp
         core/GUI/realization/Main_window.cpp
         core/GUI/declaration/Main_window.hpp
 )

@@ -7,6 +7,7 @@
 // #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e version 2.0
 #define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
 // #define EXTENDED_FUNCTIONALITY_IF //turn on if directive
+// #define TEST //turns on tests of the utility
 
 #define DIRECTIVE constexpr auto ///special type for directives in utility
 #define JUST_CONSTANT constexpr auto ///special type for constants

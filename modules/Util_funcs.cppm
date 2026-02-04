@@ -1,5 +1,5 @@
 /*
- Header file with some useful functions
+ Header file with some useful functions in check runner utility
  */
 
 module;

@@ -18,7 +18,8 @@ std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric
         const auto tmp_test_cases = new std::vector<Test_case>();
         for (auto &test_case_line: string_lines) {
             auto split_string = Utility::split(test_case_line, *test_case_separator_sym);
-            if (split_string.size() == 2) { //in case of empty comment, just add empty string
+            if (split_string.size() == 2) {
+                //in case of empty comment, just add empty string
                 split_string.emplace_back("");
             }
             const auto created_tc = new Test_case(
@@ -56,6 +57,11 @@ Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_che
                                                                                         const std::vector<std::string> &steps) const {
     const auto check_list = new Check_list{name, description, steps};
     return check_list;
+}
+
+Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *Check_runner::TA::Test_artifact_fabric::create_test_suit(const std::vector<std::string> &,
+    const std::string &) const {
+    //
 }
 
 /**
