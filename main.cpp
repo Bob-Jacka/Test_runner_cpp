@@ -5,6 +5,7 @@
 #include "core/Data/Translation.hpp"
 #include "core/Exceptions/FileControllerException.hpp"
 #include "core/Exceptions/MainException.hpp"
+#include "core/GUI/declaration/Elements_callbacks.hpp"
 #include "core/GUI/declaration/Main_window.hpp"
 #include "core/Strategies/declaration/Usual_strat.hpp"
 
@@ -125,7 +126,7 @@ namespace Check_runner {
                     if (auto cli_param = cont_to_check[i]; check_func_full(cli_param)) {
                         auto split_line = libio::string::split(cli_param, "=");
                         const auto flag_name = Utility::replace_string_all(split_line[0], "--", "");
-                        con_string_ref flag_value = split_line[1]; //because zero index is flag name
+                        std::string flag_value = split_line[1]; //because zero index is flag name
 
                         //get entry point of utility working
                         if (flag_name == LP::Static_load_parameters_names::entry) {
@@ -188,7 +189,7 @@ namespace Check_runner {
 
                             //turn on graphical user interface:
                             if (flag_name == LP::Static_load_parameters_names::inter) [[likely]] {
-                                Entities::load_parameters->set_is_gui(reinterpret_cast<con_bool_ref>(flag_value));
+                                Entities::load_parameters->set_is_gui(libio::convert::str2bool(flag_value));
                             }
 
                             //need for more devices than one:
@@ -198,17 +199,17 @@ namespace Check_runner {
 
                             //time check flag:
                             if (flag_name == LP::Static_load_parameters_names::time_check) {
-                                Entities::load_parameters->set_is_time_record(reinterpret_cast<con_bool_ref>(flag_value));
+                                Entities::load_parameters->set_is_time_record(libio::convert::str2bool(flag_value));
                             }
 
                             //colored flag:
                             if (flag_name == LP::Static_load_parameters_names::colored) [[likely]] {
-                                Entities::load_parameters->set_is_colored(reinterpret_cast<con_bool_ref>(flag_value));
+                                Entities::load_parameters->set_is_colored(libio::convert::str2bool(flag_value));
                             }
 
                             //comments flag:
                             if (flag_name == LP::Static_load_parameters_names::comments) [[likely]] {
-                                Entities::load_parameters->set_is_comments(reinterpret_cast<con_bool_ref>(flag_value));
+                                Entities::load_parameters->set_is_comments(libio::convert::str2bool(flag_value));
                             }
                         }
                     } else {
@@ -345,7 +346,6 @@ namespace Check_runner {
                             break;
                         default:
                             libio::output::println("Wrong action number, try again.");
-                            continue;
                     }
                 }
             }
@@ -566,7 +566,59 @@ namespace Check_runner {
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
     namespace GUI {
-        //
+        int changed = 0;
+        Fl_Text_Buffer *textbuffer = nullptr;
+        char filename[256] = "";
+        std::string title = "Untitled";
+        int loading = 0;
+
+        static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
+            const Fl_Menu_Item menuItems[] =
+            {
+                {"&File", 0, nullptr, nullptr, FL_SUBMENU},
+                // {"&New file", 0, new_callback},
+                {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback)},
+                {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback)},
+                {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), nullptr, FL_MENU_DIVIDER},
+                {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
+                {nullptr},
+                {"&Edit", 0, nullptr, nullptr, FL_SUBMENU},
+                {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), nullptr, FL_MENU_DIVIDER},
+                {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
+                {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
+                {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
+                {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
+                {nullptr},
+                {"&Search", 0, nullptr, nullptr, FL_SUBMENU},
+                {"&Find", FL_COMMAND + 'f', find_сallback, window},
+                {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
+                {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
+                {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
+                {nullptr},
+                {nullptr},
+            };
+            menu->copy(menuItems);
+        }
+
+        Fl_Window *new_view() {
+            const auto window = new Main_window(800, 600, title.c_str());
+
+            window->begin();
+
+            window->m_editor = new Fl_Text_Editor(10, 30, 780, 560);
+            window->m_editor->buffer(textbuffer);
+
+            const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
+            build_menu(menuBar, window);
+
+            window->end();
+            window->resizable(window->m_editor);
+            window->m_editor->linenumber_width(60);
+
+            textbuffer->add_modify_callback(changed_сallback, window);
+            textbuffer->call_modify_callbacks();
+            return window;
+        }
     }
 }
 #endif
@@ -605,42 +657,40 @@ Begin_label:
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
             //2) Run graphical user interface
-            using namespace Check_runner::GUI;
             if (Entities::load_parameters->get_gui()) {
-                const auto window = std::make_unique<Main_window>(700, 600, "Check runner");
-
-                window->show_window();
+                using namespace GUI;
+                textbuffer = new Fl_Text_Buffer();
+                Fl_Window *window = new_view();
+                window->show();
                 return Fl::run();
-            } else {
-#endif
-
-                global_strat_state = Entities::load_parameters->get_is_everything_now();
-
-                lines_from_file = Entities::parser->preprocess_lines(lines_from_file); //2) Delete comments from file
-                if (not Entities::load_parameters->get_parameters().empty()) {
-                    //2.25 Parse given in console parameters
-                    Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
-                }
-                //Modified vector with ts, after all transformations:
-                lines_from_file = Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
-                if (global_strat_state and Entities::context->get_strat() == nullptr) {
-                    Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
-                } else if (not global_strat_state) {
-                    try {
-                        //3) Create test cases objects
-                        Entities::vts = Entities::context->get_strat()->doAlgorithm(
-                            Entities::test_case_fabric->create_test_cases(lines_from_file)
-                        );
-                    } catch (...) {
-                        throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
-                    }
-                } else {
-                    //exit utility with strategy error
-                    Console::Low_level::exit_utility(EXIT_FAILURE, "Error in strategy execution at line: " + __LINE__);
-                }
-                Entities::vtr = Vec_t<TA::Test_result>();
             }
+#endif
+            global_strat_state = Entities::load_parameters->get_is_everything_now();
 
+            lines_from_file = Entities::parser->preprocess_lines(lines_from_file); //2) Delete comments from file
+            if (not Entities::load_parameters->get_parameters().empty()) {
+                //2.25 Parse given in console parameters
+                Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
+            }
+            //Modified vector with ts, after all transformations:
+            lines_from_file = Entities::parser->parse_directives(lines_from_file); //2.5) parse directives in suit file
+            if (global_strat_state and Entities::context->get_strat() == nullptr) {
+                Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
+            } else if (not global_strat_state) {
+                try {
+                    //3) Create test cases objects
+                    Entities::vts = Entities::context->get_strat()->doAlgorithm(
+                        Entities::test_case_fabric->create_test_cases(lines_from_file)
+                    );
+                } catch (...) {
+                    throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
+                }
+            } else {
+                //exit utility with strategy error
+                Console::Low_level::exit_utility(EXIT_FAILURE, "Error in strategy execution at line: " + __LINE__);
+            }
+            Entities::vtr = Vec_t<TA::Test_result>();
+            //TODO after closing window, program execution continues here
             //Strategy block
             {
                 if (not global_strat_state) {
@@ -691,6 +741,7 @@ Begin_label:
         Console::Low_level::exit_utility(EXIT_SUCCESS);
     }
 #ifdef EXTENDED_FUNCTIONALITY
+            //Config read branch
             else {
                 if (File_controller::check_file_existence(config_file_name)) {
                     auto config_lines = File_controller::readlines(config_file_name);

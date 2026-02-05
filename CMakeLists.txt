@@ -70,9 +70,11 @@ add_executable(Check_runner
         main.cpp
         Load_parameters.hpp
 
-        core/GUI/declaration/Gui_vars.hpp
         core/GUI/realization/Main_window.cpp
         core/GUI/declaration/Main_window.hpp
+        core/GUI/declaration/Gui_vars.hpp
+        core/GUI/declaration/Elements_callbacks.hpp
+        core/GUI/realization/Elements_callbacks.cpp
 )
 
 FetchContent_MakeAvailable(fltk)

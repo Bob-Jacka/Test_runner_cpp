@@ -3,7 +3,7 @@ module;
 /**
  * Module for simple GUI (graphical user interface)
  * Wrapper for your favourite (not QT) library
- * Version - 0.0.3
+ * Version - 0.0.4
  */
 
 /*
@@ -48,6 +48,11 @@ namespace Guilib {
          */
         export auto SELF = [](Fl_Widget *widget) -> auto {
             return widget->top_window()->as_window();
+        };
+
+        export template<typename Reinterpret_type, auto Value_to_reinterpret>
+        auto REINTERPRET = [] {
+            return reinterpret_cast<Reinterpret_type>(Value_to_reinterpret);
         };
     }
 

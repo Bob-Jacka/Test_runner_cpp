@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.23.2
+ Version - 1.24.2
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -181,41 +181,41 @@ void print(const T &str, std::string separator = "") {
 #ifdef LIBIO_WIDE_STRING
 #pragma message("Using libio wide string functionality")
 
-/**
- * Convert usual string object to wide string.
- * @param str source std::string object
- * @return wide string object
- */
-export std::wstring to_wstring(const std::string &str) {
-    std::vector<wchar_t> buf(str.size());
-    std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
-                                                              str.data() + str.size(),
-                                                              buf.data());
-    return std::wstring(buf.data(), buf.size());
-}
+        /**
+         * Convert usual string object to wide string.
+         * @param str source std::string object
+         * @return wide string object
+         */
+        export std::wstring to_wstring(const std::string &str) {
+            std::vector<wchar_t> buf(str.size());
+            std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
+                                                                      str.data() + str.size(),
+                                                                      buf.data());
+            return std::wstring(buf.data(), buf.size());
+        }
 
-/**
- * Print given wide string message in console with new line.
- * @warning If using C++23 - use std::println.
- * @param str string to output
- */
-export void println_w(const std::wstring &str) {
-    if (std::wcout.good()) {
-        std::wcout << str << std::endl;
-    }
-}
+        /**
+         * Print given wide string message in console with new line.
+         * @warning If using C++23 - use std::println.
+         * @param str string to output
+         */
+        export void println_w(const std::wstring &str) {
+            if (std::wcout.good()) {
+                std::wcout << str << std::endl;
+            }
+        }
 
-/**
- * Print given wide string message in console without new line.
- * @warning If using C++23 - use std::print.
- * @param str string to output
- * @param separator text separator
- */
-export void print_w(const std::wstring &str, const std::wstring &separator) {
-    if (std::wcout.good()) {
-        std::wcout << str << separator;
-    }
-}
+        /**
+         * Print given wide string message in console without new line.
+         * @warning If using C++23 - use std::print.
+         * @param str string to output
+         * @param separator text separator
+         */
+        export void print_w(const std::wstring &str, const std::wstring &separator) {
+            if (std::wcout.good()) {
+                std::wcout << str << separator;
+            }
+        }
 #endif
 
         /**
@@ -837,12 +837,12 @@ export void print_one_element(const int *array, const int i) {
             static libio::String DROP;
         };
 
-        libio::String Sql_methods::SELECT = "SELECT";
-        libio::String Sql_methods::DELETE = "DELETE";
-        libio::String Sql_methods::UPDATE = "UPDATE";
-        libio::String Sql_methods::INSERT = "INSERT";
-        libio::String Sql_methods::CREATE = "CREATE";
-        libio::String Sql_methods::DROP = "DROP";
+        String Sql_methods::SELECT = "SELECT";
+        String Sql_methods::DELETE = "DELETE";
+        String Sql_methods::UPDATE = "UPDATE";
+        String Sql_methods::INSERT = "INSERT";
+        String Sql_methods::CREATE = "CREATE";
+        String Sql_methods::DROP = "DROP";
 
         enum DATABASE_TYPE {
             //
@@ -877,4 +877,35 @@ namespace other {
     )");
 }
 #endif
+
+    /**
+     * Namespace for type convertion without using reinterpret or other cast
+     */
+    export namespace convert {
+        /**
+         * Convert string representation into bool value;
+         * @param str source string object
+         * @throw error if source string is unknown
+         * @return bool value
+         */
+        bool str2bool(const std::string &str) {
+            if (str == "true" || str == "1" || str == "True") [[likely]] {
+                return true;
+            }
+            if (str == "false" || str == "0" || str == "False") {
+                return false;
+            }
+            throw;
+        }
+
+        std::string str2str(const bool source) {
+            if (source == true) [[likely]] {
+                return "true";
+            }
+            if (source == false) {
+                return "false";
+            }
+            throw;
+        }
+    }
 }

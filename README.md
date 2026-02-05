@@ -165,3 +165,20 @@ devices=devices.txt
 interface=true ; runs graphical user interface or console - runs console app
 strategy=usual
 ```
+
+### Test file style:
+
+This section is about writing test file style and some recommendations;
+
+1) If you want to write comment in tf (test file) - use one "star" symbol (*) for upper level section and ** for second
+   level
+   Example:
+```
+*Upper level comment
+Some test in first section||
+
+**Second level comment
+Some test in second section||
+
+and so on...
+```
