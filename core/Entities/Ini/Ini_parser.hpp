@@ -9,6 +9,9 @@
 
 import Libio;
 
+/**
+ * Main namespace for interpreter
+ */
 namespace Interpreter_ns {
     constexpr auto start_section = '[';
     constexpr auto end_section = ']';

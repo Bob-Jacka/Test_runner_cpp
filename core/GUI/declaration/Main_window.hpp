@@ -29,6 +29,7 @@ namespace Check_runner::GUI {
 
         ~Main_window() override;
 
+        Fl_Text_Buffer *m_textbuffer = nullptr;
         Fl_Window *m_replace_dlg = nullptr;
         Fl_Input *m_replace_find = nullptr;
         Fl_Input *m_replace_with = nullptr;

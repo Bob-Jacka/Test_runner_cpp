@@ -17,6 +17,7 @@ module;
 export module Guilib;
 
 // #define DEBUG_GUI //uncomment this to debug
+// #define ELEMENTS_GUI
 
 /**
  * Global namespace for interface library
@@ -32,13 +33,10 @@ namespace Guilib {
          * @tparam position position of the widget on window from 0 to n.
          * @return child by given position
          */
-        export template<int element_pos, typename Reinterpret_type, int child_count = 6>
-            requires (element_pos >= 0 && ((child_count > element_pos) && (element_pos >= child_count - 1)))
+        export template<int element_pos, typename Reinterpret_type, int child_count = 8>
+            requires (element_pos >= 0 && ((child_count > element_pos) || (element_pos >= child_count - 1)))
         auto SELF_GET_CHILD = [](Fl_Widget *widget) {
-#ifdef DEBUG_GUI
-            printf("Get position - %d", position);
-#endif
-            return reinterpret_cast<Reinterpret_type>(widget->top_window()->as_window()->child(position));
+            return reinterpret_cast<Reinterpret_type>(widget->top_window()->as_window()->child(element_pos));
         };
 
         /**

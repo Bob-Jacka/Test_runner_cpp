@@ -28,11 +28,11 @@ void cut_сallback(Fl_Widget *widget, void *v);
 
 void delete_сallback(Fl_Widget *widget);
 
-void undo_сallback();
+void undo_сallback(Fl_Widget *widget);
 
-void save_as_сallback();
+void save_as_сallback(Fl_Widget *widget);
 
-void save_callback();
+void save_callback(Fl_Widget *widget);
 
 void open_callback(Fl_Widget *widget);
 

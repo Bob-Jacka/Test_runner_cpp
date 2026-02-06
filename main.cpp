@@ -566,24 +566,25 @@ namespace Check_runner {
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
     namespace GUI {
-        int changed = 0;
-        Fl_Text_Buffer *textbuffer = nullptr;
-        char filename[256] = "";
-        std::string title = "Untitled";
-        int loading = 0;
+        /**
+         * Reinterpret into callback
+         */
+        auto REINTERPRET_CALLBACK = [](void *) {
+            reinterpret_cast<Fl_Callback *>(new_callback);
+        };
 
         static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
             const Fl_Menu_Item menuItems[] =
             {
                 {"&File", 0, nullptr, nullptr, FL_SUBMENU},
-                // {"&New file", 0, new_callback},
-                {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback)},
-                {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback)},
-                {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), nullptr, FL_MENU_DIVIDER},
+                {"&New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
+                {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback), window},
+                {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback), window},
+                {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), window, FL_MENU_DIVIDER},
                 {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
                 {nullptr},
                 {"&Edit", 0, nullptr, nullptr, FL_SUBMENU},
-                {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), nullptr, FL_MENU_DIVIDER},
+                {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window, FL_MENU_DIVIDER},
                 {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
                 {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
                 {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
@@ -601,22 +602,24 @@ namespace Check_runner {
         }
 
         Fl_Window *new_view() {
-            const auto window = new Main_window(800, 600, title.c_str());
+            const auto window = new Main_window(800, 600, "Check runner");
 
             window->begin();
 
             window->m_editor = new Fl_Text_Editor(10, 30, 780, 560);
-            window->m_editor->buffer(textbuffer);
+            window->m_editor->buffer(window->m_textbuffer);
 
             const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
             build_menu(menuBar, window);
 
+            window->m_replace_dlg->hide(); //hide by default
             window->end();
             window->resizable(window->m_editor);
+            // window->m_editor->highlight_data();
             window->m_editor->linenumber_width(60);
 
-            textbuffer->add_modify_callback(changed_сallback, window);
-            textbuffer->call_modify_callbacks();
+            window->m_textbuffer->add_modify_callback(changed_сallback, window);
+            window->m_textbuffer->call_modify_callbacks();
             return window;
         }
     }
@@ -639,7 +642,7 @@ int main(int argc, char *argv[]
     bool global_strat_state = false; //global state of everything_now strategy to not use load_parameters
 
 #ifdef EXTENDED_FUNCTIONALITY
-Begin_label:
+Extended_begin_label:
 #endif
 
     if (argc > 1) {
@@ -647,6 +650,16 @@ Begin_label:
         Console::arg_count = argc; {
             Entities::load_parameters = std::make_unique<LP::Load_parameters>();
             Console::Check::check_flags(Console::Other::resolve_cli_args(argv)); //proceed flags first, before parser
+
+#ifdef EXTENDED_FUNCTIONALITY_GUI
+            //2) Run graphical user interface before creating other entities
+            if (Entities::load_parameters->get_gui()) {
+                using namespace GUI;
+                const auto window = new_view();
+                window->show();
+                return Fl::run();
+            }
+#endif
             Entities::parser = std::make_unique<Interpreter_ns::DirectiveInterpreter>();
         }
 
@@ -654,17 +667,6 @@ Begin_label:
         {
             //1) Get data from entry point file
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
-
-#ifdef EXTENDED_FUNCTIONALITY_GUI
-            //2) Run graphical user interface
-            if (Entities::load_parameters->get_gui()) {
-                using namespace GUI;
-                textbuffer = new Fl_Text_Buffer();
-                Fl_Window *window = new_view();
-                window->show();
-                return Fl::run();
-            }
-#endif
             global_strat_state = Entities::load_parameters->get_is_everything_now();
 
             lines_from_file = Entities::parser->preprocess_lines(lines_from_file); //2) Delete comments from file
@@ -690,7 +692,6 @@ Begin_label:
                 Console::Low_level::exit_utility(EXIT_FAILURE, "Error in strategy execution at line: " + __LINE__);
             }
             Entities::vtr = Vec_t<TA::Test_result>();
-            //TODO after closing window, program execution continues here
             //Strategy block
             {
                 if (not global_strat_state) {
@@ -749,7 +750,7 @@ Begin_label:
                     //increment arguments count and return back
                     argc = ini_parser->get_section_count();
                     argv = ini_parser->convert_to_char_array();
-                    goto Begin_label;
+                    goto Extended_begin_label;
                 }
                 //anyway, print help to user
                 Print::print_help();

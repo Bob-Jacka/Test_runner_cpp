@@ -168,17 +168,32 @@ strategy=usual
 
 ### Test file style:
 
-This section is about writing test file style and some recommendations;
+This section is about writing test file style and some recommendations about writing;
 
 1) If you want to write comment in tf (test file) - use one "star" symbol (*) for upper level section and ** for second
    level
+
+    ```
+    Example:
+    *Upper level comment
+    Some test in first section||
+    
+    **Second level comment
+    Some test in second section||
+    
+    and so on...
+    ```
+
+2) Write group tags into If statements, because group won't be created if if statement is false
+
+    ```
    Example:
-```
-*Upper level comment
-Some test in first section||
-
-**Second level comment
-Some test in second section||
-
-and so on...
-```
+    #If mode == single:
+    
+        #Group_start Singleplayer:
+            Some test||
+        #Group_end
+    
+    #Elif mode == multiplayer:
+        ...
+    ```
