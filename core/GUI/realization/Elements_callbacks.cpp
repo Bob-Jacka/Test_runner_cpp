@@ -6,36 +6,34 @@
 #include <FL/Fl_Text_Editor.H>
 
 //Local flags:
-int changed;
-int loading;
-char filename[256];
+int         changed;
+int         loading;
+char        filename[256];
 std::string title;
 
 /**
- * Resolve child by its parent
- * @tparam element_pos position of the element
- * @tparam Reinterpret_type type to reinterpret
- * @tparam child_count count of child in parent
+ * Injects buffer from top window text editor:
  */
-template<int element_pos, typename Reinterpret_type, int child_count = 8>
-    requires (element_pos >= 0 && ((child_count > element_pos) || (element_pos >= child_count - 1)))
-auto SELF_GET_CHILD = [](Fl_Widget *widget) {
-    return reinterpret_cast<Reinterpret_type>(widget->top_window()->as_window()->child(element_pos));
-};
-
-/**
- * Injects buffer from top window text editor
- */
-auto GET_BUFFER_FROM = [](Fl_Widget *widget) {
+auto GET_TXT_BUFFER_FROM = [](Fl_Widget *widget) {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(1))->buffer();
 };
 
 /**
  * Cast void section into Main window;
  * @param view unknown memory address
+ * @return Self casted from unknown memory
  */
 auto GET_SELF_FROM_VOID = [](void *view) {
     return static_cast<Check_runner::GUI::Main_window *>(view);
+};
+
+/**
+ * Cast void section into FL window;
+ * @param view unknown memory address
+ * @return Window casted from unknown memory
+ */
+auto GET_WINDOW_FROM_VOID = [](void *view) {
+    return static_cast<Fl_Window *>(view);
 };
 
 void set_title(Fl_Window *widget) {
@@ -62,18 +60,18 @@ void set_title(Fl_Window *widget) {
 }
 
 void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    loading = 1;
-    const int insert = ipos != -1;
-    changed = insert;
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    loading                = 1;
+    const int insert       = ipos != -1;
+    changed                = insert;
     if (!insert) {
         strcpy(filename, "");
     }
     int result;
     if (!insert) {
-        result = textbuffer->loadfile(newfile);
+        result = text_buffer->loadfile(newfile);
     } else {
-        result = textbuffer->insertfile(newfile, ipos);
+        result = text_buffer->insertfile(newfile, ipos);
     }
 
     if (result) {
@@ -82,19 +80,19 @@ void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
         strcpy(filename, newfile);
     }
     loading = 0;
-    textbuffer->call_modify_callbacks();
+    text_buffer->call_modify_callbacks();
 }
 
 void save_file(char *newfile, Fl_Widget *widget) {
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    if (textbuffer->savefile(newfile)) {
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    if (text_buffer->savefile(newfile)) {
         fl_alert("Error writing to file \'%s\':\n%s.", newfile, strerror(errno));
     } else {
         strcpy(filename, newfile);
     }
 
     changed = 0;
-    textbuffer->call_modify_callbacks();
+    text_buffer->call_modify_callbacks();
 }
 
 int check_save(Fl_Widget *widget) {
@@ -115,8 +113,8 @@ int check_save(Fl_Widget *widget) {
 }
 
 void find_2_сallback(Fl_Widget *widget, void *v) {
-    const auto window = GET_SELF_FROM_VOID(v);
-    auto textbuffer = GET_BUFFER_FROM(widget);
+    const auto window      = GET_SELF_FROM_VOID(v);
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
     if (window->search[0] == '\0') {
         find_сallback(widget, v);
         return;
@@ -124,11 +122,11 @@ void find_2_сallback(Fl_Widget *widget, void *v) {
 
     window->m_editor->insert_position(0);
 
-    int pos = window->m_editor->insert_position();
-    int found = textbuffer->search_forward(pos, window->search, &pos);
+    int pos   = window->m_editor->insert_position();
+    int found = text_buffer->search_forward(pos, window->search, &pos);
 
     if (found) {
-        textbuffer->select(pos, pos + strlen(window->search));
+        text_buffer->select(pos, pos + strlen(window->search));
         window->m_editor->insert_position(pos + strlen(window->search));
         window->m_editor->show_insert_position();
     } else {
@@ -137,13 +135,155 @@ void find_2_сallback(Fl_Widget *widget, void *v) {
 }
 
 void find_сallback(Fl_Widget *widget, void *v) {
-    const auto window = GET_SELF_FROM_VOID(v);
-    const char *value = fl_input("Search String: ", window->search);
+    const auto  window = GET_SELF_FROM_VOID(v);
+    const char *value  = fl_input("Search String: ", window->search);
 
     if (value != nullptr) {
         strcpy(window->search, value);
         find_2_сallback(widget, v);
     }
+}
+
+#define GUI_ERROR
+
+/**
+ * Parse style
+ * @param text given text
+ * @param style given style
+ * @param length given len of text
+ */
+extern "C" void style_parse(const char *text, char *style, int length) {
+#ifdef GUI_ERROR
+    char        current;
+    int         col;
+    int         last;
+    char        buf[255],
+            *   buf_p;
+    const char *temp;
+
+    auto           compare_keywords = [](const void *, const void *) -> int { return 0; }; //func for compare keywords
+    constexpr char code_types[]     = {'f'};
+    constexpr char code_keywords[]  = {};
+
+    /**
+     * col - column number
+     * last - is it last symbol
+     * length - len of the line of the text
+     * current - current style of the section of text
+     */
+    for (current = *style, col = 0, last = 0; length > 0; --length, ++text) {
+        if (current == 'A') {
+            // Check for directives, comments, strings, and keywords...
+            if (col == 0 && *text == '#') {
+                // Set style to directive
+                current = 'E';
+            } else if (strncmp(text, "//", 2) == 0) {
+                current = 'B';
+            } else if (strncmp(text, "/*", 2) == 0) {
+                current = 'C';
+            } else if (strncmp(text, "\\\"", 2) == 0) {
+                // Quoted quote...
+                *style++ = current;
+                *style++ = current;
+                ++text;
+                --length;
+                col += 2;
+                continue;
+            } else if (*text == '\"') {
+                current = 'D';
+            } else if (!last && islower(*text)) {
+                // Might be a keyword...
+                for (temp = text, buf_p = buf;
+                     islower(*temp) && buf_p < buf + sizeof(buf) - 1;
+                     *buf_p++ = *temp++) {
+                    //Empty braces
+                }
+
+                if (!islower(*temp)) {
+                    *buf_p = '\0';
+
+                    buf_p = buf;
+
+                    if (bsearch(&buf_p, code_types,
+                                std::size(code_types),
+                                sizeof(code_types[0]), compare_keywords)) {
+                        while (text < temp) {
+                            *style++ = 'F';
+                            ++text;
+                            --length;
+                            ++col;
+                        }
+
+                        --text;
+                        ++length;
+                        last = 1;
+                        continue;
+                    }
+                    if (bsearch(&buf_p, code_keywords,
+                                sizeof(code_keywords) / sizeof(code_keywords[0]),
+                                sizeof(code_keywords[0]), compare_keywords)) {
+                        while (text < temp) {
+                            *style++ = 'G';
+                            ++text;
+                            --length;
+                            ++col;
+                        }
+
+                        --text;
+                        ++length;
+                        last = 1;
+                        continue;
+                    }
+                }
+            }
+        } else if (current == 'C' && strncmp(text, "*/", 2) == 0) {
+            // Close a C comment...
+            *style++ = current;
+            *style++ = current;
+            ++text;
+            --length;
+            current = 'A';
+            col += 2;
+            continue;
+        } else if (current == 'D') {
+            // Continuing in string...
+            if (strncmp(text, "\\\"", 2) == 0) {
+                // Quoted end quote...
+                *style++ = current;
+                *style++ = current;
+                ++text;
+                --length;
+                col += 2;
+                continue;
+            }
+            if (*text == '\"') {
+                // End quote...
+                *style++ = current;
+                ++col;
+                current = 'A';
+                continue;
+            }
+        }
+
+        // Copy style info...
+        if (current == 'A' && (*text == '{' || *text == '}')) {
+            *style++ = 'G';
+        } else {
+            *style++ = current;
+        }
+        ++col;
+
+        last = isalnum(*text) || *text == '.';
+
+        if (*text == '\n') {
+            // Reset column and possibly reset the style
+            col = 0;
+            if (current == 'B' || current == 'E') {
+                current = 'A';
+            }
+        }
+    }
+#endif
 }
 
 void changed_сallback(int, const int nInserted, const int nDeleted, int, const char *, void *v) {
@@ -156,16 +296,85 @@ void changed_сallback(int, const int nInserted, const int nDeleted, int, const 
     }
 }
 
+extern "C" void colorize_callback(const int   pos,         // I - Position of update
+                                  const int   nInserted,   // I - Number of inserted chars
+                                  const int   nColorized,  // I - Number of deleted chars
+                                  int         nRestyled,   // I - Number of restyled chars
+                                  const char *deletedText, // I - Text that was deleted
+                                  void *      v            // I - Callback data
+) {
+#ifdef GUI_ERROR
+    int      start; // Start of text
+    int      end;   // End of text
+    char     last,  // Last style on line
+            *style, // Style data
+            *text;  // Text data
+
+    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject text buffer
+    const auto style_buffer = reinterpret_cast<Fl_Text_Editor *>(GET_WINDOW_FROM_VOID(v)->top_window()->child(1))->style_buffer();
+    //inject text style buffer //TODO can cause a problem
+
+    // If this is just a selection change, just unselect the style buffer...
+    if (nInserted == 0 && nColorized == 0) {
+        style_buffer->unselect();
+        return;
+    }
+
+    // Track changes in the text buffer...
+    if (nInserted > 0) {
+        // Insert characters into the style buffer...
+        style = new char[nInserted + 1];
+        memset(style, 'A', nInserted);
+        style[nInserted] = '\0';
+
+        style_buffer->replace(pos, pos + nColorized, style);
+        delete[] style;
+    } else {
+        // Just delete characters in the style buffer...
+        style_buffer->remove(pos, pos + nColorized);
+    }
+    style_buffer->select(pos, pos + nInserted - nColorized);
+
+    start = text_buffer->line_start(pos);
+    end   = text_buffer->line_end(pos + nInserted - nColorized);
+    text  = text_buffer->text_range(start, end);
+    style = style_buffer->text_range(start, end);
+    last  = style[end - start - 1];
+
+    style_parse(text, style, end - start);
+
+    style_buffer->replace(start, end, style);
+    static_cast<Fl_Text_Editor *>(v)->redisplay_range(start, end);
+
+    if (last != style[end - start - 1]) {
+        free(text);
+        free(style);
+
+        end   = text_buffer->length();
+        text  = text_buffer->text_range(start, end);
+        style = style_buffer->text_range(start, end);
+
+        style_parse(text, style, end - start);
+
+        style_buffer->replace(start, end, style);
+        static_cast<Fl_Text_Editor *>(v)->redisplay_range(start, end);
+    }
+
+    free(text);
+    free(style);
+#endif
+}
+
 void replace_сallback(Fl_Widget *widget, void *v) {
     const auto window = GET_SELF_FROM_VOID(v);
     window->m_replace_dlg->show();
 }
 
 void replace_2_сallback(Fl_Widget *widget, void *v) {
-    const auto window = GET_SELF_FROM_VOID(v);
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    const char *find = window->m_replace_find->value();
-    const char *replace = window->m_replace_with->value();
+    const auto  window      = GET_SELF_FROM_VOID(v);
+    const auto  text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const char *find        = window->m_replace_find->value();
+    const char *replace     = window->m_replace_with->value();
 
     if (find[0] == '\0') {
         window->m_replace_dlg->show();
@@ -175,14 +384,14 @@ void replace_2_сallback(Fl_Widget *widget, void *v) {
     window->m_replace_dlg->hide();
     window->m_editor->insert_position(0);
 
-    int pos = window->m_editor->insert_position();
-    int found = textbuffer->search_forward(pos, find, &pos);
+    int pos   = window->m_editor->insert_position();
+    int found = text_buffer->search_forward(pos, find, &pos);
 
     if (found) {
-        textbuffer->select(pos, pos + strlen(find));
-        textbuffer->remove_selection();
-        textbuffer->insert(pos, replace);
-        textbuffer->select(pos, pos + strlen(replace));
+        text_buffer->select(pos, pos + strlen(find));
+        text_buffer->remove_selection();
+        text_buffer->insert(pos, replace);
+        text_buffer->select(pos, pos + strlen(replace));
 
         window->m_editor->insert_position(pos + strlen(replace));
         window->m_editor->show_insert_position();
@@ -196,10 +405,10 @@ void replace_2_сallback(Fl_Widget *widget, void *v) {
  * @param v current view
  */
 void repl_all_сallback(Fl_Widget *widget, void *v) {
-    const auto window = GET_SELF_FROM_VOID(v);
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    const char *find = window->m_replace_find->value();
-    const char *replace = window->m_replace_with->value();
+    const auto  window      = GET_SELF_FROM_VOID(v);
+    const auto  text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const char *find        = window->m_replace_find->value();
+    const char *replace     = window->m_replace_with->value();
 
     find = window->m_replace_find->value();
 
@@ -214,12 +423,12 @@ void repl_all_сallback(Fl_Widget *widget, void *v) {
 
     for (int found = 1; found;) {
         int pos = window->m_editor->insert_position();
-        found = textbuffer->search_forward(pos, find, &pos);
+        found   = text_buffer->search_forward(pos, find, &pos);
 
         if (found) {
-            textbuffer->select(pos, pos + strlen(find));
-            textbuffer->remove_selection();
-            textbuffer->insert(pos, replace);
+            text_buffer->select(pos, pos + strlen(find));
+            text_buffer->remove_selection();
+            text_buffer->insert(pos, replace);
 
             window->m_editor->insert_position(pos + strlen(replace));
             window->m_editor->show_insert_position();
@@ -259,13 +468,13 @@ void cut_сallback(Fl_Widget *widget, void *v) {
 }
 
 void delete_сallback(Fl_Widget *widget) {
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    textbuffer->remove_selection();
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    text_buffer->remove_selection();
 }
 
 void undo_сallback(Fl_Widget *widget) {
-    auto textbuffer = GET_BUFFER_FROM(widget);
-    textbuffer->undo();
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    text_buffer->undo();
 }
 
 void save_as_сallback(Fl_Widget *widget) {
@@ -295,13 +504,13 @@ void open_callback(Fl_Widget *widget) {
 }
 
 void new_callback(Fl_Widget *widget) {
-    auto textbuffer = GET_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
     if (!check_save(widget)) {
         return;
     }
     filename[0] = '\0';
-    textbuffer->select(0, textbuffer->length());
-    textbuffer->remove_selection();
+    text_buffer->select(0, text_buffer->length());
+    text_buffer->remove_selection();
     changed = 0;
-    textbuffer->call_modify_callbacks();
+    text_buffer->call_modify_callbacks();
 }

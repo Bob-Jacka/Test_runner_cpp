@@ -28,12 +28,12 @@ namespace Guilib {
      */
     namespace Utility {
         /**
-         * Get current window child by its position.
-         * widget - element of the main window
-         * @tparam position position of the widget on window from 0 to n.
-         * @return child by given position
-         */
-        export template<int element_pos, typename Reinterpret_type, int child_count = 8>
+        * Resolve child by its parent
+        * @tparam element_pos position of the element
+        * @tparam Reinterpret_type type to reinterpret
+        * @tparam child_count count of child in parent
+        */
+        template<int element_pos, typename Reinterpret_type, int child_count = 8>
             requires (element_pos >= 0 && ((child_count > element_pos) || (element_pos >= child_count - 1)))
         auto SELF_GET_CHILD = [](Fl_Widget *widget) {
             return reinterpret_cast<Reinterpret_type>(widget->top_window()->as_window()->child(element_pos));
@@ -52,6 +52,13 @@ namespace Guilib {
         auto REINTERPRET = [] {
             return reinterpret_cast<Reinterpret_type>(Value_to_reinterpret);
         };
+
+        /**
+         * Reinterpret into callback
+         */
+        auto REINTERPRET_CALLBACK = [](void (*ptr)(Fl_Widget *widget)) {
+            return reinterpret_cast<Fl_Callback *>(ptr);
+        };
     }
 
     /**
@@ -64,29 +71,29 @@ namespace Guilib {
         class FLTK_button {
             bool state = false; //button state
 
-        public:
-            FLTK_button();
+            public:
+                FLTK_button();
 
-            FLTK_button(const FLTK_button &) = delete;
+                FLTK_button(const FLTK_button &) = delete;
 
-            ~FLTK_button();
+                ~FLTK_button();
 
-            //methods:
-            [[nodiscard]] auto get_state() const -> bool {
-                return state;
-            }
+                //methods:
+                [[nodiscard]] auto get_state() const -> bool {
+                    return state;
+                }
         };
 
         class FLTK_file_browser {
             std::string title;
             std::string filename;
 
-        public:
-            FLTK_file_browser();
+            public:
+                FLTK_file_browser();
 
-            FLTK_file_browser(const FLTK_file_browser &) = delete;
+                FLTK_file_browser(const FLTK_file_browser &) = delete;
 
-            ~FLTK_file_browser();
+                ~FLTK_file_browser();
         };
 
         /**
@@ -96,12 +103,12 @@ namespace Guilib {
             Fl_Text_Editor *editor;
             Fl_Text_Buffer *buffer;
 
-        public:
-            FLTK_text_input();
+            public:
+                FLTK_text_input();
 
-            FLTK_text_input(const FLTK_text_input &) = delete;
+                FLTK_text_input(const FLTK_text_input &) = delete;
 
-            ~FLTK_text_input();
+                ~FLTK_text_input();
         };
     }
 }

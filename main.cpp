@@ -21,7 +21,6 @@
 #elifdef EXTENDED_FUNCTIONALITY_GUI
 #pragma message("Using graphical user interface mode")
 #include "FL/Fl_Window.H"
-#include <FL/Fl_Box.H>
 #endif
 
 import UtilFuncs_mod;
@@ -34,9 +33,9 @@ namespace Check_runner {
 #ifdef EXTENDED_FUNCTIONALITY_GUI
     namespace Console {
 #endif
-        int arg_count = 0; //count of arguments in utility input
+        int                                   arg_count = 0;   //count of arguments in utility input
         std::chrono::steady_clock::time_point start_util_work; //start time of utility working
-        std::chrono::steady_clock::time_point end_util_work; //end time of utility working
+        std::chrono::steady_clock::time_point end_util_work;   //end time of utility working
 
         /**
          * Low level functionality (filesystem actions) in utility
@@ -115,7 +114,7 @@ namespace Check_runner {
                     return str.contains("=") and str.contains("--") and !str.empty();
                 };
                 using con_string_ref = const std::string &; ///short version of type for string values
-                using con_bool_ref = const bool &; ///short version of type for boolean values
+                using con_bool_ref   = const bool &;        ///short version of type for boolean values
 
                 if (libio::array::get_dynamic_array_size<std::string>(cont_to_check) != 0) {
                     throw Check_exceptions::MainException(__LINE__, "flags array is empty", __FILE_NAME__);
@@ -124,8 +123,8 @@ namespace Check_runner {
                 //start from 1, because zero index is fullpath to utility executable file
                 for (int i = 1; i < arg_count; ++i) {
                     if (auto cli_param = cont_to_check[i]; check_func_full(cli_param)) {
-                        auto split_line = libio::string::split(cli_param, "=");
-                        const auto flag_name = Utility::replace_string_all(split_line[0], "--", "");
+                        auto        split_line = libio::string::split(cli_param, "=");
+                        const auto  flag_name  = Utility::replace_string_all(split_line[0], "--", "");
                         std::string flag_value = split_line[1]; //because zero index is flag name
 
                         //get entry point of utility working
@@ -142,7 +141,7 @@ namespace Check_runner {
                         //strategies for utility execution:
                         if (flag_name == LP::Static_load_parameters_names::strat) {
                             const auto strat_value = reinterpret_cast<con_string_ref>(flag_value);
-                            Entities::context = std::make_unique<Strategy::StratContext>();
+                            Entities::context      = std::make_unique<Strategy::StratContext>();
 
 #ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors in import
 #pragma message("Using extended utility strategies")
@@ -259,8 +258,8 @@ namespace Check_runner {
                 }
                 libio::output::println(); //just new line
                 const std::chrono::duration<double> util_work_time = end_util_work - start_util_work;
-                const auto minutes{std::chrono::duration_cast<std::chrono::minutes>(util_work_time)};
-                const auto hours{std::chrono::duration_cast<std::chrono::hours>(util_work_time)};
+                const auto                          minutes{std::chrono::duration_cast<std::chrono::minutes>(util_work_time)};
+                const auto                          hours{std::chrono::duration_cast<std::chrono::hours>(util_work_time)};
 
                 libio::output::println("Hours: " + std::to_string(hours.count()));
                 libio::output::println("Minutes: " + std::to_string(minutes.count()));
@@ -450,7 +449,7 @@ namespace Check_runner {
         void main_utility_cycle(const A &vtc, B &vtr, const String &device = "Single_device_mode") {
             using namespace std::chrono;
             steady_clock::time_point start; //start time of ts execution
-            steady_clock::time_point end; //end time of ts execution
+            steady_clock::time_point end;   //end time of ts execution
 
             start_util_work = steady_clock::now();
             for (const auto &ts: vtc) {
@@ -555,7 +554,7 @@ namespace Check_runner {
                     break;
                 }
                 if (Entities::load_parameters->get_is_time_record()) {
-                    end = steady_clock::now();
+                    end                              = steady_clock::now();
                     duration<double> elapsed_seconds = end - start;
                     libio::output::println(Translation::elapsed_sec + std::to_string(elapsed_seconds.count()));
                 }
@@ -566,36 +565,45 @@ namespace Check_runner {
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
     namespace GUI {
-        /**
-         * Reinterpret into callback
-         */
-        auto REINTERPRET_CALLBACK = [](void *) {
-            reinterpret_cast<Fl_Callback *>(new_callback);
+        Fl_Text_Display::Style_Table_Entry __styletable[] = {
+            // Style table
+            {FL_BLACK, FL_COURIER, FL_NORMAL_SIZE},             // A - Plain
+            {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // B - Line comments
+            {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // C - Block comments
+            {FL_BLUE, FL_COURIER, FL_NORMAL_SIZE},              // D - Strings
+            {FL_DARK_RED, FL_COURIER, FL_NORMAL_SIZE},          // E - Directives
+            {FL_DARK_RED, FL_COURIER_BOLD, FL_NORMAL_SIZE},     // F - Types
+            {FL_BLUE, FL_COURIER_BOLD, FL_NORMAL_SIZE}          // G - Keywords
         };
+
+        auto style_buffer = new Fl_Text_Buffer();
 
         static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
             const Fl_Menu_Item menuItems[] =
             {
-                {"&File", 0, nullptr, nullptr, FL_SUBMENU},
+                {"&File", 0, nullptr, nullptr, FL_SUBMENU}, //file menu
                 {"&New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
                 {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback), window},
                 {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback), window},
                 {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), window, FL_MENU_DIVIDER},
                 {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
                 {nullptr},
-                {"&Edit", 0, nullptr, nullptr, FL_SUBMENU},
+                {"&Edit", 0, nullptr, nullptr, FL_SUBMENU}, //edit menu
                 {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window, FL_MENU_DIVIDER},
                 {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
                 {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
                 {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
                 {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
                 {nullptr},
-                {"&Search", 0, nullptr, nullptr, FL_SUBMENU},
+                {"&Search", 0, nullptr, nullptr, FL_SUBMENU}, //search menu
                 {"&Find", FL_COMMAND + 'f', find_сallback, window},
                 {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
                 {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
                 {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
                 {nullptr},
+                {"&Help", 0, nullptr, nullptr, FL_SUBMENU}, //help menu
+                {"&Get help", FL_COMMAND + 'h', nullptr, nullptr},
+                {"&About", 0, nullptr, nullptr},
                 {nullptr},
             };
             menu->copy(menuItems);
@@ -604,22 +612,24 @@ namespace Check_runner {
         Fl_Window *new_view() {
             const auto window = new Main_window(800, 600, "Check runner");
 
-            window->begin();
+            window->begin(); //start creating main window of utility
 
             window->m_editor = new Fl_Text_Editor(10, 30, 780, 560);
-            window->m_editor->buffer(window->m_textbuffer);
+            window->m_editor->buffer(window->m_text_buffer);
 
             const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
             build_menu(menuBar, window);
 
-            window->m_replace_dlg->hide(); //hide by default
-            window->end();
+            window->m_replace_dlg->hide(); //hide dialog by default
+            window->end();                 //end creating main window
+
             window->resizable(window->m_editor);
-            // window->m_editor->highlight_data();
+            window->m_editor->highlight_data(style_buffer, __styletable, std::size(__styletable), 'A', nullptr, nullptr);
             window->m_editor->linenumber_width(60);
 
-            window->m_textbuffer->add_modify_callback(changed_сallback, window);
-            window->m_textbuffer->call_modify_callbacks();
+            window->m_text_buffer->add_modify_callback(changed_сallback, window->m_editor);
+            window->m_text_buffer->add_modify_callback(colorize_callback, window->m_editor);
+            window->m_text_buffer->call_modify_callbacks();
             return window;
         }
     }
@@ -639,7 +649,6 @@ int main(int argc, char *argv[]
 #endif
 ) {
     using namespace Check_runner;
-    bool global_strat_state = false; //global state of everything_now strategy to not use load_parameters
 
 #ifdef EXTENDED_FUNCTIONALITY
 Extended_begin_label:
@@ -652,10 +661,9 @@ Extended_begin_label:
             Console::Check::check_flags(Console::Other::resolve_cli_args(argv)); //proceed flags first, before parser
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
-            //2) Run graphical user interface before creating other entities
+            //1) Run graphical user interface before creating other entities
             if (Entities::load_parameters->get_gui()) {
-                using namespace GUI;
-                const auto window = new_view();
+                const auto window = GUI::new_view();
                 window->show();
                 return Fl::run();
             }
@@ -665,9 +673,10 @@ Extended_begin_label:
 
         //Pre strategy actions block
         {
+            bool global_strat_state = false; //global state of everything_now strategy to not use load_parameters
             //1) Get data from entry point file
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
-            global_strat_state = Entities::load_parameters->get_is_everything_now();
+            global_strat_state   = Entities::load_parameters->get_is_everything_now();
 
             lines_from_file = Entities::parser->preprocess_lines(lines_from_file); //2) Delete comments from file
             if (not Entities::load_parameters->get_parameters().empty()) {

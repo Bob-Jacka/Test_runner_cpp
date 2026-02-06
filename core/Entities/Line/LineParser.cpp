@@ -6,8 +6,8 @@ class File_controller;
 
 Interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
     this->interpreter_position = 0;
-    this->output_vector = std::vector<std::string>();
-    this->global_parameters = std::map<std::string, std::string>();
+    this->output_vector        = std::vector<std::string>();
+    this->global_parameters    = std::map<std::string, std::string>();
 }
 
 /**
@@ -16,7 +16,7 @@ Interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
  * @return bool value of result, where false means left operand is not equal (less) that right operand.
  */
 bool Interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const std::string &parameters) const {
-    bool result = false;
+    bool       result    = false;
     const auto arguments = Utility::split(parameters); //split arguments to execute them, arguments vector ex. - [a, <, b]
     if (arguments[1] == "<") {
         result = arguments[0] < arguments[2];
@@ -38,8 +38,8 @@ bool Interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const st
  * @return bool value of directive next position, return true if directive is found, false if directive not found
  */
 bool Interpreter_ns::DirectiveInterpreter::jmp_to(const std::string &directive_to_jump) const {
-    const auto it = std::ranges::find(inner_vector_to_proceed, directive_to_jump);
-    size_t directive_index = 0;
+    const auto it                    = std::ranges::find(inner_vector_to_proceed, directive_to_jump);
+    size_t     directive_index       = 0;
     const auto current_position_iter = inner_vector_to_proceed.begin() + interpreter_position;
     if (it != inner_vector_to_proceed.end()) {
         directive_index = std::distance(current_position_iter, it);
@@ -121,7 +121,7 @@ void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &p
 
     for (const auto &parameter: split_line) {
         if (check_lambda(parameter)) {
-            auto name_and_value = Utility::split(parameter, '=');
+            auto name_and_value                  = Utility::split(parameter, '=');
             global_parameters[name_and_value[0]] = name_and_value[1];
         } else {
             throw Check_exceptions::LineInterpreterException(__LINE__, "Suit parameters should contain equal sign (=), but given " + parameter,
@@ -217,7 +217,7 @@ std::vector<std::string> Interpreter_ns::DirectiveInterpreter::parse_directives(
         const auto &line = inner_vector_to_proceed[interpreter_position++];
         if (line.starts_with(directive_start_sym)) {
             const auto split_string_line = Utility::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
-            const auto directive_name = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
+            const auto directive_name    = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
 
             const auto directive_value = libio::string::delete_whitespaces(split_string_line[1]);
 

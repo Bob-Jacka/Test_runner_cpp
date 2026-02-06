@@ -8,7 +8,10 @@ void find_сallback(Fl_Widget *widget, void *v);
 
 void find_2_сallback(Fl_Widget *widget, void *v);
 
+//Special callbacks:
 void changed_сallback(int, int nInserted, int nDeleted, int, const char *, void *v);
+
+extern "C" void colorize_callback(int pos, int nInserted, int nColorized, int nRestyled, const char *deletedText, void *v);
 
 void replace_сallback(Fl_Widget *widget, void *v);
 

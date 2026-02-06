@@ -18,27 +18,31 @@ namespace Check_runner::GUI {
     class Main_window final : public Fl_Window {
         void window_init();
 
-    public:
-        Main_window();
+        public:
+            Main_window();
 
-        Main_window(int x, int y, int w, int h);
+            Main_window(int x, int y, int w, int h);
 
-        Main_window(int w, int h, const char *window_name);
+            Main_window(int w, int h, const char *window_name);
 
-        Main_window(int x, int y, int w, int h, const char *window_name);
+            Main_window(int x, int y, int w, int h, const char *window_name);
 
-        ~Main_window() override;
+            ~Main_window() override;
 
-        Fl_Text_Buffer *m_textbuffer = nullptr;
-        Fl_Window *m_replace_dlg = nullptr;
-        Fl_Input *m_replace_find = nullptr;
-        Fl_Input *m_replace_with = nullptr;
-        Fl_Button *m_replace_all = nullptr;
-        Fl_Return_Button *m_replace_next = nullptr;
-        Fl_Button *m_replace_cancel = nullptr;
+            //Buffers:
+            Fl_Text_Buffer *m_text_buffer  = nullptr;
+            Fl_Text_Buffer *m_style_buffer = nullptr;
 
-        Fl_Text_Editor *m_editor = nullptr;
-        char search[256] = {};
+            //Other elements:
+            Fl_Window *       m_replace_dlg    = nullptr;
+            Fl_Input *        m_replace_find   = nullptr;
+            Fl_Input *        m_replace_with   = nullptr;
+            Fl_Button *       m_replace_all    = nullptr;
+            Fl_Return_Button *m_replace_next   = nullptr;
+            Fl_Button *       m_replace_cancel = nullptr;
+
+            Fl_Text_Editor *m_editor    = nullptr;
+            char            search[256] = {};
     };
 }
 #endif
