@@ -52,8 +52,8 @@ Check_runner::TA::Bug *Check_runner::TA::Test_artifact_fabric::create_bug(const 
  * @param steps steps that need to execute in this checklist
  * @return constructed checklist
  */
-Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_check_list(const std::string &name,
-                                                                                        const std::string &description,
+Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_check_list(const std::string &             name,
+                                                                                        const std::string &             description,
                                                                                         const std::vector<std::string> &steps) const {
     const auto check_list = new Check_list{name, description, steps};
     return check_list;

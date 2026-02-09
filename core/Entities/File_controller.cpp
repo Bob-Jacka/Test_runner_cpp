@@ -45,7 +45,7 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
     if (check_file_extension(file_name) == 1) {
         auto [file, cond] = open_file(file_name);
         if (cond) {
-            auto lines = std::vector<std::string>();
+            auto        lines = std::vector<std::string>();
             std::string line;
             while (getline(file, line)) {
                 lines.push_back(line);

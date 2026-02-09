@@ -1,21 +1,31 @@
 #include "../declaration/Elements_callbacks.hpp"
-#include <cstdlib> // exit
 
 #include "../declaration/Main_window.hpp"
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Text_Editor.H>
 
 //Local flags:
-int         changed;
-int         loading;
+bool        changed;
+bool        loading;
 char        filename[256];
 std::string title;
 
 /**
  * Injects buffer from top window text editor:
+ * @param widget insert widget
+ * @return text buffer
  */
 auto GET_TXT_BUFFER_FROM = [](Fl_Widget *widget) {
-    return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(1))->buffer();
+    return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->buffer();
+};
+
+/**
+ * Injects style buffer from top window text editor:
+ * @param widget insert widget
+ * @return style buffer object
+ */
+auto GET_STYLE_BUFFER_FROM = [](Fl_Widget *widget) {
+    return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->style_buffer();
 };
 
 /**
@@ -61,37 +71,43 @@ void set_title(Fl_Window *widget) {
 
 void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
     const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
-    loading                = 1;
-    const int insert       = ipos != -1;
+    loading                = true;
+    const bool insert      = ipos != -1;
     changed                = insert;
+
     if (!insert) {
         strcpy(filename, "");
     }
-    int result;
-    if (!insert) {
-        result = text_buffer->loadfile(newfile);
-    } else {
-        result = text_buffer->insertfile(newfile, ipos);
+    try {
+        if (!insert) {
+            text_buffer->loadfile(newfile);
+        } else {
+            text_buffer->insertfile(newfile, ipos);
+        }
+    } catch (...) {
+        fl_alert("Error loading file \'%s\':\n%s.", newfile, strerror(errno));
     }
 
-    if (result) {
-        fl_alert("Error reading from file \'%s\':\n%s.", newfile, strerror(errno));
-    } else if (!insert) {
+    if (!insert) {
         strcpy(filename, newfile);
     }
-    loading = 0;
+    loading = false;
     text_buffer->call_modify_callbacks();
 }
 
 void save_file(char *newfile, Fl_Widget *widget) {
     const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
-    if (text_buffer->savefile(newfile)) {
-        fl_alert("Error writing to file \'%s\':\n%s.", newfile, strerror(errno));
-    } else {
-        strcpy(filename, newfile);
+    try {
+        if (text_buffer->savefile(newfile)) {
+            fl_alert("Error writing to file \'%s\':\n%s.", newfile, strerror(errno));
+        } else {
+            strcpy(filename, newfile);
+        }
+    } catch (...) {
+        //
     }
 
-    changed = 0;
+    changed = false;
     text_buffer->call_modify_callbacks();
 }
 
@@ -144,8 +160,6 @@ void find_сallback(Fl_Widget *widget, void *v) {
     }
 }
 
-#define GUI_ERROR
-
 /**
  * Parse style
  * @param text given text
@@ -153,7 +167,6 @@ void find_сallback(Fl_Widget *widget, void *v) {
  * @param length given len of text
  */
 extern "C" void style_parse(const char *text, char *style, int length) {
-#ifdef GUI_ERROR
     char        current;
     int         col;
     int         last;
@@ -283,12 +296,11 @@ extern "C" void style_parse(const char *text, char *style, int length) {
             }
         }
     }
-#endif
 }
 
 void changed_сallback(int, const int nInserted, const int nDeleted, int, const char *, void *v) {
     if ((nInserted || nDeleted) && !loading) {
-        changed = 1;
+        changed = true;
     }
     const auto window = GET_SELF_FROM_VOID(v);
     if (loading) {
@@ -303,16 +315,14 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
                                   const char *deletedText, // I - Text that was deleted
                                   void *      v            // I - Callback data
 ) {
-#ifdef GUI_ERROR
     int      start; // Start of text
     int      end;   // End of text
     char     last,  // Last style on line
             *style, // Style data
             *text;  // Text data
 
-    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject text buffer
-    const auto style_buffer = reinterpret_cast<Fl_Text_Editor *>(GET_WINDOW_FROM_VOID(v)->top_window()->child(1))->style_buffer();
-    //inject text style buffer //TODO can cause a problem
+    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));   //inject text buffer
+    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //TODO TODO
 
     // If this is just a selection change, just unselect the style buffer...
     if (nInserted == 0 && nColorized == 0) {
@@ -337,6 +347,7 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 
     start = text_buffer->line_start(pos);
     end   = text_buffer->line_end(pos + nInserted - nColorized);
+
     text  = text_buffer->text_range(start, end);
     style = style_buffer->text_range(start, end);
     last  = style[end - start - 1];
@@ -362,9 +373,13 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 
     free(text);
     free(style);
-#endif
 }
 
+/**
+ * Callback for replace
+ * @param widget
+ * @param v
+ */
 void replace_сallback(Fl_Widget *widget, void *v) {
     const auto window = GET_SELF_FROM_VOID(v);
     window->m_replace_dlg->show();
@@ -395,8 +410,9 @@ void replace_2_сallback(Fl_Widget *widget, void *v) {
 
         window->m_editor->insert_position(pos + strlen(replace));
         window->m_editor->show_insert_position();
-    } else
+    } else {
         fl_alert("No occurrences of \'%s\' found!", find);
+    }
 }
 
 /**
@@ -432,7 +448,7 @@ void repl_all_сallback(Fl_Widget *widget, void *v) {
 
             window->m_editor->insert_position(pos + strlen(replace));
             window->m_editor->show_insert_position();
-            times++;
+            ++times;
         }
     }
 
@@ -449,7 +465,7 @@ void repl_can_сallback(Fl_Widget *widget, void *v) {
 }
 
 void exit_сallback(Fl_Widget *widget) {
-    exit(0);
+    std::exit(0);
 }
 
 void paste_сallback(Fl_Widget *widget, void *v) {
@@ -511,6 +527,6 @@ void new_callback(Fl_Widget *widget) {
     filename[0] = '\0';
     text_buffer->select(0, text_buffer->length());
     text_buffer->remove_selection();
-    changed = 0;
+    changed = false;
     text_buffer->call_modify_callbacks();
 }

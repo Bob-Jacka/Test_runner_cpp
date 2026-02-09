@@ -42,10 +42,10 @@ export module Libio;
  * Unified namespace for libio library for input/output.
  */
 namespace libio {
-    using cint [[maybe_unused]] = const int; ///constant custom integer type
-    using cbool [[maybe_unused]] = const bool; ///constant custom bool type
+    using cint [[maybe_unused]]                  = const int;  ///constant custom integer type
+    using cbool [[maybe_unused]]                 = const bool; ///constant custom bool type
     export using String_con_ref [[maybe_unused]] = const std::string &;
-    export using String [[maybe_unused]] = std::string;
+    export using String [[maybe_unused]]         = std::string;
 
     /**
      * Namespace for constrains of types using concepts
@@ -98,12 +98,12 @@ namespace libio {
 
             const std::string Ansi_colors::_color_start = "\033[";
             const std::string Ansi_colors::_clear_color = "\033[0m";
-            const std::string Ansi_colors::WHITE = "\033[37m";
-            const std::string Ansi_colors::RED = "\033[31m";
-            const std::string Ansi_colors::GREEN = "\033[32m";
-            const std::string Ansi_colors::YELLOW = "\033[33m";
-            const std::string Ansi_colors::MAGENTA = "\033[35m";
-            const std::string Ansi_colors::CYAN = "\033[36m";
+            const std::string Ansi_colors::WHITE        = "\033[37m";
+            const std::string Ansi_colors::RED          = "\033[31m";
+            const std::string Ansi_colors::GREEN        = "\033[32m";
+            const std::string Ansi_colors::YELLOW       = "\033[33m";
+            const std::string Ansi_colors::MAGENTA      = "\033[35m";
+            const std::string Ansi_colors::CYAN         = "\033[36m";
 
             /**
              * Print generic object in color to console.
@@ -227,8 +227,8 @@ void print(const T &str, std::string separator = "") {
          * @param is_inline I do not know why I do this.
          */
         export template<typename T>
-        void line_array_output(const T *array, const int array_size, const std::string &separator = " ",
-                               const bool is_inline = false) {
+        void line_array_output(const T *  array, const int array_size, const std::string &separator = " ",
+                               const bool is_inline                                                 = false) {
             for (int i = 0; i < array_size - 1; ++i) {
                 std::cout << array[i] << separator;
             }
@@ -250,7 +250,7 @@ void print(const T &str, std::string separator = "") {
             requires std::copyable<T>
         void line_array_output(T array, const std::string &separator = " ", const std::string &endsymbol = "") {
             const size_t array_size = array.size();
-            int i = 0;
+            int          i          = 0;
             for (; i < array_size - 1; ++i) {
                 std::cout << array[i] << separator;
             }
@@ -261,8 +261,8 @@ void print(const T &str, std::string separator = "") {
             requires libio::type_constrains::is_stl_container<T>
         std::string line_array_output_return(T array, const std::string &separator = " ") {
             const size_t array_size = array.size();
-            int i = 0;
-            std::string result;
+            int          i          = 0;
+            std::string  result;
             for (; i < array_size - 1; ++i) {
                 result += array[i];
                 result += separator;
@@ -305,7 +305,7 @@ void print(const T &str, std::string separator = "") {
             requires std::copyable<T>
         void print_container(const T &container, const std::string &separator = " ") {
             const size_t container_size = container.size();
-            int i = 0;
+            int          i              = 0;
             for (const auto &elem: container) {
                 if (i < container_size - 1) {
                     std::cout << elem << separator;
@@ -367,9 +367,9 @@ export void print_one_element(const int *array, const int i) {
          * @return vector object with strings
          */
         std::vector<std::string> split(std::string const &input) {
-            std::stringstream ss(input);
+            std::stringstream        ss(input);
             std::vector<std::string> result;
-            std::string word;
+            std::string              word;
             while (ss >> word) {
                 result.push_back(word);
             }
@@ -383,8 +383,8 @@ export void print_one_element(const int *array, const int i) {
         * @return vector if you want to assign to variable.
         */
         std::vector<std::string> split(const std::string &s, const std::string &delim = " ") {
-            std::vector<std::string> result;
-            const std::regex del(delim);
+            std::vector<std::string>   result;
+            const std::regex           del(delim);
             std::sregex_token_iterator it(s.begin(),
                                           s.end(), del, -1);
             const std::sregex_token_iterator end;
@@ -402,7 +402,7 @@ export void print_one_element(const int *array, const int i) {
          */
         std::string delete_whitespaces(const std::string &s) {
             const size_t first_char_pos = s.find_first_not_of(" \t\n\r\f\v");
-            std::string output_string = s; //copy source string
+            std::string  output_string  = s; //copy source string
             if (first_char_pos != std::string::npos) {
                 output_string.erase(0, first_char_pos);
             }
@@ -419,7 +419,7 @@ export void print_one_element(const int *array, const int i) {
         std::string
         change_string_register(const std::string &str, const bool regis, const std::locale &loc = std::locale("en")) {
             decltype(auto) func = (!regis) ? std::toupper<char> : std::tolower<char>;
-            std::string result;
+            std::string    result;
             for (const auto ch: str) {
                 result += func(ch, loc);
             }
@@ -842,7 +842,7 @@ export void print_one_element(const int *array, const int i) {
         String Sql_methods::UPDATE = "UPDATE";
         String Sql_methods::INSERT = "INSERT";
         String Sql_methods::CREATE = "CREATE";
-        String Sql_methods::DROP = "DROP";
+        String Sql_methods::DROP   = "DROP";
 
         enum DATABASE_TYPE {
             //

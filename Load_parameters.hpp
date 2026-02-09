@@ -11,94 +11,94 @@ namespace LP {
      * Simply stores load compiler data and provide it outside.
      */
     struct Load_parameters {
-    private:
-        //main utility parameters, part of it is required:
-        std::string entry_point; ///entry point of utility use.
-        std::string devices_entry_point; ///file with devices to test on.
-        std::string parameters; ///main parameters in utility.
-        int check_device_count{}; ///count of devices for test on.
-        bool is_gui{}; ///is need to run in graphics user interface. true - 'gui', false - 'console' (default).
+        private:
+            //main utility parameters, part of it is required:
+            std::string entry_point;          ///entry point of utility use.
+            std::string devices_entry_point;  ///file with devices to test on.
+            std::string parameters;           ///main parameters in utility.
+            int         check_device_count{}; ///count of devices for test on.
+            bool        is_gui{};             ///is need to run in graphics user interface. true - 'gui', false - 'console' (default).
 
-        //other utility parameters:
-        bool is_colored{}; ///is need for colored output.
-        bool is_comments{}; ///is need for comments in utility.
-        bool is_time_record{}; ///for each test case to record time.
-        bool is_file_write{}; ///is need for file write at the end of test run.
+            //other utility parameters:
+            bool is_colored{};     ///is need for colored output. //TODO replace with bitset
+            bool is_comments{};    ///is need for comments in utility.
+            bool is_time_record{}; ///for each test case to record time.
+            bool is_file_write{};  ///is need for file write at the end of test run.
 
-        //strategies to run:
-        bool is_random_run{}; ///randomly run test cases.
-        bool is_parallel_run{}; ///strategy for parallel adding tests.
-        bool is_high_priority{}; ///runs only high priority test cases.
-        bool is_everything_now{}; ///usually prints all tests in console or anything.
-        bool is_usual_run{}; ///simple get test cases without actions.
-        bool is_choose_run{}; ///choose severity of test cases.
+            //strategies to run:
+            bool is_random_run{};     ///randomly run test cases.
+            bool is_parallel_run{};   ///strategy for parallel adding tests.
+            bool is_high_priority{};  ///runs only high priority test cases.
+            bool is_everything_now{}; ///usually prints all tests in console or anything.
+            bool is_usual_run{};      ///simple get test cases without actions.
+            bool is_choose_run{};     ///choose severity of test cases.
 
-    public:
-        Load_parameters() = default;
+        public:
+            Load_parameters() = default;
 
-        ~Load_parameters() = default;
+            ~Load_parameters() = default;
 
-        ////////////////////////getter
+            ////////////////////////getter
 
-        [[nodiscard]] std::string get_entry_point() const;
+            [[nodiscard]] std::string get_entry_point() const;
 
-        [[nodiscard]] int get_check_device_count() const;
+            [[nodiscard]] int get_check_device_count() const;
 
-        [[nodiscard]] bool get_is_colored() const;
+            [[nodiscard]] bool get_is_colored() const;
 
-        [[nodiscard]] bool get_is_comments() const;
+            [[nodiscard]] bool get_is_comments() const;
 
-        [[nodiscard]] bool get_is_time_record() const;
+            [[nodiscard]] bool get_is_time_record() const;
 
-        [[nodiscard]] bool get_is_random() const;
+            [[nodiscard]] bool get_is_random() const;
 
-        [[nodiscard]] bool get_is_high_priority() const;
+            [[nodiscard]] bool get_is_high_priority() const;
 
-        [[nodiscard]] bool get_is_everything_now() const;
+            [[nodiscard]] bool get_is_everything_now() const;
 
-        [[nodiscard]] bool get_is_usual_run() const;
+            [[nodiscard]] bool get_is_usual_run() const;
 
-        [[nodiscard]] bool get_is_choose_run() const;
+            [[nodiscard]] bool get_is_choose_run() const;
 
-        [[nodiscard]] std::string get_devices_entry_point() const;
+            [[nodiscard]] std::string get_devices_entry_point() const;
 
-        [[nodiscard]] bool get_is_file_write() const;
+            [[nodiscard]] bool get_is_file_write() const;
 
-        [[nodiscard]] std::string get_devices() const;
+            [[nodiscard]] std::string get_devices() const;
 
-        [[nodiscard]] std::string get_parameters() const;
+            [[nodiscard]] std::string get_parameters() const;
 
-        [[nodiscard]] bool get_gui() const;
+            [[nodiscard]] bool get_gui() const;
 
-        ////////////////////////setters
+            ////////////////////////setters
 
-        void set_entry_point(const std::string &);
+            void set_entry_point(const std::string &);
 
-        void set_devices_entry_point(const std::string &);
+            void set_devices_entry_point(const std::string &);
 
-        void set_check_device_count(int);
+            void set_check_device_count(int);
 
-        void set_is_colored(bool);
+            void set_is_colored(bool);
 
-        void set_is_comments(bool);
+            void set_is_comments(bool);
 
-        void set_is_time_record(bool);
+            void set_is_time_record(bool);
 
-        void set_is_random_run(bool);
+            void set_is_random_run(bool);
 
-        void set_is_high_priority(bool);
+            void set_is_high_priority(bool);
 
-        void set_is_everything_now(bool);
+            void set_is_everything_now(bool);
 
-        void set_is_usual_strat(bool);
+            void set_is_usual_strat(bool);
 
-        void set_is_choose_strat(bool);
+            void set_is_choose_strat(bool);
 
-        void set_is_file_write(bool);
+            void set_is_file_write(bool);
 
-        void set_parameters(const std::string &);
+            void set_parameters(const std::string &);
 
-        void set_is_gui(bool);
+            void set_is_gui(bool);
     };
 
     ////////////////////////realizations
@@ -222,24 +222,24 @@ namespace LP {
      */
     struct Static_load_parameters_names {
         // main options
-        static constexpr std::string entry = "suit"; ///usually string value, include test suit (required)
-        static constexpr std::string devices = "devices"; ///devices on which start utility (optional)
-        static constexpr std::string strat = "strategy"; ///for use strategy in utility
-        static constexpr std::string inter = "interface"; ///for interface - can be 'gui' or 'console'
+        static constexpr std::string entry   = "suit";      ///usually string value, include test suit (required)
+        static constexpr std::string devices = "devices";   ///devices on which start utility (optional)
+        static constexpr std::string strat   = "strategy";  ///for use strategy in utility
+        static constexpr std::string inter   = "interface"; ///for interface - can be 'gui' or 'console'
 
         // special options, can be not specified (optional)
         static constexpr std::string time_check = "time_record";
-        static constexpr std::string comments = "comment";
-        static constexpr std::string colored = "colored";
+        static constexpr std::string comments   = "comment";
+        static constexpr std::string colored    = "colored";
         static constexpr std::string parameters = "parameters";
 
         // strategies, cannot be None (required)
         static constexpr std::string high_prior_strat = "high_prior";
-        static constexpr std::string random_strat = "random";
-        static constexpr std::string parallel_strat = "parallel";
-        static constexpr std::string everything_now = "everything_now"; ///not presented in main check cli
-        static constexpr std::string usual_strat = "usual";
-        static constexpr std::string choose_strat = "choose";
+        static constexpr std::string random_strat     = "random";
+        static constexpr std::string parallel_strat   = "parallel";
+        static constexpr std::string everything_now   = "everything_now"; ///not presented in main check cli
+        static constexpr std::string usual_strat      = "usual";
+        static constexpr std::string choose_strat     = "choose";
 
         //other
         static constexpr std::string help = "--help";

@@ -5,8 +5,6 @@
 #include "core/Data/Translation.hpp"
 #include "core/Exceptions/FileControllerException.hpp"
 #include "core/Exceptions/MainException.hpp"
-#include "core/GUI/declaration/Elements_callbacks.hpp"
-#include "core/GUI/declaration/Main_window.hpp"
 #include "core/Strategies/declaration/Usual_strat.hpp"
 
 #ifdef EXTENDED_FUNCTIONALITY
@@ -20,6 +18,8 @@
 
 #elifdef EXTENDED_FUNCTIONALITY_GUI
 #pragma message("Using graphical user interface mode")
+#include "core/GUI/declaration/Elements_callbacks.hpp"
+#include "core/GUI/declaration/Main_window.hpp"
 #include "FL/Fl_Window.H"
 #endif
 
@@ -571,12 +571,10 @@ namespace Check_runner {
             {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // B - Line comments
             {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // C - Block comments
             {FL_BLUE, FL_COURIER, FL_NORMAL_SIZE},              // D - Strings
-            {FL_DARK_RED, FL_COURIER, FL_NORMAL_SIZE},          // E - Directives
+            {FL_YELLOW, FL_COURIER, FL_NORMAL_SIZE},            // E - Directives
             {FL_DARK_RED, FL_COURIER_BOLD, FL_NORMAL_SIZE},     // F - Types
             {FL_BLUE, FL_COURIER_BOLD, FL_NORMAL_SIZE}          // G - Keywords
         };
-
-        auto style_buffer = new Fl_Text_Buffer();
 
         static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
             const Fl_Menu_Item menuItems[] =
@@ -601,23 +599,24 @@ namespace Check_runner {
                 {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
                 {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
                 {nullptr},
-                {"&Help", 0, nullptr, nullptr, FL_SUBMENU}, //help menu
-                {"&Get help", FL_COMMAND + 'h', nullptr, nullptr},
-                {"&About", 0, nullptr, nullptr},
+                // {"&Help", 0, nullptr, nullptr, FL_SUBMENU}, //help menu //TODO cause a problem in menu creation
+                // {"&Get help", FL_COMMAND + 'h', nullptr, nullptr},
+                // {"&About", 0, nullptr, nullptr},
                 {nullptr},
             };
             menu->copy(menuItems);
         }
 
         Fl_Window *new_view() {
-            const auto window = new Main_window(800, 600, "Check runner");
-
+            const auto window       = new Main_window(800, 600, "Check runner");
+            const auto style_buffer = new Fl_Text_Buffer();
             window->begin(); //start creating main window of utility
+
+            const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
 
             window->m_editor = new Fl_Text_Editor(10, 30, 780, 560);
             window->m_editor->buffer(window->m_text_buffer);
 
-            const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
             build_menu(menuBar, window);
 
             window->m_replace_dlg->hide(); //hide dialog by default
@@ -627,9 +626,10 @@ namespace Check_runner {
             window->m_editor->highlight_data(style_buffer, __styletable, std::size(__styletable), 'A', nullptr, nullptr);
             window->m_editor->linenumber_width(60);
 
-            window->m_text_buffer->add_modify_callback(changed_сallback, window->m_editor);
-            window->m_text_buffer->add_modify_callback(colorize_callback, window->m_editor);
+            window->m_text_buffer->add_modify_callback(changed_сallback, window);
+            window->m_text_buffer->add_modify_callback(colorize_callback, window);
             window->m_text_buffer->call_modify_callbacks();
+
             return window;
         }
     }
