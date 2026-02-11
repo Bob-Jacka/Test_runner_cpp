@@ -565,52 +565,78 @@ namespace Check_runner {
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
     namespace GUI {
-        Fl_Text_Display::Style_Table_Entry __styletable[] = {
-            // Style table
-            {FL_BLACK, FL_COURIER, FL_NORMAL_SIZE},             // A - Plain
-            {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // B - Line comments
-            {FL_DARK_GREEN, FL_COURIER_ITALIC, FL_NORMAL_SIZE}, // C - Block comments
-            {FL_BLUE, FL_COURIER, FL_NORMAL_SIZE},              // D - Strings
-            {FL_YELLOW, FL_COURIER, FL_NORMAL_SIZE},            // E - Directives
-            {FL_DARK_RED, FL_COURIER_BOLD, FL_NORMAL_SIZE},     // F - Types
-            {FL_BLUE, FL_COURIER_BOLD, FL_NORMAL_SIZE}          // G - Keywords
+        // Style table, 1 - color, 2 - font_type, 3 - font size | 4 attr, 5 bg color
+        Fl_Text_Display::Style_Table_Entry _styletable[] = {
+            {FL_BLACK, FL_COURIER, FONT_SIZE},                           // A - Plain simple text
+            {FL_GRAY, FL_COURIER_ITALIC, COMMENT_FONT_SIZE, 0, FL_GRAY}, // B - Line comments
+            {FL_GRAY, FL_COURIER_ITALIC, COMMENT_FONT_SIZE},             // C - Block comments
+            {FL_BLUE, FL_COURIER_BOLD, FONT_SIZE},                       // D - Strings (Parameters)
+            {FL_DARK_YELLOW, FL_COURIER | FL_BOLD, DIRECTIVE_FONT_SIZE}, // E - Directives
+            {FL_BLACK, FL_COURIER_BOLD, FONT_SIZE},                      // F - Types, !disable strings with default color
+            {FL_DARK_RED, FL_COURIER_BOLD, FONT_SIZE}                    // G - Keywords
         };
 
+        /**
+         * Build window menu with callbacks
+         * @param menu
+         * @param window
+         */
         static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
-            const Fl_Menu_Item menuItems[] =
-            {
-                {"&File", 0, nullptr, nullptr, FL_SUBMENU}, //file menu
-                {"&New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
-                {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback), window},
-                {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback), window},
-                {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), window, FL_MENU_DIVIDER},
-                {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
-                {nullptr},
-                {"&Edit", 0, nullptr, nullptr, FL_SUBMENU}, //edit menu
-                {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window, FL_MENU_DIVIDER},
-                {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
-                {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
-                {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
-                {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
-                {nullptr},
-                {"&Search", 0, nullptr, nullptr, FL_SUBMENU}, //search menu
-                {"&Find", FL_COMMAND + 'f', find_сallback, window},
-                {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
-                {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
-                {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
-                {nullptr},
-                // {"&Help", 0, nullptr, nullptr, FL_SUBMENU}, //help menu //TODO cause a problem in menu creation
-                // {"&Get help", FL_COMMAND + 'h', nullptr, nullptr},
-                // {"&About", 0, nullptr, nullptr},
-                {nullptr},
-            };
-            menu->copy(menuItems);
+            static bool counter = true;
+            try {
+                const Fl_Menu_Item menuItems[] =
+                {
+                    {"&File", 0, nullptr, nullptr, FL_SUBMENU}, //file menu
+                    {"&New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
+                    {"&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback), window},
+                    {"&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback), window},
+                    {"&Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), window, FL_MENU_DIVIDER},
+                    {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
+                    {nullptr},
+                    {"&Edit", 0, nullptr, nullptr, FL_SUBMENU}, //edit menu
+                    {"&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window, FL_MENU_DIVIDER},
+                    {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
+                    {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
+                    {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
+                    {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
+                    {nullptr},
+                    {"&Search", 0, nullptr, nullptr, FL_SUBMENU}, //search menu
+                    {"&Find", FL_COMMAND + 'f', find_сallback, window},
+                    {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
+                    {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
+                    {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
+                    {nullptr},
+                    {"&Help", 0, nullptr, nullptr, FL_SUBMENU}, //help menu
+                    {"&About", FL_COMMAND + 'h', about_callback, window, FL_MENU_DIVIDER},
+                    {"&Increase font", FL_ALT + '+', increase_font_callback, window},
+                    {"&Decrease font", FL_ALT + '-', decrease_font_callback, window},
+                    {nullptr},
+                    {"&AI", 0, nullptr, nullptr, FL_SUBMENU}, //AI menu
+                    {"&Chat", 0, AI_chat_callback, window},
+                    {"&Agent", 0, AI_agent_callback, window},
+                    {nullptr},
+                    {nullptr}
+                };
+                menu->copy(menuItems);
+            } catch (...) {
+#ifdef DEBUG
+                printf("An error in creating menu: build_menu function");
+#endif
+                if (counter == true) {
+                    build_menu(menu, window);
+                }
+                counter = false;
+            }
         }
 
+        /**
+         * Create main window
+         * @return pointer to window
+         */
         Fl_Window *new_view() {
             const auto window       = new Main_window(800, 600, "Check runner");
-            const auto style_buffer = new Fl_Text_Buffer();
-            window->begin(); //start creating main window of utility
+            const auto style_buffer = new Fl_Text_Buffer(); //text buffer for styles
+            window->begin();                                //start creating main window of utility
 
             const auto menuBar = new Fl_Menu_Bar(0, 0, 800, 30);
 
@@ -623,13 +649,12 @@ namespace Check_runner {
             window->end();                 //end creating main window
 
             window->resizable(window->m_editor);
-            window->m_editor->highlight_data(style_buffer, __styletable, std::size(__styletable), 'A', nullptr, nullptr);
+            window->m_editor->highlight_data(style_buffer, _styletable, std::size(_styletable), 'A', nullptr, nullptr);
             window->m_editor->linenumber_width(60);
 
             window->m_text_buffer->add_modify_callback(changed_сallback, window);
             window->m_text_buffer->add_modify_callback(colorize_callback, window);
             window->m_text_buffer->call_modify_callbacks();
-
             return window;
         }
     }
@@ -768,3 +793,7 @@ Extended_begin_label:
 #endif
     libio::output::println("Out utility, bye");
 }
+
+#ifndef EXTENDED_FUNCTIONALITY_GUI
+}
+#endif

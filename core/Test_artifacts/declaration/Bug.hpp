@@ -41,6 +41,44 @@ namespace Check_runner {
 
                 [[nodiscard]] std::string to_string() const override;
         };
+
+        /**
+         * Not a bug, but there is a question due to functionality or visual
+         */
+        class Question final : Test_artifact {
+            std::string name;
+            std::string description;
+
+            public:
+                Question() = delete;
+
+                Question(const std::string &name, const std::string &description);
+
+                Question(const Question &) = delete;
+
+                [[nodiscard]] std::string get_name() const override;
+
+                [[nodiscard]] std::string to_string() const override;
+        };
+
+        /**
+         * Not a bug, but some improvement to functionality or visual
+         */
+        class Enhance final : Test_artifact {
+            std::string name;
+            std::string description;
+
+            public:
+                Enhance() = delete;
+
+                Enhance(const std::string &name, const std::string &description);
+
+                Enhance(const Enhance &) = delete;
+
+                [[nodiscard]] std::string get_name() const override;
+
+                [[nodiscard]] std::string to_string() const override;
+        };
     }
 }
 #endif

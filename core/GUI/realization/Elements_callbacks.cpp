@@ -5,17 +5,21 @@
 #include <FL/Fl_Text_Editor.H>
 
 //Local flags:
-bool        changed;
-bool        loading;
-char        filename[256];
-std::string title;
+bool changed;
+bool loading; //TODO maybe replace bool values with bitset
+char filename[256];
+
+//Global parse data:
+auto           compare_keywords_func = [](const void *current, const void *in_structures) -> int { return 0; }; //func for compare keywords
+constexpr char code_types[]          = {"has"};                                                                 //For F color type
+constexpr char code_keywords[]       = {"High"};                                                                //For G color type
 
 /**
  * Injects buffer from top window text editor:
  * @param widget insert widget
  * @return text buffer
  */
-auto GET_TXT_BUFFER_FROM = [](Fl_Widget *widget) {
+auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->buffer();
 };
 
@@ -24,14 +28,14 @@ auto GET_TXT_BUFFER_FROM = [](Fl_Widget *widget) {
  * @param widget insert widget
  * @return style buffer object
  */
-auto GET_STYLE_BUFFER_FROM = [](Fl_Widget *widget) {
+auto GET_STYLE_BUFFER_FROM = [](const Fl_Widget *widget) {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->style_buffer();
 };
 
 /**
  * Cast void section into Main window;
  * @param view unknown memory address
- * @return Self casted from unknown memory
+ * @return Self cast from unknown memory
  */
 auto GET_SELF_FROM_VOID = [](void *view) {
     return static_cast<Check_runner::GUI::Main_window *>(view);
@@ -46,29 +50,33 @@ auto GET_WINDOW_FROM_VOID = [](void *view) {
     return static_cast<Fl_Window *>(view);
 };
 
-void set_title(Fl_Window *widget) {
-    if (filename[0] == '\0') {
-        title.assign("Untitled");
-    } else {
-        const char *slash = strrchr(filename, '/');
-#ifdef WIN32
-        if (slash == nullptr) {
-            slash = strrchr(filename, '\\');
-        }
-#endif
-        if (slash != nullptr) {
-            title.assign(slash + 1);
-        } else {
-            title.assign(filename);
-        }
-    }
+/**
+ * Pointer to self window
+ */
+auto SELF = [](const Fl_Widget *widget) -> auto {
+    return widget->top_window()->as_window();
+};
 
+/**
+ * Set window title
+ * @param widget
+ * @param new_title
+ */
+void set_title(const Fl_Widget *widget, const char *new_title) {
+    const auto  main_window = SELF(widget);
+    std::string changed_title(new_title);
     if (changed) {
-        title.append(" (modified)");
+        changed_title.append(" (modified)");
     }
-    widget->label(title.c_str());
+    main_window->label(changed_title.c_str());
 }
 
+/**
+ * Load file into text buffer
+ * @param newfile name of the file
+ * @param ipos position
+ * @param widget injected widget
+ */
 void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
     const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
     loading                = true;
@@ -81,8 +89,10 @@ void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
     try {
         if (!insert) {
             text_buffer->loadfile(newfile);
+            set_title(widget, newfile);
         } else {
             text_buffer->insertfile(newfile, ipos);
+            set_title(widget, newfile);
         }
     } catch (...) {
         fl_alert("Error loading file \'%s\':\n%s.", newfile, strerror(errno));
@@ -95,7 +105,12 @@ void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
     text_buffer->call_modify_callbacks();
 }
 
-void save_file(char *newfile, Fl_Widget *widget) {
+/**
+ * Save file in text buffer
+ * @param newfile file name
+ * @param widget injected widget
+ */
+void save_file(char *newfile, const Fl_Widget *widget) {
     const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
     try {
         if (text_buffer->savefile(newfile)) {
@@ -161,22 +176,18 @@ void find_сallback(Fl_Widget *widget, void *v) {
 }
 
 /**
- * Parse style
- * @param text given text
+ * Parse style in colorize callback
+ * @param text given text symbol
  * @param style given style
  * @param length given len of text
  */
-extern "C" void style_parse(const char *text, char *style, int length) {
+extern "C" void style_parser(const char *text, char *style, int length) {
     char        current;
     int         col;
     int         last;
     char        buf[255],
             *   buf_p;
     const char *temp;
-
-    auto           compare_keywords = [](const void *, const void *) -> int { return 0; }; //func for compare keywords
-    constexpr char code_types[]     = {'f'};
-    constexpr char code_keywords[]  = {};
 
     /**
      * col - column number
@@ -186,14 +197,12 @@ extern "C" void style_parse(const char *text, char *style, int length) {
      */
     for (current = *style, col = 0, last = 0; length > 0; --length, ++text) {
         if (current == 'A') {
-            // Check for directives, comments, strings, and keywords...
-            if (col == 0 && *text == '#') {
-                // Set style to directive
-                current = 'E';
-            } else if (strncmp(text, "//", 2) == 0) {
-                current = 'B';
+            if (col >= 0 && *text == '#') {
+                current = 'E'; //directive
+            } else if (strncmp(text, "*", 1) == 0) {
+                current = 'B'; //block line comment
             } else if (strncmp(text, "/*", 2) == 0) {
-                current = 'C';
+                current = 'C'; //multiline comment start
             } else if (strncmp(text, "\\\"", 2) == 0) {
                 // Quoted quote...
                 *style++ = current;
@@ -219,7 +228,7 @@ extern "C" void style_parse(const char *text, char *style, int length) {
 
                     if (bsearch(&buf_p, code_types,
                                 std::size(code_types),
-                                sizeof(code_types[0]), compare_keywords)) {
+                                sizeof(code_types[0]), compare_keywords_func)) {
                         while (text < temp) {
                             *style++ = 'F';
                             ++text;
@@ -233,8 +242,8 @@ extern "C" void style_parse(const char *text, char *style, int length) {
                         continue;
                     }
                     if (bsearch(&buf_p, code_keywords,
-                                sizeof(code_keywords) / sizeof(code_keywords[0]),
-                                sizeof(code_keywords[0]), compare_keywords)) {
+                                std::size(code_keywords),
+                                sizeof(code_keywords[0]), compare_keywords_func)) {
                         while (text < temp) {
                             *style++ = 'G';
                             ++text;
@@ -321,8 +330,8 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
             *style, // Style data
             *text;  // Text data
 
-    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));   //inject text buffer
-    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //TODO TODO
+    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject text buffer
+    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));
 
     // If this is just a selection change, just unselect the style buffer...
     if (nInserted == 0 && nColorized == 0) {
@@ -352,7 +361,7 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
     style = style_buffer->text_range(start, end);
     last  = style[end - start - 1];
 
-    style_parse(text, style, end - start);
+    style_parser(text, style, end - start);
 
     style_buffer->replace(start, end, style);
     static_cast<Fl_Text_Editor *>(v)->redisplay_range(start, end);
@@ -365,7 +374,7 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
         text  = text_buffer->text_range(start, end);
         style = style_buffer->text_range(start, end);
 
-        style_parse(text, style, end - start);
+        style_parser(text, style, end - start);
 
         style_buffer->replace(start, end, style);
         static_cast<Fl_Text_Editor *>(v)->redisplay_range(start, end);
@@ -378,11 +387,12 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 /**
  * Callback for replace
  * @param widget
- * @param v
+ * @param v view
  */
 void replace_сallback(Fl_Widget *widget, void *v) {
     const auto window = GET_SELF_FROM_VOID(v);
     window->m_replace_dlg->show();
+    window->m_editor->deactivate(); //deactivate window for changing focus
 }
 
 void replace_2_сallback(Fl_Widget *widget, void *v) {
@@ -399,9 +409,9 @@ void replace_2_сallback(Fl_Widget *widget, void *v) {
     window->m_replace_dlg->hide();
     window->m_editor->insert_position(0);
 
-    int pos   = window->m_editor->insert_position();
-    int found = text_buffer->search_forward(pos, find, &pos);
-
+    int       pos   = window->m_editor->insert_position();
+    const int found = text_buffer->search_forward(pos, find, &pos);
+    window->m_editor->activate();
     if (found) {
         text_buffer->select(pos, pos + strlen(find));
         text_buffer->remove_selection();
@@ -425,8 +435,6 @@ void repl_all_сallback(Fl_Widget *widget, void *v) {
     const auto  text_buffer = GET_TXT_BUFFER_FROM(widget);
     const char *find        = window->m_replace_find->value();
     const char *replace     = window->m_replace_with->value();
-
-    find = window->m_replace_find->value();
 
     if (find[0] == '\0') {
         window->m_replace_dlg->show();
@@ -457,6 +465,7 @@ void repl_all_сallback(Fl_Widget *widget, void *v) {
     } else {
         fl_alert("No occurrences of \'%s\' found!", find);
     }
+    window->m_editor->activate();
 }
 
 void repl_can_сallback(Fl_Widget *widget, void *v) {
@@ -494,7 +503,7 @@ void undo_сallback(Fl_Widget *widget) {
 }
 
 void save_as_сallback(Fl_Widget *widget) {
-    char *newfile = fl_file_chooser("Save File As?", "*", filename); //new file handler
+    char *newfile = fl_file_chooser("Save File As?", "*.txt", filename); //new file handler
     if (newfile != nullptr) {
         save_file(newfile, widget);
     }
@@ -513,7 +522,7 @@ void open_callback(Fl_Widget *widget) {
         return;
     }
 
-    char *newfile = fl_file_chooser("Open File?", "*", filename);
+    char *newfile = fl_file_chooser("Open File?", "*.txt", filename); //Show only txt file and directories
     if (newfile != nullptr) {
         load_file(newfile, -1, widget);
     }
@@ -529,4 +538,69 @@ void new_callback(Fl_Widget *widget) {
     text_buffer->remove_selection();
     changed = false;
     text_buffer->call_modify_callbacks();
+}
+
+/**
+ * About modal window
+ * @param widget
+ * @param v
+ */
+void about_callback(Fl_Widget *widget, void *v) {
+    const auto about_window = new Fl_Double_Window(600, 600, "About");
+    about_window->begin();
+    auto *box = new Fl_Box(0, 0, 590, 590);
+    box->label("About page:\n"
+        "1\n"
+        "2\n"
+        "3\n"
+        "Utility version - 2.0.0\n"
+    );
+    box->labelsize(16);
+    box->labelfont(FL_BOLD);
+
+    about_window->end();
+    about_window->show();
+}
+
+void increase_font_callback(Fl_Widget *widget, void *v) {
+    const auto self         = GET_SELF_FROM_VOID(v);
+    const int  current_font = self->m_editor->textsize();
+    self->m_editor->textsize(current_font + 2);
+#ifdef DEBUG
+    printf("Current font size - %d\n", self->m_editor->textsize());
+#endif
+    self->m_editor->redraw();
+}
+
+void decrease_font_callback(Fl_Widget *widget, void *v) {
+    const auto self         = GET_SELF_FROM_VOID(v);
+    const int  current_font = self->m_editor->textsize();
+    self->m_editor->textsize(current_font - 2);
+#ifdef DEBUG
+    printf("Current font size - %d\n", self->m_editor->textsize());
+#endif
+    self->m_editor->redraw();
+}
+
+void AI_chat_callback(Fl_Widget *widget, void *v) {
+    auto       buffer      = Fl_Text_Buffer();
+    const auto chat_window = new Fl_Double_Window(600, 600, "AI chat");
+    chat_window->begin();
+
+    const auto txt_input = new Fl_Text_Editor(20, 550, 500, 50);
+    txt_input->buffer(buffer);
+    txt_input->textsize(15);
+
+#ifdef DEBUG
+    printf("User sent message to ai");
+#endif
+    chat_window->end();
+    chat_window->show();
+}
+
+void AI_agent_callback(Fl_Widget *widget, void *v) {
+    const auto agent_window = new Fl_Double_Window(600, 600, "AI agent menu");
+    agent_window->begin();
+    agent_window->end();
+    agent_window->show();
 }

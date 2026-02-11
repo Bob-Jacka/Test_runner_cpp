@@ -4,13 +4,13 @@
  * Main bug constructor
  * @param name name of the bug
  * @param description description of the bug
- * @param severity
+ * @param severity severity of the bug
  */
 Check_runner::TA::Bug::Bug(const std::string &name, const std::string &description, const Severity severity) {
     if (!name.empty() and !description.empty()) {
-        this->name = name;
+        this->name        = name;
         this->description = description;
-        this->severity = severity;
+        this->severity    = severity;
     } else {
         throw Check_exceptions::TestArtifactException(__LINE__, "Name or description should not be empty", __FILE_NAME__);
     }
@@ -54,4 +54,34 @@ bool Check_runner::TA::Bug::operator>(const Bug &rhs) const {
 
 bool Check_runner::TA::Bug::operator>=(const Bug &rhs) const {
     return this->severity >= rhs.severity;
+}
+
+//Other entities
+
+////Enhance
+Check_runner::TA::Enhance::Enhance(const std::string &name, const std::string &description) {
+    this->name        = name;
+    this->description = description;
+}
+
+std::string Check_runner::TA::Enhance::get_name() const {
+    return this->name;
+}
+
+std::string Check_runner::TA::Enhance::to_string() const {
+    return "";
+}
+
+////Question
+Check_runner::TA::Question::Question(const std::string &name, const std::string &description) {
+    this->name        = name;
+    this->description = description;
+}
+
+std::string Check_runner::TA::Question::get_name() const {
+    return this->name;
+}
+
+std::string Check_runner::TA::Question::to_string() const {
+    return "";
 }

@@ -41,4 +41,18 @@ void open_callback(Fl_Widget *widget);
 
 void new_callback(Fl_Widget *widget);
 
+void about_callback(Fl_Widget *widget, void *v);
+
+//Callbacks for font actions:
+
+void increase_font_callback(Fl_Widget *widget, void *v);
+
+void decrease_font_callback(Fl_Widget *widget, void *v);
+
+//AI callbacks:
+
+void AI_chat_callback(Fl_Widget *widget, void *v);
+
+void AI_agent_callback(Fl_Widget *widget, void *v);
+
 #endif
