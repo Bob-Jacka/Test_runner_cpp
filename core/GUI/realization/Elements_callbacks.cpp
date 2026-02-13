@@ -12,7 +12,7 @@ char filename[256];
 //Global parse data:
 auto           compare_keywords_func = [](const void *current, const void *in_structures) -> int { return 0; }; //func for compare keywords
 constexpr char code_types[]          = {"has"};                                                                 //For F color type
-constexpr char code_keywords[]       = {"High"};                                                                //For G color type
+constexpr char code_keywords[]       = {"|"};                                                                   //For G color type
 
 /**
  * Injects buffer from top window text editor:
@@ -126,6 +126,11 @@ void save_file(char *newfile, const Fl_Widget *widget) {
     text_buffer->call_modify_callbacks();
 }
 
+/**
+ * Check is file changed
+ * @param widget
+ * @return 1 - true, 0 for false
+ */
 int check_save(Fl_Widget *widget) {
     if (!changed) {
         return 1;
@@ -474,6 +479,7 @@ void repl_can_сallback(Fl_Widget *widget, void *v) {
 }
 
 void exit_сallback(Fl_Widget *widget) {
+    check_save(widget);
     std::exit(0);
 }
 
@@ -542,8 +548,8 @@ void new_callback(Fl_Widget *widget) {
 
 /**
  * About modal window
- * @param widget
- * @param v
+ * @param widget widget
+ * @param v view
  */
 void about_callback(Fl_Widget *widget, void *v) {
     const auto about_window = new Fl_Double_Window(600, 600, "About");
@@ -553,7 +559,7 @@ void about_callback(Fl_Widget *widget, void *v) {
         "1\n"
         "2\n"
         "3\n"
-        "Utility version - 2.0.0\n"
+        "Utility version - 2.2.0\n"
     );
     box->labelsize(16);
     box->labelfont(FL_BOLD);

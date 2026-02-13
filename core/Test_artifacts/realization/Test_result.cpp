@@ -1,20 +1,23 @@
 #include "../declaration/Test_result.hpp"
 
 Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result) {
-    this->name = name;
+    this->name   = name;
     this->result = result;
+    this->quest_enhance = nullptr;
 }
 
 Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result, const std::vector<Bug> &bugs) {
-    this->name = name;
-    this->result = result;
-    this->bugs = bugs;
+    this->name          = name;
+    this->result        = result;
+    this->bugs          = bugs;
+    this->quest_enhance = nullptr;
 }
 
 Check_runner::TA::Test_result::Test_result() {
-    this->name = "";
+    this->name   = "";
     this->result = "";
-    this->bugs = std::vector<Bug>();
+    this->bugs   = std::vector<Bug>();
+    this->quest_enhance = nullptr;
 }
 
 std::string Check_runner::TA::Test_result::to_string() const {
@@ -42,6 +45,23 @@ void Check_runner::TA::Test_result::add_bug(const Bug &bug) {
         this->bugs.push_back(bug);
     } else {
         throw Check_exceptions::TestArtifactException(__LINE__, "bug name cannot be empty string", __FILE_NAME__);
+    }
+}
+
+/**
+ * Add question or enhancement to test result
+ * @param to_add value to add to test result
+ * @throw TestArtifactException
+ */
+void Check_runner::TA::Test_result::add_quest_enhance(const std::tuple<Question, Enhance> &to_add) {
+    try {
+        if (std::get(to_add)) {
+            this->quest_enhance.value(to_add.value());
+        } else {
+            throw;
+        }
+    } catch (const std::exception &e) {
+        throw Check_exceptions::TestArtifactException(__LINE__, e.what(), __FILE_NAME__);
     }
 }
 

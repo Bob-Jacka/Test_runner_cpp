@@ -1,10 +1,10 @@
-#include "../Line/LineParser.hpp"
+#include "../Line/Line_parser.hpp"
 
 import Libio;
 
 class File_controller;
 
-Interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
+Interpreter_ns::Directive_interpreter::Directive_interpreter() {
     this->interpreter_position = 0;
     this->output_vector        = std::vector<std::string>();
     this->global_parameters    = std::map<std::string, std::string>();
@@ -12,23 +12,26 @@ Interpreter_ns::DirectiveInterpreter::DirectiveInterpreter() {
 
 /**
  * Execute logical expression with two arguments and return result of execution.
- * @param parameters line that contains arguments and comparison sign.
+ * @param parameters_line line that contains arguments and comparison sign.
  * @return bool value of result, where false means left operand is not equal (less) that right operand.
  */
-bool Interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const std::string &parameters) const {
-    bool       result    = false;
-    const auto arguments = Utility::split(parameters); //split arguments to execute them, arguments vector ex. - [a, <, b]
-    if (arguments[1] == "<") {
-        result = arguments[0] < arguments[2];
-    } else if (arguments[1] == ">") {
-        result = arguments[0] > arguments[2];
-    } else if (arguments[1] == "==") {
-        result = arguments[0] == arguments[2];
-    } else if (arguments[1] == "!=") {
-        result = arguments[0] != arguments[2];
+bool Interpreter_ns::Directive_interpreter::interpret_logical_expression(const std::string &parameters_line) const {
+    bool               result    = false;
+    const auto         arguments = Utility::split(parameters_line); //split arguments to execute them, arguments vector ex. - [a, <, b]
+    const std::string &op_1      = arguments[0];
+    const std::string &operat    = arguments[1];
+    const std::string &op_2      = arguments[2];
+    if (operat == "<") [[unlikely]] {
+        result = op_1 < op_2;
+    } else if (operat == ">") [[unlikely]] {
+        result = op_1 > op_2;
+    } else if (operat == "==") [[likely]] {
+        result = op_1 == op_2;
+    } else if (operat == "!=") {
+        result = op_1 != op_2;
     } else {
-        throw Check_exceptions::LineInterpreterException(__LINE__, "Unknown parameter form given: " + parameters, __FILE_NAME__);
-    }
+        throw Check_exceptions::LineInterpreterException(__LINE__, "Unknown parameter form given: " + parameters_line, __FILE_NAME__);
+    } //or return false
     return result;
 }
 
@@ -37,7 +40,7 @@ bool Interpreter_ns::DirectiveInterpreter::interpret_logical_expression(const st
  * @param directive_to_jump name of the directive to jump on
  * @return bool value of directive next position, return true if directive is found, false if directive not found
  */
-bool Interpreter_ns::DirectiveInterpreter::jmp_to(const std::string &directive_to_jump) const {
+bool Interpreter_ns::Directive_interpreter::jmp_to(const std::string &directive_to_jump) {
     const auto it                    = std::ranges::find(inner_vector_to_proceed, directive_to_jump);
     size_t     directive_index       = 0;
     const auto current_position_iter = inner_vector_to_proceed.begin() + interpreter_position;
@@ -54,18 +57,18 @@ bool Interpreter_ns::DirectiveInterpreter::jmp_to(const std::string &directive_t
     return false;
 }
 
-std::map<std::string, std::string> Interpreter_ns::DirectiveInterpreter::get_suit_parameters() const {
+Interpreter_ns::Parameters Interpreter_ns::Directive_interpreter::get_suit_parameters() {
     return this->global_parameters;
 }
 
-std::vector<std::string> Interpreter_ns::DirectiveInterpreter::get_output_vector() const {
+std::vector<std::string> Interpreter_ns::Directive_interpreter::get_output_vector() const {
     return this->output_vector;
 }
 
 /**
  * Increment interpreter position in suit file
  */
-void Interpreter_ns::DirectiveInterpreter::increment_interpreter_position() const {
+void Interpreter_ns::Directive_interpreter::increment_interpreter_position() {
     ++this->interpreter_position;
 }
 
@@ -74,7 +77,7 @@ void Interpreter_ns::DirectiveInterpreter::increment_interpreter_position() cons
  * @param directive_args name of the directive (its name).
  * @throw LineInterpreterException if line not end with semicolon
 */
-void Interpreter_ns::DirectiveInterpreter::directive_group(const std::string &directive_args) const {
+void Interpreter_ns::Directive_interpreter::directive_group(const std::string &directive_args) {
     using High_str = std::string;
     if (directive_args.ends_with(group_indicator)) {
         //check for directive ending and process inner test cases in group if they exist
@@ -107,7 +110,7 @@ void Interpreter_ns::DirectiveInterpreter::directive_group(const std::string &di
  * @param parameters_line string line to parse for parameters.
  * @throw LineInterpreterException if given parameters are in wrong form.
  */
-void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &parameters_line) const {
+void Interpreter_ns::Directive_interpreter::parse_parameters(const std::string &parameters_line) {
     using namespace libio::string;
     auto split_line = Utility::split(parameters_line, ',');
     if (split_line[0].contains(group_indicator)) {
@@ -122,7 +125,7 @@ void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &p
     for (const auto &parameter: split_line) {
         if (check_lambda(parameter)) {
             auto name_and_value                  = Utility::split(parameter, '=');
-            global_parameters[name_and_value[0]] = name_and_value[1];
+            global_parameters[name_and_value[0]] = name_and_value[1]; //attach name to value in global parameters
         } else {
             throw Check_exceptions::LineInterpreterException(__LINE__, "Suit parameters should contain equal sign (=), but given " + parameter,
                                                              __FILE_NAME__);
@@ -152,7 +155,7 @@ void Interpreter_ns::DirectiveInterpreter::parse_parameters(const std::string &p
  * @param _arguments arguments that will be given to if, elif or else directives.
  * @throw LineInterpreterException if wrong method usage
  */
-bool Interpreter_ns::DirectiveInterpreter::high_level_branch_wrapper(const std::string &_arguments) const {
+bool Interpreter_ns::Directive_interpreter::high_level_branch_wrapper(const std::string &_arguments) {
     /**
      * Check for equal operators in given string
      */
@@ -198,11 +201,11 @@ bool Interpreter_ns::DirectiveInterpreter::high_level_branch_wrapper(const std::
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-int Interpreter_ns::DirectiveInterpreter::get_interpreter_position() const {
+int Interpreter_ns::Directive_interpreter::get_interpreter_position() const {
     return this->interpreter_position;
 }
 
-void Interpreter_ns::DirectiveInterpreter::set_interpreter_position(const int &interpreter_position) const {
+void Interpreter_ns::Directive_interpreter::set_interpreter_position(const int &interpreter_position) {
     this->interpreter_position = interpreter_position;
 }
 
@@ -210,16 +213,16 @@ void Interpreter_ns::DirectiveInterpreter::set_interpreter_position(const int &i
  * Public entry point to line parser.
  * Proceed directives in input vector object one by one.
  * @throw LineInterpreterException if group directive is not valid ending.
+ * @return vector with parsed lines
  */
-std::vector<std::string> Interpreter_ns::DirectiveInterpreter::parse_directives(const std::vector<std::string> &input_vector) const {
+std::vector<std::string> Interpreter_ns::Directive_interpreter::parse_directives(const std::vector<std::string> &input_vector) {
     inner_vector_to_proceed = input_vector;
     while (interpreter_position != input_vector.size() - 1) {
         const auto &line = inner_vector_to_proceed[interpreter_position++];
         if (line.starts_with(directive_start_sym)) {
             const auto split_string_line = Utility::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
             const auto directive_name    = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
-
-            const auto directive_value = libio::string::delete_whitespaces(split_string_line[1]);
+            const auto directive_value   = libio::string::delete_whitespaces(split_string_line[1]); //current directive value
 
             if (directive_value.contains("\"")) {
                 throw Check_exceptions::LineInterpreterException(__LINE__, "Value should not contain \" symbol", __FILE_NAME__);
@@ -235,7 +238,7 @@ std::vector<std::string> Interpreter_ns::DirectiveInterpreter::parse_directives(
                         if (not high_level_branch_wrapper(directive_value)) {
                             if (jmp_to(else_directive)) {
                                 high_level_branch_wrapper(directive_value);
-                            } //TODO капец как не уверен в этой лестнице, потом переписать на что то более элегантное
+                            }
                         }
                     }
                 }
@@ -256,8 +259,9 @@ std::vector<std::string> Interpreter_ns::DirectiveInterpreter::parse_directives(
 /**
  * Delete comment lines from input vector.
  * Also delete ignore lines that starts with - ignore directive
+ * @return vector with lines
  */
-std::vector<std::string> Interpreter_ns::DirectiveInterpreter::preprocess_lines(std::vector<std::string> &input_vector) const {
+std::vector<std::string> Interpreter_ns::Directive_interpreter::preprocess_lines(std::vector<std::string> &input_vector) {
     for (int i = 0; i < input_vector.size();) {
         const auto line = libio::string::delete_whitespaces(input_vector[i]);
         if (line.starts_with(comment_sym) or line.starts_with(ignore_directive) or line.empty()) {
@@ -275,7 +279,7 @@ std::vector<std::string> Interpreter_ns::DirectiveInterpreter::preprocess_lines(
  * Simply adds all elements from input vector to inner output
  * @param input_vector source vector with strings
  */
-void Interpreter_ns::DirectiveInterpreter::add_to_output_vector(const std::vector<std::string> &input_vector) const {
+void Interpreter_ns::Directive_interpreter::add_to_output_vector(const std::vector<std::string> &input_vector) {
     for (auto &input_elem: input_vector) {
         output_vector.push_back(input_elem);
     }

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Load_parameters.hpp"
-#include "core/Entities/Line/LineParser.hpp"
+#include "core/Entities/Line/Line_parser.hpp"
 #include "core/Entities/Test_Artifact_Fabric.hpp"
 #ifdef EXTENDED_FUNCTIONALITY
 #include "core/Entities/Ini_parser.hpp"
@@ -25,10 +25,10 @@ namespace Check_runner {
     */
     struct Entities {
         //Other entities:
-        static std::unique_ptr<LP::Load_parameters>                  load_parameters;  ///load parameters of the utility
-        static std::unique_ptr<TA::Test_artifact_fabric>             test_case_fabric; ///test artifacts fabric entity
-        static std::unique_ptr<Strategy::StratContext>               context;          ///context for determining utility strategy
-        static std::unique_ptr<Interpreter_ns::DirectiveInterpreter> parser;           ///entity for text parsing in suit
+        static std::unique_ptr<LP::Load_parameters>                   load_parameters;  ///load parameters of the utility
+        static std::unique_ptr<TA::Test_artifact_fabric>              test_case_fabric; ///test artifacts fabric entity
+        static std::unique_ptr<Strategy::StratContext>                context;          ///context for determining utility strategy
+        static std::unique_ptr<Interpreter_ns::Directive_interpreter> parser;           ///entity for text parsing in suit
 
         //Vectors with test artifacts:
         static Vec_t<TA::Test_result> vtr; ///vector for test results after test case run

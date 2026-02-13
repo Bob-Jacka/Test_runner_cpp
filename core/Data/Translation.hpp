@@ -6,12 +6,22 @@
 #ifndef TRANSLATION_HPP
 #define TRANSLATION_HPP
 
+
 // #define RU_TRANSLATION
 
 /**
  * Create your own text translation to your language.
  */
 namespace Translation {
+    //Unified translation for results:
+    constexpr auto suc_res  = "Success";
+    constexpr auto fail_res = "Failed";
+    constexpr auto skip_res = "Skipped";
+
+    //Other user input words
+    constexpr auto question = "Question";
+    constexpr auto enhance  = "Enhance";
+
 #ifdef RU_TRANSLATION
 #pragma message("Using Ru translation")
         //Bugs:
@@ -50,7 +60,7 @@ namespace Translation {
         constexpr auto elapsed_sec = "Потраченное время на тест кейс: ";
 
 #else // default localization (En)
-#pragma message("Using default translation")
+#pragma message("Using default translation - en")
     constexpr auto device_name = "Device name: ";
     //Bugs:
     constexpr auto found_bugs = "Found Bugs:";
@@ -72,10 +82,15 @@ namespace Translation {
     constexpr auto enter_invite_bug_sev = "\nEnter bug severity: ";
     constexpr auto input_exit           = "To exit enter 'exit' word";
 
-    //user action answer
-    constexpr auto accept    = "yes";
-    constexpr auto disaccept = "no";
-    constexpr auto skip      = "skip";
+    //user action answer:
+    constexpr auto accept       = "yes";
+    constexpr auto accept_short = "y";
+
+    //short versions of action answers:
+    constexpr auto disaccept       = "no";
+    constexpr auto disaccept_short = "n";
+
+    constexpr auto skip = "skip";
 
     //Test case:
     constexpr auto ts_question     = "Is test case successful?";

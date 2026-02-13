@@ -468,6 +468,8 @@ namespace Check_runner {
                     libio::output::println("Is test case successful?");
                     libio::output::colored::colored_print("You can write 'fluggegecheimen' word to stop utility for actions", "\n",
                                                           libio::output::colored::Ansi_colors::CYAN);
+                    libio::output::colored::colored_print("Optionally - Question or Enhance", "\n",
+                                                          libio::output::colored::Ansi_colors::CYAN);
                     libio::output::colored::colored_print("Enter 'yes' (y), 'no' (n) or 'skip' for test result", "\n",
                                                           libio::output::colored::Ansi_colors::CYAN);
 
@@ -485,70 +487,76 @@ namespace Check_runner {
                         //Edsger Wybe Dijkstra said that 'goto' statement is bad, I know, but it is some kind of reference to previous version of Test_runner
                     }
                     //test case result user input
-                    auto test_res = TA::Test_result();
-                    if (result == Translation::accept or result == "y") {
-                        test_res.set_name(ts.get_name());
-                        test_res.set_result("Success");
-                    } else if (result == Translation::skip) {
-                        test_res.set_name(ts.get_name());
-                        test_res.set_result("Skipped");
-                    } else if (result == Translation::disaccept or result == "n") {
-                        test_res.set_name(ts.get_name());
-                        test_res.set_result("Failed");
+                    auto test_res = TA::Test_result(); {
+                        if (result == Translation::accept or result == Translation::accept_short) {
+                            test_res.set_name(ts.get_name());
+                            test_res.set_result(Translation::suc_res); //apply success result
+                        } else if (result == Translation::question or result == Translation::enhance) {
+                            test_res.set_name(ts.get_name()); //if Question or Enhance
+                            test_res.set_result(Translation::skip_res);
+                            //TODO question / enhance input
+                            goto Ask_again_label; //Return back, because user inputted question or enhance
+                        } else if (result == Translation::skip) {
+                            test_res.set_name(ts.get_name());
+                            test_res.set_result(Translation::skip_res);
+                        } else if (result == Translation::disaccept or result == Translation::disaccept_short) {
+                            test_res.set_name(ts.get_name());
+                            test_res.set_result(Translation::fail_res);
 
-                        libio::output::colored::colored_print("To exit enter 'exit' word", "\n",
-                                                              libio::output::colored::Ansi_colors::CYAN);
-                        libio::output::println(Translation::enter_invite);
+                            libio::output::colored::colored_print("To exit enter 'exit' word", "\n",
+                                                                  libio::output::colored::Ansi_colors::CYAN);
+                            libio::output::println(Translation::enter_invite);
 
-                        String bug_name;
-                        String bug_description;
-                        String maybe_bug_severity;
+                            String bug_name;
+                            String bug_description;
+                            String maybe_bug_severity;
 
-                        REPEAT_FOREVER {
-                            libio::output::print(Translation::enter_invite_bug);
-                            bug_name = libio::input::user_input();
-                            if (bug_name == EXIT_SYM) {
+                            REPEAT_FOREVER {
+                                libio::output::print(Translation::enter_invite_bug);
+                                bug_name = libio::input::user_input();
+                                if (bug_name == EXIT_SYM) {
+                                    break;
+                                }
+
+                                libio::output::print("\nEnter bug description (shortly, if you can): ");
+                                bug_description = libio::input::user_input();
+                                if (bug_description == EXIT_SYM) {
+                                    break;
+                                }
+
+                                libio::output::print(Translation::enter_invite_bug_sev);
+                                maybe_bug_severity = libio::input::user_input();
+                                if (maybe_bug_severity == EXIT_SYM) {
+                                    break;
+                                }
+                                libio::output::println(); //simple new line
+
+                                TA::Severity severity;
+                                maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
+                                if (maybe_bug_severity == Translation::low) {
+                                    severity = TA::Severity::Low;
+                                } else if (maybe_bug_severity == Translation::medium) {
+                                    severity = TA::Severity::Medium;
+                                } else if (maybe_bug_severity == Translation::high) {
+                                    severity = TA::Severity::High;
+                                } else if (maybe_bug_severity == Translation::blocker) {
+                                    severity = TA::Severity::Blocker;
+                                } else {
+                                    //you can write endless loop to not terminate program
+                                    throw Check_exceptions::MainException(__LINE__, "Unknown test severity.", __FILE_NAME__);
+                                }
+
+                                const auto bug = TA::Bug(bug_name, bug_description, severity);
+                                test_res.add_bug(bug);
+                                test_res.set_device_name(device); //set device name, if not provided - write single_device_mode constant
                                 break;
                             }
-
-                            libio::output::print("\nEnter bug description (shortly, if you can): ");
-                            bug_description = libio::input::user_input();
-                            if (bug_description == EXIT_SYM) {
-                                break;
-                            }
-
-                            libio::output::print(Translation::enter_invite_bug_sev);
-                            maybe_bug_severity = libio::input::user_input();
-                            if (maybe_bug_severity == EXIT_SYM) {
-                                break;
-                            }
-                            libio::output::println(); //simple new line
-
-                            TA::Severity severity;
-                            maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
-                            if (maybe_bug_severity == Translation::low) {
-                                severity = TA::Severity::Low;
-                            } else if (maybe_bug_severity == Translation::medium) {
-                                severity = TA::Severity::Medium;
-                            } else if (maybe_bug_severity == Translation::high) {
-                                severity = TA::Severity::High;
-                            } else if (maybe_bug_severity == Translation::blocker) {
-                                severity = TA::Severity::Blocker;
-                            } else {
-                                //you can write endless loop to not terminate program
-                                throw Check_exceptions::MainException(__LINE__, "Unknown test severity.", __FILE_NAME__);
-                            }
-
-                            const auto bug = TA::Bug(bug_name, bug_description, severity);
-                            test_res.add_bug(bug);
-                            test_res.set_device_name(device); //set device name, if not provided - write single_device_mode constant
+                            vtr.push_back(test_res);
                             break;
+                        } else {
+                            //it can be no exception, if you want to not terminate the program (simply write endless loop or write continue)
+                            throw Check_exceptions::MainException(__LINE__, "Unknown test result.", __FILE_NAME__);
                         }
-                        vtr.push_back(test_res);
-                        break;
-                    } else {
-                        //it can be no exception, if you want to not terminate the program (simply write endless loop or write continue)
-                        throw Check_exceptions::MainException(__LINE__, "Unknown test result.", __FILE_NAME__);
                     }
                     Entities::vtr.push_back(test_res);
                     break;
@@ -693,7 +701,7 @@ Extended_begin_label:
                 return Fl::run();
             }
 #endif
-            Entities::parser = std::make_unique<Interpreter_ns::DirectiveInterpreter>();
+            Entities::parser = std::make_unique<Interpreter_ns::Directive_interpreter>();
         }
 
         //Pre strategy actions block

@@ -3,7 +3,7 @@
 std::unique_ptr<LP::Load_parameters>                    Check_runner::Entities::load_parameters  = nullptr;
 std::unique_ptr<Check_runner::TA::Test_artifact_fabric> Check_runner::Entities::test_case_fabric = nullptr;
 std::unique_ptr<Strategy::StratContext>                 Check_runner::Entities::context          = nullptr;
-std::unique_ptr<Interpreter_ns::DirectiveInterpreter>   Check_runner::Entities::parser           = nullptr;
+std::unique_ptr<Interpreter_ns::Directive_interpreter>  Check_runner::Entities::parser           = nullptr;
 
 Vec_t<Check_runner::TA::Test_result> Check_runner::Entities::vtr = {};
 
