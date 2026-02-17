@@ -43,42 +43,45 @@ namespace Check_runner {
         };
 
         /**
-         * Not a bug, but there is a question due to functionality or visual
+         * Task type
          */
-        class Question final : Test_artifact {
-            std::string name;
-            std::string description;
-
-            public:
-                Question() = delete;
-
-                Question(const std::string &name, const std::string &description);
-
-                Question(const Question &) = delete;
-
-                [[nodiscard]] std::string get_name() const override;
-
-                [[nodiscard]] std::string to_string() const override;
+        enum Type {
+            QUESTION,
+            ENHANCE,
         };
 
         /**
+         * Not a bug, but there is a question due to functionality or visual;
          * Not a bug, but some improvement to functionality or visual
          */
-        class Enhance final : Test_artifact {
+        class Question_or_enhance final : Test_artifact {
             std::string name;
             std::string description;
+            Type        type;
 
             public:
-                Enhance() = delete;
+                friend void enter_question_or_enhance(Question_or_enhance &object);
 
-                Enhance(const std::string &name, const std::string &description);
+                Question_or_enhance();
 
-                Enhance(const Enhance &) = delete;
+                Question_or_enhance(const std::string &name, const std::string &description, Type type);
+
+                Question_or_enhance(const Question_or_enhance &) = default;
+
+                Question_or_enhance(const Question_or_enhance &&) = delete;
+
+                Question_or_enhance &operator=(const Question_or_enhance &other) = delete;
 
                 [[nodiscard]] std::string get_name() const override;
 
                 [[nodiscard]] std::string to_string() const override;
+
+                [[nodiscard]] std::string get_description() const;
+
+                [[nodiscard]] Type get_type() const;
         };
+
+        void enter_question_or_enhance(Question_or_enhance &object);
     }
 }
 #endif

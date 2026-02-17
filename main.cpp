@@ -54,7 +54,7 @@ namespace Check_runner {
                         file_test_results << test_result.get_result() << "\n";
                         if (const auto bugs = test_result.get_bugs(); !bugs.empty()) {
                             int counter = 1; //if you are a programmer - you can start from 0 value!
-                            file_test_results << Translation::found_bugs << "\n";
+                            file_test_results << Translation::Console_translation::found_bugs << "\n";
                             for (auto &bug: bugs) {
                                 file_test_results << counter << ") " << "\n";
                                 file_test_results << "\tBug name: " << bug.get_name() << "\n";
@@ -64,7 +64,7 @@ namespace Check_runner {
                             }
                         } else {
                             //no bug found branch
-                            file_test_results << Translation::no_bugs << "\n";
+                            file_test_results << Translation::Console_translation::no_bugs << "\n";
                         }
                     }
                 } else {
@@ -451,15 +451,18 @@ namespace Check_runner {
             steady_clock::time_point start; //start time of ts execution
             steady_clock::time_point end;   //end time of ts execution
 
+            const bool is_comment = Entities::load_parameters->get_is_comments();
+            const bool is_time    = Entities::load_parameters->get_is_time_record();
+
             start_util_work = steady_clock::now();
             for (const auto &ts: vtc) {
                 //proceed test case one by one:
                 libio::output::println_w(L"Name: " + libio::output::to_wstring(ts.get_name()));
-                if (Entities::load_parameters->get_is_comments()) {
+                if (is_comment) {
                     libio::output::println_w(L"Comment: " + libio::output::to_wstring(ts.get_comment())); //output comments to console
                 }
                 //get start time of the test case execution:
-                if (Entities::load_parameters->get_is_time_record()) {
+                if (is_time) {
                     start = steady_clock::now();
                 }
             Ask_again_label:
@@ -488,31 +491,35 @@ namespace Check_runner {
                     }
                     //test case result user input
                     auto test_res = TA::Test_result(); {
-                        if (result == Translation::accept or result == Translation::accept_short) {
+                        if (result == Translation::Console_translation::accept or result == Translation::Console_translation::accept_short) {
                             test_res.set_name(ts.get_name());
-                            test_res.set_result(Translation::suc_res); //apply success result
-                        } else if (result == Translation::question or result == Translation::enhance) {
+                            test_res.set_result(Translation::Console_translation::suc_res); //apply success result
+                        } else if (result == Translation::Console_translation::question or result == Translation::Console_translation::enhance) {
+                            auto quest_or_enhance = TA::Question_or_enhance();
+                            TA::enter_question_or_enhance(quest_or_enhance);
                             test_res.set_name(ts.get_name()); //if Question or Enhance
-                            test_res.set_result(Translation::skip_res);
-                            //TODO question / enhance input
-                            goto Ask_again_label; //Return back, because user inputted question or enhance
-                        } else if (result == Translation::skip) {
+                            test_res.set_result(Translation::Console_translation::skip_res);
+                            test_res.add_quest_enhance(quest_or_enhance);
+                            vtr.push_back(test_res); //add question or enhance to test results
+                            goto Ask_again_label;    //Return back, because user inputted question or enhance, but not test result
+                        } else if (result == Translation::Console_translation::skip) {
                             test_res.set_name(ts.get_name());
-                            test_res.set_result(Translation::skip_res);
-                        } else if (result == Translation::disaccept or result == Translation::disaccept_short) {
+                            test_res.set_result(Translation::Console_translation::skip_res);
+                        } else if (result == Translation::Console_translation::disaccept or result ==
+                                   Translation::Console_translation::disaccept_short) {
                             test_res.set_name(ts.get_name());
-                            test_res.set_result(Translation::fail_res);
+                            test_res.set_result(Translation::Console_translation::fail_res);
 
                             libio::output::colored::colored_print("To exit enter 'exit' word", "\n",
                                                                   libio::output::colored::Ansi_colors::CYAN);
-                            libio::output::println(Translation::enter_invite);
+                            libio::output::println(Translation::Console_translation::enter_invite);
 
                             String bug_name;
                             String bug_description;
                             String maybe_bug_severity;
 
                             REPEAT_FOREVER {
-                                libio::output::print(Translation::enter_invite_bug);
+                                libio::output::print(Translation::Console_translation::enter_invite_bug);
                                 bug_name = libio::input::user_input();
                                 if (bug_name == EXIT_SYM) {
                                     break;
@@ -524,7 +531,7 @@ namespace Check_runner {
                                     break;
                                 }
 
-                                libio::output::print(Translation::enter_invite_bug_sev);
+                                libio::output::print(Translation::Console_translation::enter_invite_bug_sev);
                                 maybe_bug_severity = libio::input::user_input();
                                 if (maybe_bug_severity == EXIT_SYM) {
                                     break;
@@ -533,13 +540,13 @@ namespace Check_runner {
 
                                 TA::Severity severity;
                                 maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
-                                if (maybe_bug_severity == Translation::low) {
+                                if (maybe_bug_severity == Translation::Console_translation::low) {
                                     severity = TA::Severity::Low;
-                                } else if (maybe_bug_severity == Translation::medium) {
+                                } else if (maybe_bug_severity == Translation::Console_translation::medium) {
                                     severity = TA::Severity::Medium;
-                                } else if (maybe_bug_severity == Translation::high) {
+                                } else if (maybe_bug_severity == Translation::Console_translation::high) {
                                     severity = TA::Severity::High;
-                                } else if (maybe_bug_severity == Translation::blocker) {
+                                } else if (maybe_bug_severity == Translation::Console_translation::blocker) {
                                     severity = TA::Severity::Blocker;
                                 } else {
                                     //you can write endless loop to not terminate program
@@ -561,10 +568,10 @@ namespace Check_runner {
                     Entities::vtr.push_back(test_res);
                     break;
                 }
-                if (Entities::load_parameters->get_is_time_record()) {
+                if (is_time) {
                     end                              = steady_clock::now();
                     duration<double> elapsed_seconds = end - start;
-                    libio::output::println(Translation::elapsed_sec + std::to_string(elapsed_seconds.count()));
+                    libio::output::println(Translation::Console_translation::elapsed_sec + std::to_string(elapsed_seconds.count()));
                 }
             }
             end_util_work = steady_clock::now();
@@ -586,8 +593,8 @@ namespace Check_runner {
 
         /**
          * Build window menu with callbacks
-         * @param menu
-         * @param window
+         * @param menu menu object to build
+         * @param window window object
          */
         static void build_menu(Fl_Menu_Bar *menu, Fl_Window *window) {
             static bool counter = true;
@@ -631,6 +638,7 @@ namespace Check_runner {
                 printf("An error in creating menu: build_menu function");
 #endif
                 if (counter == true) {
+                    //try to create second time
                     build_menu(menu, window);
                 }
                 counter = false;
@@ -662,6 +670,7 @@ namespace Check_runner {
 
             window->m_text_buffer->add_modify_callback(changed_сallback, window);
             window->m_text_buffer->add_modify_callback(colorize_callback, window);
+            window->m_text_buffer->add_modify_callback(grammar_nazi_check, window);
             window->m_text_buffer->call_modify_callbacks();
             return window;
         }
@@ -743,7 +752,7 @@ Extended_begin_label:
                         if (File_controller::check_file_existence(devices_file_name)) {
                             for (const auto &device: File_controller::readlines(Entities::load_parameters->get_devices_entry_point())) {
                                 //get devices from file
-                                libio::output::colored::colored_print(Translation::device_name + device, "\n",
+                                libio::output::colored::colored_print(Translation::Console_translation::device_name + device, "\n",
                                                                       libio::output::colored::Ansi_colors::YELLOW);
                                 Console::main_utility_cycle(Entities::vts, Entities::vtr, device); //one utility cycle for one device
                             }
@@ -752,8 +761,9 @@ Extended_begin_label:
                                 __LINE__, "No device entry point file was found - " + std::string(devices_file_name), __FILE_NAME__);
                         }
                     } else {
-                        libio::output::colored::colored_print(Translation::device_name + std::string("Single device mode running"), "\n",
-                                                              libio::output::colored::Ansi_colors::YELLOW);
+                        libio::output::colored::colored_print(
+                            Translation::Console_translation::device_name + std::string("Single device mode running"), "\n",
+                            libio::output::colored::Ansi_colors::YELLOW);
                         Console::main_utility_cycle(Entities::vts, Entities::vtr);
                     }
                 }

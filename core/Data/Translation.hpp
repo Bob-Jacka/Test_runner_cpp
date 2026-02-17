@@ -13,14 +13,15 @@
  * Create your own text translation to your language.
  */
 namespace Translation {
-    //Unified translation for results:
-    constexpr auto suc_res  = "Success";
-    constexpr auto fail_res = "Failed";
-    constexpr auto skip_res = "Skipped";
+    namespace Console_translation {
+        //Unified translation for results:
+        constexpr auto suc_res  = "Success";
+        constexpr auto fail_res = "Failed";
+        constexpr auto skip_res = "Skipped";
 
-    //Other user input words
-    constexpr auto question = "Question";
-    constexpr auto enhance  = "Enhance";
+        //Other user input words
+        constexpr auto question = "Question";
+        constexpr auto enhance  = "Enhance";
 
 #ifdef RU_TRANSLATION
 #pragma message("Using Ru translation")
@@ -61,53 +62,54 @@ namespace Translation {
 
 #else // default localization (En)
 #pragma message("Using default translation - en")
-    constexpr auto device_name = "Device name: ";
-    //Bugs:
-    constexpr auto found_bugs = "Found Bugs:";
-    constexpr auto bug_name   = "\tBug name: ";
-    constexpr auto bug_desc   = "\tBug description: ";
-    constexpr auto bug_sev    = "\tBug severity: ";
-    constexpr auto no_bugs    = "No bugs";
+        constexpr auto device_name = "Device name: ";
+        //Bugs:
+        constexpr auto found_bugs = "Found Bugs:";
+        constexpr auto bug_name   = "\tBug name: ";
+        constexpr auto bug_desc   = "\tBug description: ";
+        constexpr auto bug_sev    = "\tBug severity: ";
+        constexpr auto no_bugs    = "No bugs";
 
-    //Bug severity:
-    constexpr auto low      = "Low";
-    constexpr auto medium   = "Medium";
-    constexpr auto high     = "High";
-    constexpr auto critical = "Critical";
-    constexpr auto blocker  = "Blocker";
+        //Bug severity:
+        constexpr auto low      = "Low";
+        constexpr auto medium   = "Medium";
+        constexpr auto high     = "High";
+        constexpr auto critical = "Critical";
+        constexpr auto blocker  = "Blocker";
 
-    //Other "bug" words:
-    constexpr auto enter_invite         = "Write down bugs attributes:";
-    constexpr auto enter_invite_bug     = "Enter bug name: ";
-    constexpr auto enter_invite_bug_sev = "\nEnter bug severity: ";
-    constexpr auto input_exit           = "To exit enter 'exit' word";
+        //Other "bug" words:
+        constexpr auto enter_invite         = "Write down bugs attributes:";
+        constexpr auto enter_invite_bug     = "Enter bug name: ";
+        constexpr auto enter_invite_bug_sev = "\nEnter bug severity: ";
+        constexpr auto input_exit           = "To exit enter 'exit' word";
 
-    //user action answer:
-    constexpr auto accept       = "yes";
-    constexpr auto accept_short = "y";
+        //user action answer:
+        constexpr auto accept       = "yes";
+        constexpr auto accept_short = "y";
 
-    //short versions of action answers:
-    constexpr auto disaccept       = "no";
-    constexpr auto disaccept_short = "n";
+        //short versions of action answers:
+        constexpr auto disaccept       = "no";
+        constexpr auto disaccept_short = "n";
 
-    constexpr auto skip = "skip";
+        constexpr auto skip = "skip";
 
-    //Test case:
-    constexpr auto ts_question     = "Is test case successful?";
-    constexpr auto available_input = "Enter yes (y), no (n) or skip for test result";
+        //Test case:
+        constexpr auto ts_question     = "Is test case successful?";
+        constexpr auto available_input = "Enter yes (y), no (n) or skip for test result";
 
-    //strategies strings:
-    constexpr auto high_prior_strat = "high_prior";
-    constexpr auto random_strat     = "random";
-    constexpr auto parallel_strat   = "parallel";
+        //strategies strings:
+        constexpr auto high_prior_strat = "high_prior";
+        constexpr auto random_strat     = "random";
+        constexpr auto parallel_strat   = "parallel";
 
-    //Menu:
-    constexpr auto load = "Load";
-    constexpr auto save = "Save";
+        //Menu:
+        constexpr auto load = "Load";
+        constexpr auto save = "Save";
 
-    //other strings:
-    constexpr auto elapsed_sec = "Elapsed seconds for this test case: ";
+        //other strings:
+        constexpr auto elapsed_sec = "Elapsed seconds for this test case: ";
 #endif
+    }
 }
 
 #endif

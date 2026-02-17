@@ -390,6 +390,15 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 }
 
 /**
+ * Check for grammar in text and punish user.
+ * @param nInserted
+ * @param nDeleted
+ * @param v
+ */
+void grammar_nazi_check(int, const int nInserted, const int nDeleted, int, const char *, void *v) {
+}
+
+/**
  * Callback for replace
  * @param widget
  * @param v view

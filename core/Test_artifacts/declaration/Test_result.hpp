@@ -11,7 +11,7 @@ namespace Check_runner {
             std::string      device_name; ///which device was running
             std::vector<Bug> bugs;        ///available bugs in test case
 
-            std::tuple<Question, Enhance> quest_enhance;
+            std::vector<Question_or_enhance> quest_enhance;
 
             public:
                 Test_result(const std::string &, const std::string &, const std::vector<Bug> &);
@@ -40,7 +40,7 @@ namespace Check_runner {
 
                 void add_bug(const Bug &);
 
-                void add_quest_enhance(const std::tuple<Question, Enhance> &); ///add question or enhancement in test result
+                void add_quest_enhance(const Question_or_enhance &); ///add question or enhancement in test result
 
                 [[nodiscard]] std::string to_string() const override;
         };

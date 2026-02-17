@@ -1,23 +1,23 @@
 #include "../declaration/Test_result.hpp"
 
 Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result) {
-    this->name   = name;
-    this->result = result;
-    this->quest_enhance = nullptr;
+    this->name          = name;
+    this->result        = result;
+    this->quest_enhance = std::vector<Question_or_enhance>();
 }
 
 Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result, const std::vector<Bug> &bugs) {
     this->name          = name;
     this->result        = result;
     this->bugs          = bugs;
-    this->quest_enhance = nullptr;
+    this->quest_enhance = std::vector<Question_or_enhance>();
 }
 
 Check_runner::TA::Test_result::Test_result() {
-    this->name   = "";
-    this->result = "";
-    this->bugs   = std::vector<Bug>();
-    this->quest_enhance = nullptr;
+    this->name          = "";
+    this->result        = "";
+    this->bugs          = std::vector<Bug>();
+    this->quest_enhance = std::vector<Question_or_enhance>();
 }
 
 std::string Check_runner::TA::Test_result::to_string() const {
@@ -53,10 +53,10 @@ void Check_runner::TA::Test_result::add_bug(const Bug &bug) {
  * @param to_add value to add to test result
  * @throw TestArtifactException
  */
-void Check_runner::TA::Test_result::add_quest_enhance(const std::tuple<Question, Enhance> &to_add) {
+void Check_runner::TA::Test_result::add_quest_enhance(const Question_or_enhance &to_add) {
     try {
-        if (std::get(to_add)) {
-            this->quest_enhance.value(to_add.value());
+        if (!to_add.get_name().empty()) {
+            this->quest_enhance.push_back(to_add);
         } else {
             throw;
         }

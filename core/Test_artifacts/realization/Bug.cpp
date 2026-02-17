@@ -56,32 +56,44 @@ bool Check_runner::TA::Bug::operator>=(const Bug &rhs) const {
     return this->severity >= rhs.severity;
 }
 
-//Other entities
-
-////Enhance
-Check_runner::TA::Enhance::Enhance(const std::string &name, const std::string &description) {
-    this->name        = name;
-    this->description = description;
-}
-
-std::string Check_runner::TA::Enhance::get_name() const {
-    return this->name;
-}
-
-std::string Check_runner::TA::Enhance::to_string() const {
-    return "";
+Check_runner::TA::Question_or_enhance::Question_or_enhance() {
+    this->name        = "";
+    this->description = "";
 }
 
 ////Question
-Check_runner::TA::Question::Question(const std::string &name, const std::string &description) {
+Check_runner::TA::Question_or_enhance::Question_or_enhance(const std::string &name, const std::string &description, const Type type) {
     this->name        = name;
     this->description = description;
+    this->type        = type;
 }
 
-std::string Check_runner::TA::Question::get_name() const {
+std::string Check_runner::TA::Question_or_enhance::get_name() const {
     return this->name;
 }
 
-std::string Check_runner::TA::Question::to_string() const {
+std::string Check_runner::TA::Question_or_enhance::to_string() const {
     return "";
+}
+
+std::string Check_runner::TA::Question_or_enhance::get_description() const {
+    return this->description;
+}
+
+Check_runner::TA::Type Check_runner::TA::Question_or_enhance::get_type() const {
+    return this->type;
+}
+
+void Check_runner::TA::enter_question_or_enhance(Question_or_enhance &object) {
+    if (std::cin.good()) {
+        std::cout << "Enter name: ";
+        std::cin >> object.name;
+        std::cout << "\n";
+
+        std::cout << "Enter description: ";
+        std::cin >> object.description;
+        std::cout << "\n";
+    } else {
+        throw;
+    }
 }
