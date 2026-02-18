@@ -57,4 +57,8 @@ void AI_chat_callback(Fl_Widget *widget, void *v);
 
 void AI_agent_callback(Fl_Widget *widget, void *v);
 
+#ifdef GUI_LANG_CHECKER
+void AI_check_grammar(Fl_Widget *widget, void *v);
+#endif
+
 #endif

@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Input.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Text_Editor.H>
+#include <FL/Fl_Input.H>
 #include <FL/Fl_Return_Button.H>
+#include <FL/Fl_Text_Editor.H>
+#include <FL/Fl_Window.H>
 #include "Gui_vars.hpp"
 #include "FL/Fl_Double_Window.H"
 #include "FL/Fl_Menu_Bar.H"

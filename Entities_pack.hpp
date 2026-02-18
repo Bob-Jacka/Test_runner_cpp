@@ -5,13 +5,18 @@
 #include <vector>
 
 #include "Load_parameters.hpp"
-#include "core/Entities/Line/Line_parser.hpp"
 #include "core/Entities/Test_Artifact_Fabric.hpp"
+#include "core/Entities/Line/Line_parser.hpp"
 #ifdef EXTENDED_FUNCTIONALITY
 #include "core/Entities/Ini_parser.hpp"
 #endif
 #include "core/Strategies/declaration/StratContex.hpp"
 #include "core/Test_artifacts/declaration/Test_result.hpp"
+
+#ifdef GUI_LANG_CHECKER
+#pragma message("Using gui lang dep")
+#include <jamspell/spell_corrector.hpp>
+#endif
 
 template<typename T>
 using Vec_t = std::vector<T>; ///short type for vector with generic type
@@ -29,6 +34,13 @@ namespace Check_runner {
         static std::unique_ptr<TA::Test_artifact_fabric>              test_case_fabric; ///test artifacts fabric entity
         static std::unique_ptr<Strategy::StratContext>                context;          ///context for determining utility strategy
         static std::unique_ptr<Interpreter_ns::Directive_interpreter> parser;           ///entity for text parsing in suit
+#ifdef EXTENDED_FUNCTIONALITY
+        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser;           ///entity for text parsing ini file
+#endif
+
+#ifdef GUI_LANG_CHECKER
+        static std::unique_ptr<NJamSpell::TSpellCorrector> corrector; ///lang model for text correction
+#endif
 
         //Vectors with test artifacts:
         static Vec_t<TA::Test_result> vtr; ///vector for test results after test case run

@@ -4,19 +4,29 @@
 ////Uncomment above macros to turn on special features:
 // #define LIBIO_EXPERIMENTAL //to turn on lib experimental functionality
 // #define DEBUG //to turn on debug mode in utility
-// #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e version 2.0
+// #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e. version 2.0
 #define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
 // #define EXTENDED_FUNCTIONALITY_IF //turn on if directive in directive interpreter
 // #define TEST //turns on tests of the utility
+// #define GUI_LANG_CHECKER //turns on language checker functionality in utility
 
 #define DIRECTIVE constexpr auto ///special type for directives in utility
 #define JUST_CONSTANT constexpr auto ///special type for constants
 
 #define REPEAT_FOREVER while (true)
 
+/**
+ * Add fully user input experience
+ * @param val address of the variable to input in
+ */
+#define USER_INPUT(val) \
+    libio::output::print(INPUT_SYM); \
+    libio::input::user_input(val);\
+    libio::output::println(); //just new line symbol
+
 //File with utility constants / settings
 
-JUST_CONSTANT version                 = "2.2.0";           ///version of the app
+JUST_CONSTANT version                 = "2.3.0";           ///version of the app
 JUST_CONSTANT comment_sym             = "*";               ///use for mark line in suit as a comment
 JUST_CONSTANT directive_start_sym     = "#";               ///use for mark line in suit as a utility directive
 JUST_CONSTANT test_case_separator_sym = "|";               ///symbol for separating modified string line to test case

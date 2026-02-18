@@ -331,7 +331,7 @@ namespace Check_runner {
 #endif
                     libio::output::println("2. See bugs");
                     libio::output::println("3. Close menu");
-                    libio::input::user_input(user_action);
+                    USER_INPUT(user_action);
                     switch (user_action) {
 #ifdef EXTENDED_FUNCTIONALITY
                     case 1:
@@ -461,24 +461,22 @@ namespace Check_runner {
                 if (is_comment) {
                     libio::output::println_w(L"Comment: " + libio::output::to_wstring(ts.get_comment())); //output comments to console
                 }
-                //get start time of the test case execution:
                 if (is_time) {
-                    start = steady_clock::now();
+                    start = steady_clock::now(); //get start time of the test case execution:
                 }
             Ask_again_label:
                 //ask user about result block
                 String result; {
-                    libio::output::println("Is test case successful?");
-                    libio::output::colored::colored_print("You can write 'fluggegecheimen' word to stop utility for actions", "\n",
-                                                          libio::output::colored::Ansi_colors::CYAN);
-                    libio::output::colored::colored_print("Optionally - Question or Enhance", "\n",
-                                                          libio::output::colored::Ansi_colors::CYAN);
-                    libio::output::colored::colored_print("Enter 'yes' (y), 'no' (n) or 'skip' for test result", "\n",
-                                                          libio::output::colored::Ansi_colors::CYAN);
+                    libio::output::colored::colored_println("Is test case successful?",
+                                                            libio::output::colored::Ansi_colors::GREEN);
+                    libio::output::colored::colored_println("You can write 'fluggegecheimen' word to stop utility for actions",
+                                                            libio::output::colored::Ansi_colors::CYAN);
+                    libio::output::colored::colored_println("Optionally - Question or Enhance",
+                                                            libio::output::colored::Ansi_colors::CYAN);
+                    libio::output::colored::colored_println("Enter 'yes' (y), 'no' (n) or 'skip' for test result",
+                                                            libio::output::colored::Ansi_colors::CYAN);
 
-                    libio::output::print(INPUT_SYM);
-                    libio::input::user_input(result);
-                    libio::output::println(); //just new line symbol
+                    USER_INPUT(result);
                 }
 
                 //result - forever loop, if user has not watched "eurotrip" film
@@ -520,19 +518,19 @@ namespace Check_runner {
 
                             REPEAT_FOREVER {
                                 libio::output::print(Translation::Console_translation::enter_invite_bug);
-                                bug_name = libio::input::user_input();
+                                USER_INPUT(bug_name);
                                 if (bug_name == EXIT_SYM) {
                                     break;
                                 }
 
                                 libio::output::print("\nEnter bug description (shortly, if you can): ");
-                                bug_description = libio::input::user_input();
+                                USER_INPUT(bug_description);
                                 if (bug_description == EXIT_SYM) {
                                     break;
                                 }
 
                                 libio::output::print(Translation::Console_translation::enter_invite_bug_sev);
-                                maybe_bug_severity = libio::input::user_input();
+                                USER_INPUT(maybe_bug_severity);
                                 if (maybe_bug_severity == EXIT_SYM) {
                                     break;
                                 }
@@ -628,7 +626,10 @@ namespace Check_runner {
                     {nullptr},
                     {"&AI", 0, nullptr, nullptr, FL_SUBMENU}, //AI menu
                     {"&Chat", 0, AI_chat_callback, window},
-                    {"&Agent", 0, AI_agent_callback, window},
+                    {"&Agent", 0, AI_agent_callback, window, FL_MENU_DIVIDER},
+#ifdef GUI_LANG_CHECKER
+                    {"&Check grammar", 0, AI_check_grammar, window},
+#endif
                     {nullptr},
                     {nullptr}
                 };
@@ -649,7 +650,7 @@ namespace Check_runner {
          * Create main window
          * @return pointer to window
          */
-        Fl_Window *new_view() {
+        Fl_Window *create_view() noexcept {
             const auto window       = new Main_window(800, 600, "Check runner");
             const auto style_buffer = new Fl_Text_Buffer(); //text buffer for styles
             window->begin();                                //start creating main window of utility
@@ -703,9 +704,12 @@ Extended_begin_label:
             Console::Check::check_flags(Console::Other::resolve_cli_args(argv)); //proceed flags first, before parser
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
+#ifdef GUI_LANG_CHECKER
+            Entities::corrector.LoadLangModel("model.bin");
+#endif
             //1) Run graphical user interface before creating other entities
             if (Entities::load_parameters->get_gui()) {
-                const auto window = GUI::new_view();
+                const auto window = GUI::create_view();
                 window->show();
                 return Fl::run();
             }

@@ -77,6 +77,9 @@ add_executable(Check_runner
         core/GUI/realization/Elements_callbacks.cpp
 )
 
+target_include_directories(Check_runner PUBLIC jamspell)
+target_include_directories(Check_runner PUBLIC contrib)
+
 FetchContent_MakeAvailable(fltk)
 target_link_libraries(Check_runner PRIVATE fltk)
 

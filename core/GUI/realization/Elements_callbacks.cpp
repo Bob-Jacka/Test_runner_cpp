@@ -619,3 +619,12 @@ void AI_agent_callback(Fl_Widget *widget, void *v) {
     agent_window->end();
     agent_window->show();
 }
+
+#ifdef GUI_LANG_CHECKER
+/**
+ * Check grammar during utility stop when user asks for check
+ */
+void AI_check_grammar(Fl_Widget *widget, void *v) {
+    //
+}
+#endif

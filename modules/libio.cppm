@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.2
+ Version - 1.24.3
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -15,11 +15,14 @@ module;
  In your cmake file
 */
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <regex>
-#include <cstring>
 
+/**
+ * Library flags
+ */
 // #define LIBIO_EXPERIMENTAL //uncomment/comment this line to turn on/off LIBIO_EXPERIMENTAL library features
 // #define LIBIO_TEST //uncomment/comment this line to turn on/off library test
 // #define UNSTABLE //turns on unstable versions of very popular functions
@@ -117,6 +120,14 @@ namespace libio {
             colored_print(const T &object, const std::string &separator = " ", const std::string &color = Ansi_colors::WHITE) {
                 if (std::cout.good()) {
                     std::cout << color << object << Ansi_colors::_clear_color << separator;
+                }
+            }
+
+            template<typename T>
+            void
+            colored_println(const T &object, const std::string &color = Ansi_colors::WHITE) {
+                if (std::cout.good()) {
+                    std::cout << color << object << Ansi_colors::_clear_color << "\n";
                 }
             }
         }
