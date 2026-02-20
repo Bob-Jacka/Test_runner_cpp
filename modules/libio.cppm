@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.3
+ Version - 1.24.4
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -40,6 +40,15 @@ module;
 #endif
 
 export module Libio;
+
+/**
+ * Add fully user input experience
+ * @param val address of the variable to input in
+ */
+#define USER_INPUT(val) \
+    libio::output::print(">> "); \
+    libio::input::user_input(val);\
+    libio::output::println(); //just new line symbol
 
 /**
  * Unified namespace for libio library for input/output.
@@ -741,6 +750,18 @@ export void print_one_element(const int *array, const int i) {
             }
             std::cerr << "Error reading file " << fileName << std::endl;
             return {};
+        }
+
+        /**
+         * Read file into string object
+         * @param fileName name of the file to read
+         * @return string object with file data
+         */
+        inline std::string read_file2(const std::string &fileName) {
+            const std::ifstream in(fileName, std::ios::binary);
+            std::ostringstream  out;
+            out << in.rdbuf();
+            return out.str();
         }
 
         /**

@@ -9,8 +9,7 @@ namespace Check_runner {
          * Class for combine test artifacts.
          * @tparam T generic type for test artifact in suit.
          */
-        template<typename T>
-            requires std::is_base_of_v<Test_artifact, T>
+        template<typename T> requires std::is_base_of_v<Test_artifact, T>
         class Test_suit final : public Test_artifact {
             using Dummy_map = std::vector<std::pair<std::string, std::string> >; //it will be error if you add map header
             std::string suit_name; ///name of the suit
@@ -68,7 +67,9 @@ namespace Check_runner {
                         break;
                     }
                 }
-                throw Check_exceptions::TestArtifactException(__LINE__, "No valid key found in local parameters of suit", __FILE_NAME__);
+                throw Check_exceptions::TestArtifactException(__LINE__,
+                                                              "No valid key found in local parameters of suit",
+                                                              __FILE_NAME__);
             }
         };
     }

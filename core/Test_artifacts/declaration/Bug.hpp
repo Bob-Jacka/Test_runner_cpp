@@ -14,32 +14,32 @@ namespace Check_runner {
         class Bug final : Test_artifact {
             std::string name;
             std::string description;
-            Severity    severity;
+            Severity severity;
 
-            public:
-                Bug(const std::string &, const std::string &, Severity severity = Severity::Low);
+        public:
+            Bug(const std::string &, const std::string &, Severity severity = Severity::Low);
 
-                Bug() = delete;
+            Bug() = delete;
 
-                Bug(const Bug &) = default;
+            Bug(const Bug &) = default;
 
-                ~Bug() override = default;
+            ~Bug() override = default;
 
-                [[nodiscard]] std::string get_name() const override;
+            [[nodiscard]] std::string get_name() const override;
 
-                [[nodiscard]] std::string get_description() const;
+            [[nodiscard]] std::string get_description() const;
 
-                [[nodiscard]] Severity get_severity() const;
+            [[nodiscard]] Severity get_severity() const;
 
-                bool operator<(const Bug &rhs) const;
+            bool operator<(const Bug &rhs) const;
 
-                bool operator<=(const Bug &rhs) const;
+            bool operator<=(const Bug &rhs) const;
 
-                bool operator>(const Bug &rhs) const;
+            bool operator>(const Bug &rhs) const;
 
-                bool operator>=(const Bug &rhs) const;
+            bool operator>=(const Bug &rhs) const;
 
-                [[nodiscard]] std::string to_string() const override;
+            [[nodiscard]] std::string to_string() const override;
         };
 
         /**
@@ -57,28 +57,28 @@ namespace Check_runner {
         class Question_or_enhance final : Test_artifact {
             std::string name;
             std::string description;
-            Type        type;
+            Type type;
 
-            public:
-                friend void enter_question_or_enhance(Question_or_enhance &object);
+        public:
+            friend void enter_question_or_enhance(Question_or_enhance &object);
 
-                Question_or_enhance();
+            Question_or_enhance();
 
-                Question_or_enhance(const std::string &name, const std::string &description, Type type);
+            Question_or_enhance(const std::string &name, const std::string &description, Type type);
 
-                Question_or_enhance(const Question_or_enhance &) = default;
+            Question_or_enhance(const Question_or_enhance &) = default;
 
-                Question_or_enhance(const Question_or_enhance &&) = delete;
+            Question_or_enhance(const Question_or_enhance &&) = delete;
 
-                Question_or_enhance &operator=(const Question_or_enhance &other) = delete;
+            Question_or_enhance &operator=(const Question_or_enhance &other) = delete;
 
-                [[nodiscard]] std::string get_name() const override;
+            [[nodiscard]] std::string get_name() const override;
 
-                [[nodiscard]] std::string to_string() const override;
+            [[nodiscard]] std::string to_string() const override;
 
-                [[nodiscard]] std::string get_description() const;
+            [[nodiscard]] std::string get_description() const;
 
-                [[nodiscard]] Type get_type() const;
+            [[nodiscard]] Type get_type() const;
         };
 
         void enter_question_or_enhance(Question_or_enhance &object);

@@ -9,7 +9,8 @@ namespace Check_exceptions {
         explicit FileControllerException(int, const std::string &, const char *);
     };
 
-    inline FileControllerException::FileControllerException(const int line, const std::string &msg, const char *filename) {
+    inline FileControllerException::FileControllerException(const int line, const std::string &msg,
+                                                            const char *filename) {
         std::cout << "Error: " << msg << " at line " << line << " at file " << filename << std::endl;
     }
 }

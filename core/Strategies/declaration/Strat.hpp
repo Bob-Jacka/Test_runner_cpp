@@ -14,7 +14,8 @@ namespace Strategy {
 
         virtual ~Strat() = default;
 
-        [[nodiscard]] virtual std::vector<Check_runner::TA::Test_case> doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const = 0;
+        [[nodiscard]] virtual std::vector<Check_runner::TA::Test_case>
+        doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const = 0;
     };
 }
 

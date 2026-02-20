@@ -8,11 +8,12 @@
  */
 Check_runner::TA::Bug::Bug(const std::string &name, const std::string &description, const Severity severity) {
     if (!name.empty() and !description.empty()) {
-        this->name        = name;
+        this->name = name;
         this->description = description;
-        this->severity    = severity;
+        this->severity = severity;
     } else {
-        throw Check_exceptions::TestArtifactException(__LINE__, "Name or description should not be empty", __FILE_NAME__);
+        throw Check_exceptions::TestArtifactException(__LINE__, "Name or description should not be empty",
+                                                      __FILE_NAME__);
     }
 }
 
@@ -57,15 +58,16 @@ bool Check_runner::TA::Bug::operator>=(const Bug &rhs) const {
 }
 
 Check_runner::TA::Question_or_enhance::Question_or_enhance() {
-    this->name        = "";
+    this->name = "";
     this->description = "";
 }
 
 ////Question
-Check_runner::TA::Question_or_enhance::Question_or_enhance(const std::string &name, const std::string &description, const Type type) {
-    this->name        = name;
+Check_runner::TA::Question_or_enhance::Question_or_enhance(const std::string &name, const std::string &description,
+                                                           const Type type) {
+    this->name = name;
     this->description = description;
-    this->type        = type;
+    this->type = type;
 }
 
 std::string Check_runner::TA::Question_or_enhance::get_name() const {

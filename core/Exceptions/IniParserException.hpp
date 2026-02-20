@@ -1,5 +1,6 @@
 #ifndef INIPARSEREXCEPTION_HPP
 #define INIPARSEREXCEPTION_HPP
+
 #include "Base_exception.hpp"
 
 namespace Check_exceptions {

@@ -1,5 +1,6 @@
 #ifndef RANDOM_RUN_STRAT_HPP
 #define RANDOM_RUN_STRAT_HPP
+
 #include "Strat.hpp"
 
 namespace Strategy {
@@ -9,7 +10,8 @@ namespace Strategy {
 
         ~Random_run_strat() override = default;
 
-        [[nodiscard]] std::vector<Check_runner::TA::Test_case> doAlgorithm(std::vector<Check_runner::TA::Test_case>&) const override;
+        [[nodiscard]] std::vector<Check_runner::TA::Test_case>
+        doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const override;
     };
 }
 #endif

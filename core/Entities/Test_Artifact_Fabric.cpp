@@ -13,7 +13,7 @@ Check_runner::TA::Test_artifact_fabric::~Test_artifact_fabric() = default;
  * @return vector with test cases, instead of strings
  */
 std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric::create_test_cases(
-    const std::vector<std::string> &string_lines) const {
+        const std::vector<std::string> &string_lines) const {
     if (!string_lines.empty()) {
         const auto tmp_test_cases = new std::vector<Test_case>();
         for (auto &test_case_line: string_lines) {
@@ -23,9 +23,9 @@ std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric
                 split_string.emplace_back("");
             }
             const auto created_tc = new Test_case(
-                split_string[0],
-                split_string[2],
-                priority_to_object(split_string[1])
+                    split_string[0],
+                    split_string[2],
+                    priority_to_object(split_string[1])
             );
             tmp_test_cases->push_back(*created_tc);
         }
@@ -40,7 +40,8 @@ std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric
  * @param description description of the bug
  * @return constructed bug object.
  */
-Check_runner::TA::Bug *Check_runner::TA::Test_artifact_fabric::create_bug(const std::string &bug_name, const std::string &description) const {
+Check_runner::TA::Bug *
+Check_runner::TA::Test_artifact_fabric::create_bug(const std::string &bug_name, const std::string &description) const {
     const auto bug = new Bug{bug_name, description};
     return bug;
 }
@@ -52,15 +53,16 @@ Check_runner::TA::Bug *Check_runner::TA::Test_artifact_fabric::create_bug(const 
  * @param steps steps that need to execute in this checklist
  * @return constructed checklist
  */
-Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_check_list(const std::string &             name,
-                                                                                        const std::string &             description,
+Check_runner::TA::Check_list *Check_runner::TA::Test_artifact_fabric::create_check_list(const std::string &name,
+                                                                                        const std::string &description,
                                                                                         const std::vector<std::string> &steps) const {
     const auto check_list = new Check_list{name, description, steps};
     return check_list;
 }
 
-Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *Check_runner::TA::Test_artifact_fabric::create_test_suit(const std::vector<std::string> &,
-    const std::string &) const {
+Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *
+Check_runner::TA::Test_artifact_fabric::create_test_suit(const std::vector<std::string> &,
+                                                         const std::string &) const {
     //
 }
 
@@ -71,13 +73,14 @@ Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *Check_runner::TA::Test
  * @throw std::invalid_argument if wrong style or style not supported by method.
  * @return decomposed test case (string line with new line symbols) to write into file or another or return "" if not implemented.
  */
-std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Test_case &tc, const TS_style style = TS_style::TXT) const {
+std::string Check_runner::TA::Test_artifact_fabric::decompose_test_case(const Test_case &tc,
+                                                                        const TS_style style = TS_style::TXT) const {
     auto add_line = [&](const std::string &line) -> std::string {
         return line + "\n";
     };
     std::string decomposed_test_case;
     switch (style) {
-            [[unlikely]] case TS_style::GOOGLE_STYLESHEET:
+        [[unlikely]] case TS_style::GOOGLE_STYLESHEET:
             return "";
 
             [[unlikely]] case TS_style::JIRA:

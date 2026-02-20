@@ -21,7 +21,8 @@ namespace Interpreter_ns {
     template<typename T>
     concept concept_ini_guard = requires(T)
     {
-        libio::type_constrains::is_number_v<T> || libio::type_constrains::is_string_v<T> || libio::type_constrains::is_bool_v<T>;
+        libio::type_constrains::is_number_v < T > || libio::type_constrains::is_string_v < T > ||
+        libio::type_constrains::is_bool_v<T>;
     };
 
     /**
@@ -47,11 +48,11 @@ namespace Interpreter_ns {
         ~Ini_parser() = default;
 
         template<typename T>
-            requires concept_ini_guard<T>
+        requires concept_ini_guard<T>
         T get_value(const std::string &) const;
 
         template<typename T>
-            requires concept_ini_guard<T>
+        requires concept_ini_guard<T>
         T get_value_or(const std::string &, const T &) const;
 
         Sections_t get_sections() const;
@@ -70,7 +71,7 @@ namespace Interpreter_ns {
  * @return generic parameter value from section
  */
 template<typename T>
-    requires Interpreter_ns::concept_ini_guard<T>
+requires Interpreter_ns::concept_ini_guard<T>
 T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const {
     if (section_param.contains(".")) {
         const auto split_line = libio::string::split(section_param,
@@ -84,7 +85,9 @@ T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const 
                         return to_return;
                     }
                 } catch (const std::exception &e) {
-                    throw Check_exceptions::IniParserException(__LINE__, "Error retrieving value: " + std::string(e.what()), __FILE_NAME__);
+                    throw Check_exceptions::IniParserException(__LINE__,
+                                                               "Error retrieving value: " + std::string(e.what()),
+                                                               __FILE_NAME__);
                 }
             }
         }
@@ -94,7 +97,8 @@ T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const 
         }
         libio::output::println();
 
-        throw Check_exceptions::IniParserException(__LINE__, "No value, but maybe you mistyped, upper you will see some values from section",
+        throw Check_exceptions::IniParserException(__LINE__,
+                                                   "No value, but maybe you mistyped, upper you will see some values from section",
                                                    __FILE_NAME__);
     }
     throw Check_exceptions::IniParserException(__LINE__, "Unknown section name", __FILE_NAME__);
@@ -109,7 +113,7 @@ T Interpreter_ns::Ini_parser::get_value(const std::string &section_param) const 
  * @return section value or default if not found
  */
 template<typename T>
-    requires Interpreter_ns::concept_ini_guard<T>
+requires Interpreter_ns::concept_ini_guard<T>
 T Interpreter_ns::Ini_parser::get_value_or(const std::string &section_param, const T &default_value) const {
     if (section_param.contains(".")) {
         const auto split_line = libio::string::split(section_param,
@@ -123,7 +127,9 @@ T Interpreter_ns::Ini_parser::get_value_or(const std::string &section_param, con
                         return to_return;
                     }
                 } catch (const std::exception &e) {
-                    throw Check_exceptions::IniParserException(__LINE__, "Error retrieving value: " + std::string(e.what()), __FILE_NAME__);
+                    throw Check_exceptions::IniParserException(__LINE__,
+                                                               "Error retrieving value: " + std::string(e.what()),
+                                                               __FILE_NAME__);
                 }
             }
         }

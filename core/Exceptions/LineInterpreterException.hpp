@@ -9,7 +9,8 @@ namespace Check_exceptions {
         explicit LineInterpreterException(int line, const std::string &msg, const char *filename);
     };
 
-    inline LineInterpreterException::LineInterpreterException(const int line, const std::string &msg, const char *filename) {
+    inline LineInterpreterException::LineInterpreterException(const int line, const std::string &msg,
+                                                              const char *filename) {
         std::cout << "Error: " << msg << " at line " << line << " at file " << filename << std::endl;
     }
 }

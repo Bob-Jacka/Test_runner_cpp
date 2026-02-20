@@ -1,5 +1,6 @@
 #ifndef PARALLEL_STRAT_HPP
 #define PARALLEL_STRAT_HPP
+
 #include <vector>
 
 #include "Strat.hpp"
@@ -15,7 +16,8 @@ namespace Strategy {
 
         ~Parallel_strat() override = default;
 
-        [[nodiscard]] std::vector<Check_runner::TA::Test_case> doAlgorithm(std::vector<Check_runner::TA::Test_case>&) const override;
+        [[nodiscard]] std::vector<Check_runner::TA::Test_case>
+        doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const override;
     };
 }
 

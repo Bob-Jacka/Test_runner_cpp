@@ -10,9 +10,16 @@ bool loading; //TODO maybe replace bool values with bitset
 char filename[256];
 
 //Global parse data:
-auto           compare_keywords_func = [](const void *current, const void *in_structures) -> int { return 0; }; //func for compare keywords
-constexpr char code_types[]          = {"has"};                                                                 //For F color type
-constexpr char code_keywords[]       = {"|"};                                                                   //For G color type
+auto compare_keywords_func = [](const void *current,
+                                const void *in_structures) -> int {
+    return 0;
+}; //func for compare keywords
+constexpr char code_types[] = {
+    "has"
+}; //For F color type
+constexpr char code_keywords[] = {
+    "|"
+}; //For G color type
 
 /**
  * Injects buffer from top window text editor:
@@ -390,15 +397,6 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 }
 
 /**
- * Check for grammar in text and punish user.
- * @param nInserted
- * @param nDeleted
- * @param v
- */
-void grammar_nazi_check(int, const int nInserted, const int nDeleted, int, const char *, void *v) {
-}
-
-/**
  * Callback for replace
  * @param widget
  * @param v view
@@ -597,6 +595,11 @@ void decrease_font_callback(Fl_Widget *widget, void *v) {
     self->m_editor->redraw();
 }
 
+/**
+ * Open chat functionality in utility
+ * @param widget
+ * @param v view
+ */
 void AI_chat_callback(Fl_Widget *widget, void *v) {
     auto       buffer      = Fl_Text_Buffer();
     const auto chat_window = new Fl_Double_Window(600, 600, "AI chat");
@@ -607,24 +610,36 @@ void AI_chat_callback(Fl_Widget *widget, void *v) {
     txt_input->textsize(15);
 
 #ifdef DEBUG
-    printf("User sent message to ai");
+    printf("User entered to AI chat");
 #endif
     chat_window->end();
     chat_window->show();
 }
 
+/**
+ * Open window with agents
+ * @param widget
+ * @param v view
+ */
 void AI_agent_callback(Fl_Widget *widget, void *v) {
     const auto agent_window = new Fl_Double_Window(600, 600, "AI agent menu");
+#ifdef DEBUG
+    printf("User entered to AI agent functionality");
+#endif
     agent_window->begin();
     agent_window->end();
     agent_window->show();
 }
 
+#define GUI_LANG_CHECKER
 #ifdef GUI_LANG_CHECKER
+
 /**
  * Check grammar during utility stop when user asks for check
  */
 void AI_check_grammar(Fl_Widget *widget, void *v) {
-    //
+    const auto txt_buf = GET_TXT_BUFFER_FROM(widget);
+
 }
+#undef GUI_LANG_CHECKER
 #endif

@@ -31,7 +31,8 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
         file.close();
         return lines;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name with name " + file_name,__FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name with name " + file_name,
+                                                    __FILE_NAME__);
 }
 
 /**
@@ -45,7 +46,7 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
     if (check_file_extension(file_name) == 1) {
         auto [file, cond] = open_file(file_name);
         if (cond) {
-            auto        lines = std::vector<std::string>();
+            auto lines = std::vector<std::string>();
             std::string line;
             while (getline(file, line)) {
                 lines.push_back(line);
@@ -53,7 +54,8 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
             file.close();
             return lines;
         }
-        throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name " + file_name, __FILE_NAME__);
+        throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name " + file_name,
+                                                        __FILE_NAME__);
     }
     if (check_file_extension(file_name) == 2) {
         const auto fake_string = file_name + ".txt";
@@ -67,7 +69,8 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
  * @throw FileControllerException input file not opened.
  * @return vector with strings
  */
-std::vector<std::string> Check_runner::File_controller::readlines(std::ifstream &file_descriptor, const int line_count) {
+std::vector<std::string>
+Check_runner::File_controller::readlines(std::ifstream &file_descriptor, const int line_count) {
     if (file_descriptor.is_open()) {
         auto lines = std::vector<std::string>(line_count);
         for (int i = 0; i < line_count; ++i) {
@@ -78,7 +81,8 @@ std::vector<std::string> Check_runner::File_controller::readlines(std::ifstream 
         file_descriptor.close();
         return lines;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with file descriptor", __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with file descriptor",
+                                                    __FILE_NAME__);
 }
 
 /**
@@ -95,7 +99,8 @@ std::string Check_runner::File_controller::readline(const std::string &file_desc
         file.close();
         return line;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with string file descriptor " + file_descriptor, __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with string file descriptor " +
+                                                              file_descriptor, __FILE_NAME__);
 }
 
 /**
@@ -111,7 +116,8 @@ std::string Check_runner::File_controller::readline(std::ifstream &file_descript
         file_descriptor.close();
         return line;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with ifstream file descrtiptor", __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with ifstream file descrtiptor",
+                                                    __FILE_NAME__);
 }
 
 /**

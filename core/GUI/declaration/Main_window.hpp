@@ -29,6 +29,7 @@ namespace Check_runner::GUI {
 
             ~Main_window() override;
 
+        public:
             //Buffers:
             Fl_Text_Buffer *m_text_buffer  = nullptr;
             Fl_Text_Buffer *m_style_buffer = nullptr;

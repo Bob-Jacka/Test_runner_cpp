@@ -35,7 +35,8 @@ char **Interpreter_ns::Ini_parser::convert_to_char_array(const int arg_count) co
     return to_return;
 }
 
-Interpreter_ns::Ini_parser::Sections_t Interpreter_ns::Ini_parser::parse_ini_from_vector(const std::vector<std::string> &lines) {
+Interpreter_ns::Ini_parser::Sections_t
+Interpreter_ns::Ini_parser::parse_ini_from_vector(const std::vector<std::string> &lines) {
     std::map<std::string, std::map<std::string, std::string> > sections_ini;
     std::string current_section;
 
@@ -62,8 +63,8 @@ Interpreter_ns::Ini_parser::Sections_t Interpreter_ns::Ini_parser::parse_ini_fro
 
             const size_t semicolon_pos = value_with_comment.find(comment_start);
             const std::string value = (semicolon_pos != std::string::npos)
-                                          ? libio::string::trim(value_with_comment.substr(0, semicolon_pos))
-                                          : value_with_comment;
+                                      ? libio::string::trim(value_with_comment.substr(0, semicolon_pos))
+                                      : value_with_comment;
 
             if (!current_section.empty()) {
                 sections_ini[current_section][key] = value;

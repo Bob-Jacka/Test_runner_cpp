@@ -19,6 +19,7 @@ namespace Interpreter_ns {
      * Class for directive interpreter
      */
     class Directive_interpreter {
+    private:
         int interpreter_position; ///position of interpreter in main suit of utility
 
         Parameters global_parameters; ///global parameters, key is param name, value is param value
@@ -27,47 +28,46 @@ namespace Interpreter_ns {
 
         std::vector<std::string> output_vector; ///vector that will be output result of parse directives and further creating test cases
 
-        [[nodiscard]] bool interpret_logical_expression(const std::string &) const;
+    private:
+        [[nodiscard]] static bool interpret_logical_expression(const std::string &);
 
         bool jmp_to(const std::string &);
 
         bool high_level_branch_wrapper(const std::string &_arguments);
 
-        public:
-            void directive_group(const std::string &);
+        void include_cycle();
 
-            void parse_parameters(const std::string &);
+    public:
+        void directive_group(const std::string &);
 
-            //constructor and destructor:
-            Directive_interpreter();
+        void parse_parameters(const std::string &);
 
-            ~Directive_interpreter() = default;
+        //constructor and destructor:
+        Directive_interpreter();
 
-            explicit Directive_interpreter(const std::vector<std::string> &) = delete;
+        ~Directive_interpreter() = default;
 
-            Directive_interpreter(const Directive_interpreter &) = delete;
+        explicit Directive_interpreter(const std::vector<std::string> &) = delete;
 
-            Directive_interpreter &operator=(const Directive_interpreter &) = delete;
+        Directive_interpreter(const Directive_interpreter &) = delete;
 
-            //parameters getter:
-            Parameters get_suit_parameters();
+        Directive_interpreter &operator=(const Directive_interpreter &) = delete;
 
-            [[nodiscard]] std::vector<std::string> get_output_vector() const;
+        //parameters getter:
+        Parameters get_suit_parameters();
 
-            //Other methods:
+        [[nodiscard]] std::vector<std::string> get_output_vector() const;
 
-            std::vector<std::string> parse_directives(const std::vector<std::string> &);
+        //Other methods:
 
-            std::vector<std::string> preprocess_lines(std::vector<std::string> &); ///delete comments elements from vector
+        std::vector<std::string> exec(const std::vector<std::string> &); ///main method in directive interpreter
 
-            void add_to_output_vector(const std::vector<std::string> &);
+        std::vector<std::string> delete_comments(std::vector<std::string> &); ///delete comments elements from vector
 
-            //interpreter other actions
-            [[nodiscard]] int get_interpreter_position() const;
+        void add_to_output_vector(const std::vector<std::string> &);
 
-            void set_interpreter_position(const int &);
-
-            void increment_interpreter_position();
+        //interpreter other actions
+        void set_interpreter_position(const int &);
     };
 }
 

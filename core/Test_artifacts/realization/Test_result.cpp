@@ -1,22 +1,23 @@
 #include "../declaration/Test_result.hpp"
 
 Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result) {
-    this->name          = name;
-    this->result        = result;
+    this->name = name;
+    this->result = result;
     this->quest_enhance = std::vector<Question_or_enhance>();
 }
 
-Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result, const std::vector<Bug> &bugs) {
-    this->name          = name;
-    this->result        = result;
-    this->bugs          = bugs;
+Check_runner::TA::Test_result::Test_result(const std::string &name, const std::string &result,
+                                           const std::vector<Bug> &bugs) {
+    this->name = name;
+    this->result = result;
+    this->bugs = bugs;
     this->quest_enhance = std::vector<Question_or_enhance>();
 }
 
 Check_runner::TA::Test_result::Test_result() {
-    this->name          = "";
-    this->result        = "";
-    this->bugs          = std::vector<Bug>();
+    this->name = "";
+    this->result = "";
+    this->bugs = std::vector<Bug>();
     this->quest_enhance = std::vector<Question_or_enhance>();
 }
 

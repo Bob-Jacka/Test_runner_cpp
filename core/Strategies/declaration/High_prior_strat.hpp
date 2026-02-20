@@ -1,5 +1,6 @@
 #ifndef HIGH_PRIOR_STRAT_HPP
 #define HIGH_PRIOR_STRAT_HPP
+
 #include "Strat.hpp"
 
 namespace Strategy {
@@ -9,7 +10,8 @@ namespace Strategy {
 
         ~High_prior_strat() override = default;
 
-        [[nodiscard]] std::vector<Check_runner::TA::Test_case> doAlgorithm(std::vector<Check_runner::TA::Test_case>&) const override;
+        [[nodiscard]] std::vector<Check_runner::TA::Test_case>
+        doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const override;
     };
 }
 #endif
