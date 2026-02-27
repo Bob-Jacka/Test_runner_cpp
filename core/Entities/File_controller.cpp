@@ -13,6 +13,8 @@ std::tuple<std::ifstream, bool> Check_runner::File_controller::open_file(const s
 }
 
 #ifdef NEW_FILE_FORMAT
+#pragma message ("Using New file format")
+
 std::tuple<std::ifstream, bool> Check_runner::File_controller::create_tf_file(const std::string &file_name) {
     if (auto file = std::ifstream(file_name); file.is_open()) {
         return std::make_tuple<std::ifstream, bool>(std::move(file), true);
@@ -25,6 +27,20 @@ std::tuple<std::ifstream, bool> Check_runner::File_controller::create_rsf_file(c
         return std::make_tuple<std::ifstream, bool>(std::move(file), true);
     }
     throw Check_exceptions::FileControllerException(__LINE__, "Cannot create rsf file", __FILE_NAME__);
+}
+#elifndef NEW_FILE_FORMAT
+/**
+ * Function for creating test result file.
+ * @param results_file_name string value for file name.
+ * @throw FileControllerException cannot create test result file.
+ * @return file descriptor.
+ */
+std::fstream Check_runner::File_controller::create_test_result_file(const std::string &results_file_name) {
+    auto [file, cond] = open_file(results_file_name);
+    if (cond) {
+        return file;
+    }
+    throw Check_exceptions::FileControllerException(__LINE__, "Cannot create test result file", __FILE_NAME__);
 }
 #endif
 
@@ -135,20 +151,6 @@ std::string Check_runner::File_controller::readline(std::ifstream &file_descript
 }
 
 /**
- * Function for creating test result file.
- * @param results_file_name string value for file name.
- * @throw FileControllerException cannot create test result file.
- * @return file descriptor.
- */
-std::fstream Check_runner::File_controller::create_test_result_file(const std::string &results_file_name) {
-    auto [file, cond] = open_file(results_file_name);
-    if (cond) {
-        //
-    }
-    throw Check_exceptions::FileControllerException(__LINE__, "Cannot create test result file", __FILE_NAME__);
-}
-
-/**
 * Check for file extension.
 * @param file_name name of the file to check.
 * @return bool value of checking state (1 - if txt file, 2 - empty ext, 3 - tf or rsf, otherwise 0).
@@ -160,24 +162,27 @@ int Check_runner::File_controller::check_file_extension(const std::string &file_
     if (file_name.ends_with("")) [[likely]] {
         return 2;
     }
+#ifdef NEW_FILE_FORMAT
     if (file_name.ends_with(RSF_F) or file_name.ends_with(TF)) [[likely]] {
         return 3;
     }
+#endif
     return 0;
 }
 
 /**
 * Function for checking if file exists in filesystem.
 * @param file_name name of the file to check.
+* @return bool value of file existance
 */
 bool Check_runner::File_controller::check_file_existence(std::string &file_name) {
     //check for file extension existence
-    if (check_file_extension(file_name) == 2) {
 #ifndef NEW_FILE_FORMAT
+    if (check_file_extension(file_name) == 2) {
         //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
-        file_name += ".txt";
-#endif
+        file_name += TXT_F;
     }
+#endif
     auto [file, cond] = open_file(file_name);
     if (cond) {
         file.close();

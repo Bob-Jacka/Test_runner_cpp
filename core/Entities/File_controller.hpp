@@ -9,11 +9,12 @@
 
 #include "../Exceptions/FileControllerException.hpp"
 
-#define TXT_F ".txt" //simple old txt files
-#define RSF_F ".rsf" //brave new file format for test results
-#define TF ".tf" //new format for test files
-
 namespace Check_runner {
+    constexpr auto TXT_F = ".txt"; //simple old txt files
+#ifdef NEW_FILE_FORMAT
+    constexpr auto RSF_F = ".rsf"; //brave new file format for test results
+    constexpr auto TF    = ".tf";  //new format for test files
+#endif
     /**
      * Class for fs actions;
      * There are two special files in utility:
@@ -48,10 +49,6 @@ namespace Check_runner {
 
             File_controller &operator=(File_controller &&) = delete;
 
-            //Test result document file
-
-            static std::fstream create_test_result_file(const std::string & = "results.txt");
-
             ///for test results output. @deprecated due to new file format
 
             static int check_file_extension(const std::string &);
@@ -62,8 +59,10 @@ namespace Check_runner {
 
 #ifdef NEW_FILE_FORMAT
             static std::tuple<std::ifstream, bool> create_tf_file(const std::string &file_name); ///file for tests
-
             static std::tuple<std::ifstream, bool> create_rsf_file(const std::string &file_name); ///file for test results
+#elifndef NEW_FILE_FORMAT
+            //Test result document file
+            static std::fstream create_test_result_file(const std::string & = "results.txt");
 #endif
     };
 }

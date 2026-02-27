@@ -54,7 +54,8 @@ namespace Check_runner {
             * @throw FileControllerException if unknown bug severity
             */
             void write_test_results_2file(const Vec_t<TA::Test_result> &test_results) {
-                if (auto file_test_results = File_controller::create_test_result_file(); file_test_results.is_open()) {
+                auto file_test_results = File_controller::create_test_result_file();
+                if (file_test_results.is_open()) {
                     for (auto &test_result: test_results) {
                         file_test_results << test_result.get_name() << "\n";
                         file_test_results << test_result.get_device_name() << "\n";
@@ -62,7 +63,7 @@ namespace Check_runner {
                         if (const auto bugs = test_result.get_bugs(); !bugs.empty()) {
                             int counter = 1; //if you are a programmer - you can start from 0 value!
                             file_test_results << Translation::Console_translation::found_bugs << "\n";
-                            for (auto &bug: bugs) {
+                            for (const auto &bug: bugs) {
                                 file_test_results << counter << ") " << "\n";
                                 file_test_results << "\tBug name: " << bug.get_name() << "\n";
                                 file_test_results << "\tBug description: " << bug.get_description() << "\n";
@@ -87,7 +88,6 @@ namespace Check_runner {
              * Save current progress during utility stop menu
              */
             void save_current_progress();
-
             void load_current_progress();
 #endif
 
