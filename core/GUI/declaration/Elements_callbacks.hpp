@@ -32,6 +32,8 @@ void cut_сallback(Fl_Widget *widget, void *v);
 
 void delete_сallback(Fl_Widget *widget);
 
+void add_tc_callback(Fl_Widget *widget, void *v);
+
 void undo_сallback(Fl_Widget *widget);
 
 void save_as_сallback(Fl_Widget *widget);

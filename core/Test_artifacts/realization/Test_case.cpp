@@ -1,21 +1,21 @@
 #include "../declaration/Test_case.hpp"
 
 Check_runner::TA::Test_case::Test_case(const Test_case &other) : Test_artifact(other) {
-    this->name = other.name;
+    this->name     = other.name;
     this->severity = other.severity;
-    this->steps = other.steps;
-    this->comment = other.comment;
+    this->steps    = other.steps;
+    this->comment  = other.comment;
     this->priority = other.priority;
 }
 
-Check_runner::TA::Test_case::Test_case(const std::string &name, const std::string &comment, const Priority given_prior,
-                                       const Severity given_sev) {
+Check_runner::TA::Test_case::Test_case(const std::string &            name, const std::string &comment, const TA_helper_data::Priority given_prior,
+                                       const TA_helper_data::Severity given_sev) {
     if (!name.empty()) {
-        this->name = name;
-        this->comment = comment;
+        this->name     = name;
+        this->comment  = comment;
         this->priority = given_prior;
         this->severity = given_sev;
-        this->steps = std::vector<std::string>();
+        this->steps    = std::vector<std::string>();
     } else {
         throw Check_exceptions::TestArtifactException(__LINE__, "Name cannot be empty string", __FILE_NAME__);
     }
@@ -25,7 +25,7 @@ std::string Check_runner::TA::Test_case::get_comment() const {
     return this->comment;
 }
 
-Check_runner::TA::Priority Check_runner::TA::Test_case::get_priority() const {
+Check_runner::TA_helper_data::Priority Check_runner::TA::Test_case::get_priority() const {
     return this->priority;
 }
 
@@ -72,11 +72,11 @@ bool Check_runner::TA::Test_case::operator!=(const Test_case &rhs) const {
 }
 
 Check_runner::TA::Test_case &Check_runner::TA::Test_case::operator=(const Test_case &rhs) {
-    this->name = rhs.name;
-    this->comment = rhs.comment;
+    this->name     = rhs.name;
+    this->comment  = rhs.comment;
     this->priority = rhs.priority;
     this->severity = rhs.severity;
-    this->steps = rhs.steps;
+    this->steps    = rhs.steps;
     return *this;
 }
 
@@ -84,7 +84,7 @@ std::string Check_runner::TA::Test_case::get_name() const {
     return this->name;
 }
 
-Check_runner::TA::Severity Check_runner::TA::Test_case::get_severity() const {
+Check_runner::TA_helper_data::Severity Check_runner::TA::Test_case::get_severity() const {
     return this->severity;
 }
 
@@ -97,11 +97,11 @@ std::string Check_runner::TA::Test_case::to_string() const {
 }
 
 std::string Check_runner::TA::Test_case::get_hash() const {
-    return ts_hash;
+    return tc_hash;
 }
 
 void Check_runner::TA::Test_case::set_hash(const std::string &new_hash) {
-    ts_hash = new_hash;
+    tc_hash = new_hash;
 }
 
 void Check_runner::TA::swap(Test_case &lhs, Test_case &rhs) noexcept {

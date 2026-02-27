@@ -6,11 +6,11 @@
  * @param description description of the bug
  * @param severity severity of the bug
  */
-Check_runner::TA::Bug::Bug(const std::string &name, const std::string &description, const Severity severity) {
+Check_runner::TA::Bug::Bug(const std::string &name, const std::string &description, const TA_helper_data::Severity severity) {
     if (!name.empty() and !description.empty()) {
-        this->name = name;
+        this->name        = name;
         this->description = description;
-        this->severity = severity;
+        this->severity    = severity;
     } else {
         throw Check_exceptions::TestArtifactException(__LINE__, "Name or description should not be empty",
                                                       __FILE_NAME__);
@@ -29,7 +29,7 @@ std::string Check_runner::TA::Bug::get_description() const {
     return this->description;
 }
 
-Check_runner::TA::Severity Check_runner::TA::Bug::get_severity() const {
+Check_runner::TA_helper_data::Severity Check_runner::TA::Bug::get_severity() const {
     return this->severity;
 }
 
@@ -58,16 +58,16 @@ bool Check_runner::TA::Bug::operator>=(const Bug &rhs) const {
 }
 
 Check_runner::TA::Question_or_enhance::Question_or_enhance() {
-    this->name = "";
+    this->name        = "";
     this->description = "";
 }
 
 ////Question
 Check_runner::TA::Question_or_enhance::Question_or_enhance(const std::string &name, const std::string &description,
-                                                           const Type type) {
-    this->name = name;
+                                                           const Type         type) {
+    this->name        = name;
     this->description = description;
-    this->type = type;
+    this->type        = type;
 }
 
 std::string Check_runner::TA::Question_or_enhance::get_name() const {
@@ -97,5 +97,15 @@ void Check_runner::TA::enter_question_or_enhance(Question_or_enhance &object) {
         std::cout << "\n";
     } else {
         throw;
+    }
+}
+
+std::string Check_runner::TA::convert_type_str(const Question_or_enhance &object) {
+    switch (object.get_type()) {
+        case Type::QUESTION:
+            return "Question";
+        case Type::ENHANCE:
+            return "Enhance";
+        default: throw;
     }
 }

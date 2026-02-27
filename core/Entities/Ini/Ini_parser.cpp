@@ -2,7 +2,7 @@
 
 Interpreter_ns::Ini_parser::Ini_parser(const std::string &filename) {
     const std::vector<std::string> lines = libio::file::read_file(filename);
-    this->sections = parse_ini_from_vector(lines);
+    this->sections                       = parse_ini_from_vector(lines);
 }
 
 Interpreter_ns::Ini_parser::Ini_parser(const std::vector<std::string> &lines) {
@@ -22,7 +22,7 @@ int Interpreter_ns::Ini_parser::get_section_count() const {
  * @return array of chars
  */
 char **Interpreter_ns::Ini_parser::convert_to_char_array(const int arg_count) const {
-    int counter = 0;
+    int        counter   = 0;
     const auto to_return = libio::array::create_2d_array<char>(arg_count, 1);
     for (const auto &section: this->sections) {
         for (const auto &[fst, snd]: section.second) {
@@ -38,7 +38,7 @@ char **Interpreter_ns::Ini_parser::convert_to_char_array(const int arg_count) co
 Interpreter_ns::Ini_parser::Sections_t
 Interpreter_ns::Ini_parser::parse_ini_from_vector(const std::vector<std::string> &lines) {
     std::map<std::string, std::map<std::string, std::string> > sections_ini;
-    std::string current_section;
+    std::string                                                current_section;
 
     for (const auto &line: lines) {
         std::string trimmed = libio::string::trim(line);
@@ -58,13 +58,13 @@ Interpreter_ns::Ini_parser::parse_ini_from_vector(const std::vector<std::string>
 
         size_t equal_pos = trimmed.find(value_splitter);
         if (equal_pos != std::string::npos) {
-            std::string key = libio::string::trim(trimmed.substr(0, equal_pos));
+            std::string key                = libio::string::trim(trimmed.substr(0, equal_pos));
             std::string value_with_comment = libio::string::trim(trimmed.substr(equal_pos + 1));
 
-            const size_t semicolon_pos = value_with_comment.find(comment_start);
-            const std::string value = (semicolon_pos != std::string::npos)
-                                      ? libio::string::trim(value_with_comment.substr(0, semicolon_pos))
-                                      : value_with_comment;
+            const size_t      semicolon_pos = value_with_comment.find(comment_start);
+            const std::string value         = (semicolon_pos != std::string::npos)
+                                          ? libio::string::trim(value_with_comment.substr(0, semicolon_pos))
+                                          : value_with_comment;
 
             if (!current_section.empty()) {
                 sections_ini[current_section][key] = value;

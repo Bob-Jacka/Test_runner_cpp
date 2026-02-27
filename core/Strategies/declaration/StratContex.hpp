@@ -2,7 +2,6 @@
 #define STRATCONTEX_HPP
 
 #include <memory>
-
 #include "Strat.hpp"
 
 /**
@@ -15,19 +14,19 @@ namespace Strategy {
     class StratContext {
         std::unique_ptr<Strat> strategy_;
 
-    public:
-        explicit StratContext() = default;
+        public:
+            explicit StratContext() = default;
 
-        void set_strategy(std::unique_ptr<Strat> &&strategy) {
-            strategy_ = std::move(strategy);
-        }
-
-        std::unique_ptr<Strat> get_strat() {
-            if (strategy_ == nullptr) {
-                return nullptr;
+            void set_strategy(std::unique_ptr<Strat> &&strategy) {
+                strategy_ = std::move(strategy);
             }
-            return std::move(strategy_);
-        }
+
+            std::unique_ptr<Strat> get_strat() {
+                if (strategy_ == nullptr) {
+                    return nullptr;
+                }
+                return std::move(strategy_);
+            }
     };
 }
 

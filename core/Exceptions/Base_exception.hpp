@@ -4,19 +4,17 @@
 #include <exception>
 #include <iostream>
 
-import UtilFuncs_mod;
-
 /**
  * Namespace for exceptions in check runner
  */
 namespace Check_exceptions {
     class BaseException : public std::exception {
-    public:
-        [[nodiscard]] const char *what() const noexcept override;
+        public:
+            [[nodiscard]] const char *what() const noexcept override;
 
-        BaseException() = default;
+            BaseException() = default;
 
-        ~BaseException() override = default;
+            ~BaseException() override = default;
     };
 
     inline const char *BaseException::what() const noexcept {

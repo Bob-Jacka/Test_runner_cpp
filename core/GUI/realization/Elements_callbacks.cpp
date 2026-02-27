@@ -1,8 +1,8 @@
 #include "../declaration/Elements_callbacks.hpp"
 
-#include "../declaration/Main_window.hpp"
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Text_Editor.H>
+#include "../declaration/Main_window.hpp"
 
 //Local flags:
 bool changed;
@@ -14,6 +14,7 @@ auto compare_keywords_func = [](const void *current,
                                 const void *in_structures) -> int {
     return 0;
 }; //func for compare keywords
+
 constexpr char code_types[] = {
     "has"
 }; //For F color type
@@ -135,7 +136,7 @@ void save_file(char *newfile, const Fl_Widget *widget) {
 
 /**
  * Check is file changed
- * @param widget
+ * @param widget current window
  * @return 1 - true, 0 for false
  */
 int check_save(Fl_Widget *widget) {
@@ -398,7 +399,7 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
 
 /**
  * Callback for replace
- * @param widget
+ * @param widget current window
  * @param v view
  */
 void replace_сallback(Fl_Widget *widget, void *v) {
@@ -510,6 +511,18 @@ void delete_сallback(Fl_Widget *widget) {
     text_buffer->remove_selection();
 }
 
+/**
+ * Add empty test case into text editor
+ * @param widget current widget
+ * @param v view
+ */
+void add_tc_callback(Fl_Widget *widget, void *v) {
+    const auto window = GET_SELF_FROM_VOID(v);
+    const auto editor = window->m_editor;
+    auto       pos    = editor->insert_position(); //TODO might be deleted
+    editor->insert("\n<tc name>|<tc prior>|\n");   //insert default template tc
+}
+
 void undo_сallback(Fl_Widget *widget) {
     const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
     text_buffer->undo();
@@ -597,7 +610,7 @@ void decrease_font_callback(Fl_Widget *widget, void *v) {
 
 /**
  * Open chat functionality in utility
- * @param widget
+ * @param widget current window
  * @param v view
  */
 void AI_chat_callback(Fl_Widget *widget, void *v) {
@@ -639,7 +652,6 @@ void AI_agent_callback(Fl_Widget *widget, void *v) {
  */
 void AI_check_grammar(Fl_Widget *widget, void *v) {
     const auto txt_buf = GET_TXT_BUFFER_FROM(widget);
-
 }
 #undef GUI_LANG_CHECKER
 #endif

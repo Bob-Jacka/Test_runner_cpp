@@ -18,10 +18,9 @@
 #include "../contrib/cityhash/city.h"
 
 namespace NJamSpell {
-
     std::string LoadFile(const std::string &fileName) {
-        std::ifstream in(fileName, std::ios::binary);
-        std::ostringstream out;
+        const std::ifstream in(fileName, std::ios::binary);
+        std::ostringstream  out;
         out << in.rdbuf();
         return out.str();
     }
@@ -32,7 +31,7 @@ namespace NJamSpell {
     }
 
     TTokenizer::TTokenizer()
-            : Locale(std::locale::classic()) {
+        : Locale(std::locale::classic()) {
     }
 
     /**
@@ -41,7 +40,7 @@ namespace NJamSpell {
      * @return bool value of operation result
      */
     bool TTokenizer::LoadAlphabet(const std::string &alphabetFile) {
-        std::string data = LoadFile(alphabetFile);
+        const std::string data = LoadFile(alphabetFile);
         if (data.empty()) {
             return false;
         }
@@ -72,11 +71,11 @@ namespace NJamSpell {
         TSentences sentences;
 
         TWords currSentence;
-        TWord currWord;
+        TWord  currWord;
 
         for (size_t i = 0; i < originalText.size(); ++i) {
             wchar_t letter = std::tolower(originalText[i], Locale);
-            if (Alphabet.find(letter) != Alphabet.end()) {
+            if (Alphabet.contains(letter)) {
                 if (currWord.Ptr == nullptr) {
                     currWord.Ptr = &originalText[i];
                 }
@@ -123,7 +122,7 @@ namespace NJamSpell {
         return utf_to_utf<wchar_t>(text.c_str(), text.c_str() + text.size());
 #else
 #pragma message("Using deprecated std function")
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t, 0x10ffff, std::little_endian>> converter;
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t, 0x10ffff, std::little_endian> > converter;
         return converter.from_bytes(text);
 #endif
     }
@@ -151,20 +150,20 @@ namespace NJamSpell {
      */
     uint64_t GetCurrentTimeMs() {
         using namespace std::chrono;
-        milliseconds ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        const auto ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         return ms.count();
     }
 
-    static const std::locale GLocale(std::locale::classic());
-    static const std::ctype<wchar_t> &GWctype = std::use_facet<std::ctype<wchar_t>>(GLocale);
+    static const std::locale          GLocale(std::locale::classic());
+    static const std::ctype<wchar_t> &GWctype = std::use_facet<std::ctype<wchar_t> >(GLocale);
 
     void ToLower(std::wstring &text) {
-        std::transform(text.begin(), text.end(), text.begin(), [](wchar_t wch) {
+        std::ranges::transform(text, text.begin(), [](const wchar_t wch) {
             return GWctype.tolower(wch);
         });
     }
 
-    wchar_t MakeUpperIfRequired(wchar_t orig, wchar_t sample) {
+    wchar_t MakeUpperIfRequired(const wchar_t orig, const wchar_t sample) {
         if (GWctype.toupper(sample) == sample) {
             return GWctype.toupper(orig);
         }
@@ -172,13 +171,12 @@ namespace NJamSpell {
     }
 
     uint16_t CityHash16(const std::string &str) {
-        uint32_t hash = CityHash32(&str[0], str.size());
+        const uint32_t hash = CityHash32(&str[0], str.size());
         return hash % std::numeric_limits<uint16_t>::max();
     }
 
     uint16_t CityHash16(const char *str, size_t size) {
-        uint32_t hash = CityHash32(str, size);
+        const uint32_t hash = CityHash32(str, size);
         return hash % std::numeric_limits<uint16_t>::max();
     }
-
 } // NJamSpell

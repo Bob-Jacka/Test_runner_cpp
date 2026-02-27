@@ -31,7 +31,6 @@
 
 #endif
 
-import UtilFuncs_mod;
 import Libio;
 
 /**
@@ -67,7 +66,7 @@ namespace Check_runner {
                                 file_test_results << counter << ") " << "\n";
                                 file_test_results << "\tBug name: " << bug.get_name() << "\n";
                                 file_test_results << "\tBug description: " << bug.get_description() << "\n";
-                                file_test_results << "\tBug severity: " << TA::object_to_severity(bug.get_severity())
+                                file_test_results << "\tBug severity: " << TA_helper_data::object_to_severity(bug.get_severity())
                                         << "\n";
                                 ++counter;
                             }
@@ -135,7 +134,7 @@ namespace Check_runner {
                 for (int i = 1; i < arg_count; ++i) {
                     if (auto cli_param = cont_to_check[i]; check_func_full(cli_param)) {
                         auto        split_line = libio::string::split(cli_param, "=");
-                        const auto  flag_name  = Utility::replace_string_all(split_line[0], "--", "");
+                        const auto  flag_name  = libio::string::replace_string_all(split_line[0], "--", "");
                         std::string flag_value = split_line[1]; //because zero index is flag name
 
                         //get entry point of utility working
@@ -147,7 +146,7 @@ namespace Check_runner {
                             } else {
                                 throw Check_exceptions::MainException(
                                     __LINE__,
-                                    "Entry point file does not exists in filesystem with name: " + entry_point,
+                                    ("Entry point file does not exists in filesystem with name: " + entry_point).c_str(),
                                     __FILE_NAME__);
                             }
                         }
@@ -190,7 +189,7 @@ namespace Check_runner {
                                 );
                             } else {
                                 throw Check_exceptions::MainException(__LINE__,
-                                                                      "No strategy selected for value: " + strat_value,
+                                                                      ("No strategy selected for value: " + strat_value).c_str(),
                                                                       __FILE_NAME__);
                             }
                         }
@@ -203,7 +202,7 @@ namespace Check_runner {
 
                             //turn on graphical user interface:
                             if (flag_name == LP::Static_load_parameters_names::inter) [[likely]] {
-                                Entities::load_parameters->set_is_gui(libio::convert::str2bool(flag_value));
+                                Entities::load_parameters->SET_GUI_FLAG();
                             }
 
                             //need for more devices than one:
@@ -213,21 +212,21 @@ namespace Check_runner {
 
                             //time check flag:
                             if (flag_name == LP::Static_load_parameters_names::time_check) {
-                                Entities::load_parameters->set_is_time_record(libio::convert::str2bool(flag_value));
+                                Entities::load_parameters->SET_IS_TIME_REC();
                             }
 
                             //colored flag:
                             if (flag_name == LP::Static_load_parameters_names::colored) [[likely]] {
-                                Entities::load_parameters->set_is_colored(libio::convert::str2bool(flag_value));
+                                Entities::load_parameters->SET_IS_COLORED_OUT();
                             }
 
                             //comments flag:
                             if (flag_name == LP::Static_load_parameters_names::comments) [[likely]] {
-                                Entities::load_parameters->set_is_comments(libio::convert::str2bool(flag_value));
+                                Entities::load_parameters->SET_IS_COMMENTS();
                             }
                         }
                     } else {
-                        throw Check_exceptions::MainException(__LINE__, "Unknown compiler flag selected: " + cli_param,
+                        throw Check_exceptions::MainException(__LINE__, ("Unknown compiler flag selected: " + cli_param).c_str(),
                                                               __FILE_NAME__);
                         //kill utility if unknown flag detected
                     }
@@ -265,7 +264,7 @@ namespace Check_runner {
                         for (const auto &bug: bugs_vec) {
                             libio::output::println("\tBug name: " + bug.get_name());
                             libio::output::println("\tBug description: " + bug.get_description());
-                            libio::output::println("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
+                            libio::output::println("\tBug severity: " + TA_helper_data::object_to_severity(bug.get_severity()));
                         }
                     } else {
                         libio::output::println("No bugs in " + res.get_name());
@@ -322,7 +321,7 @@ namespace Check_runner {
                     for (const auto &bug: elem.get_bugs()) {
                         libio::output::println("\tBug name: " + bug.get_name());
                         libio::output::println("\tBug description: " + bug.get_description());
-                        libio::output::println("\tBug severity: " + TA::object_to_severity(bug.get_severity()));
+                        libio::output::println("\tBug severity: " + TA_helper_data::object_to_severity(bug.get_severity()));
                     }
                 }
             }
@@ -492,8 +491,8 @@ namespace Check_runner {
             steady_clock::time_point start; //start time of ts execution
             steady_clock::time_point end;   //end time of ts execution
 
-            const bool is_comment = Entities::load_parameters->get_is_comments();
-            const bool is_time    = Entities::load_parameters->get_is_time_record();
+            const bool is_comment = Entities::load_parameters->GET_IS_COMMENTS();
+            const bool is_time    = Entities::load_parameters->GET_IS_TIME_REC();
 
             start_util_work = steady_clock::now();
             for (const auto &ts: vtc) {
@@ -580,16 +579,16 @@ namespace Check_runner {
                                 }
                                 libio::output::println(); //simple new line
 
-                                TA::Severity severity;
+                                TA_helper_data::Severity severity;
                                 maybe_bug_severity = libio::string::change_string_register(maybe_bug_severity, true);
                                 if (maybe_bug_severity == Translation::Console_translation::low) {
-                                    severity = TA::Severity::Low;
+                                    severity = TA_helper_data::Severity::Low;
                                 } else if (maybe_bug_severity == Translation::Console_translation::medium) {
-                                    severity = TA::Severity::Medium;
+                                    severity = TA_helper_data::Severity::Medium;
                                 } else if (maybe_bug_severity == Translation::Console_translation::high) {
-                                    severity = TA::Severity::High;
+                                    severity = TA_helper_data::Severity::High;
                                 } else if (maybe_bug_severity == Translation::Console_translation::blocker) {
-                                    severity = TA::Severity::Blocker;
+                                    severity = TA_helper_data::Severity::Blocker;
                                 } else {
                                     //you can write endless loop to not terminate program
                                     throw Check_exceptions::MainException(__LINE__, "Unknown test severity.",
@@ -664,7 +663,9 @@ namespace Check_runner {
                         FL_MENU_DIVIDER
                     },
                     {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
+
                     {nullptr},
+
                     {Translation::GUI::edit, 0, nullptr, nullptr, FL_SUBMENU}, //edit menu
                     {
                         "&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window,
@@ -674,18 +675,25 @@ namespace Check_runner {
                     {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
                     {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
                     {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
+                    {"&Add TC", FL_ALT + 'n', add_tc_callback, window, FL_MENU_DIVIDER}, //add empty tc to file
+
                     {nullptr},
+
                     {Translation::GUI::search, 0, nullptr, nullptr, FL_SUBMENU}, //search menu
                     {"&Find", FL_COMMAND + 'f', find_сallback, window},
                     {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
                     {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
                     {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
+
                     {nullptr},
+
                     {Translation::GUI::help, 0, nullptr, nullptr, FL_SUBMENU}, //help menu
                     {"&About", FL_COMMAND + 'h', about_callback, window, FL_MENU_DIVIDER},
                     {"&Increase font", FL_ALT + '+', increase_font_callback, window},
                     {"&Decrease font", FL_ALT + '-', decrease_font_callback, window},
+
                     {nullptr},
+
                     {Translation::GUI::ai, 0, nullptr, nullptr, FL_SUBMENU}, //AI menu
                     {"&Chat", 0, AI_chat_callback, window},
                     {"&Agent", 0, AI_agent_callback, window, FL_MENU_DIVIDER},
@@ -704,7 +712,7 @@ namespace Check_runner {
                     //try to create second time
                     build_menu(menu, window);
                 }
-                counter = false;
+                counter = false; //then end trying
             }
         }
 
@@ -766,18 +774,22 @@ int main(int argc, char *argv[]
 
 #ifdef EXTENDED_FUNCTIONALITY_GUI
             //1) Run graphical user interface before creating other entities
-            if (Entities::load_parameters->get_gui()) {
+            if (Entities::load_parameters->GET_GUI_FLAG()) {
                 const auto window = GUI::create_view();
 
 #ifdef GUI_LANG_CHECKER
                 ///lang model for text correction
-                auto load_res = Entities::corrector->load_lang_model(model_name); //TODO maybe execute as std async
-                if (load_res) {
-                    libio::output::println("Failed to load language model from file");
-                } else {
-                    libio::output::println("Model loaded successfully");
-                }
+                std::future<void> result = std::async(std::launch::async, []() {
+                    auto load_res = Entities::corrector->load_lang_model(model_name);
+                    if (load_res) {
+                        libio::output::println("Failed to load language model from file");
+                    } else {
+                        libio::output::println("Model loaded successfully");
+                    }
+                });
+
 #endif
+
                 window->show();
                 return Fl::run();
             }
@@ -787,7 +799,7 @@ int main(int argc, char *argv[]
 
         //Pre strategy actions block
         {
-            const bool global_strat_state = Entities::load_parameters->get_is_everything_now();
+            const bool global_strat_state = Entities::load_parameters->GET_EVERYTHING_NOW_STRAT();
             //global state of everything_now strategy to not use load_parameters
             //1) Get data from entry point file
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
@@ -832,8 +844,8 @@ int main(int argc, char *argv[]
                             }
                         } else {
                             throw Check_exceptions::MainException(__LINE__,
-                                                                  "No device entry point file was found - " +
-                                                                  std::string(devices_file_name),
+                                                                  ("No device entry point file was found - " +
+                                                                   std::string(devices_file_name)).c_str(),
                                                                   __FILE_NAME__);
                         }
                     } else {
@@ -860,7 +872,7 @@ int main(int argc, char *argv[]
                 Console::Print::print_test_results_2console(Entities::vtr);
 
                 //write test results to file if parameter is true
-                if (Entities::load_parameters->get_is_file_write()) {
+                if (Entities::load_parameters->GET_IS_FILE_WRITE()) {
                     Console::Low_level::write_test_results_2file(Entities::vtr);
                 }
             }
@@ -872,7 +884,6 @@ int main(int argc, char *argv[]
     ) {
         //print help to user if user wants help to be printed
         Console::Print::print_help();
-
         Console::Low_level::exit_utility(EXIT_SUCCESS);
     }
 #ifdef EXTENDED_FUNCTIONALITY

@@ -1,7 +1,6 @@
 #ifndef ENTITIES_PACK_HPP
 #define ENTITIES_PACK_HPP
 
-#include <string>
 #include <vector>
 
 #include "Load_parameters.hpp"
@@ -12,7 +11,10 @@
 #include "core/Entities/Ini_parser.hpp"
 #endif
 
+#ifdef GUI_LANG_CHECKER
 #include "spell_corrector.hpp"
+#endif
+
 #include "core/Strategies/declaration/StratContex.hpp"
 #include "core/Test_artifacts/declaration/Test_result.hpp"
 
@@ -40,6 +42,7 @@ namespace Check_runner {
 #ifdef GUI_LANG_CHECKER
         static std::unique_ptr<NJamSpell::TSpellCorrector> corrector;
 #endif
+
         //Vectors with test artifacts:
         static Vec_t<TA::Test_result> vtr; ///vector for test results after test case run
         static Vec_t<TA::Test_case>   vts; ///vector for test cases, that created in utility

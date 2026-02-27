@@ -1,5 +1,4 @@
 #include "File_controller.hpp"
-
 #include "../Exceptions/FileControllerException.hpp"
 
 /**
@@ -11,8 +10,24 @@ std::tuple<std::ifstream, bool> Check_runner::File_controller::open_file(const s
     if (auto file = std::ifstream(file_name); file.is_open()) {
         return std::make_tuple<std::ifstream, bool>(std::move(file), true);
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "File not exist with name " + file_name, __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, ("File not exist with name " + file_name).c_str(), __FILE_NAME__);
 }
+
+#ifdef NEW_FILE_FORMAT
+std::tuple<std::ifstream, bool> Check_runner::File_controller::create_tf_file(const std::string &file_name) {
+    if (auto file = std::ifstream(file_name); file.is_open()) {
+        return std::make_tuple<std::ifstream, bool>(std::move(file), true);
+    }
+    throw Check_exceptions::FileControllerException(__LINE__, "Cannot create tf file", __FILE_NAME__);
+}
+
+std::tuple<std::ifstream, bool> Check_runner::File_controller::create_rsf_file(const std::string &file_name) {
+    if (auto file = std::ifstream(file_name); file.is_open()) {
+        return std::make_tuple<std::ifstream, bool>(std::move(file), true);
+    }
+    throw Check_exceptions::FileControllerException(__LINE__, "Cannot create rsf file", __FILE_NAME__);
+}
+#endif
 
 /**
  * Static read lines file, open another file and read strings (lines).
@@ -31,7 +46,7 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
         file.close();
         return lines;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name with name " + file_name,
+    throw Check_exceptions::FileControllerException(__LINE__, ("Input file not opened with name with name " + file_name).c_str(),
                                                     __FILE_NAME__);
 }
 
@@ -46,7 +61,7 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
     if (check_file_extension(file_name) == 1) {
         auto [file, cond] = open_file(file_name);
         if (cond) {
-            auto lines = std::vector<std::string>();
+            auto        lines = std::vector<std::string>();
             std::string line;
             while (getline(file, line)) {
                 lines.push_back(line);
@@ -54,14 +69,14 @@ std::vector<std::string> Check_runner::File_controller::readlines(const std::str
             file.close();
             return lines;
         }
-        throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with name " + file_name,
+        throw Check_exceptions::FileControllerException(__LINE__, ("Input file not opened with name " + file_name).c_str(),
                                                         __FILE_NAME__);
     }
     if (check_file_extension(file_name) == 2) {
         const auto fake_string = file_name + ".txt";
         return readlines(fake_string);
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Wrong file extension " + file_name, __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, ("Wrong file extension " + file_name).c_str(), __FILE_NAME__);
 }
 
 /**
@@ -99,8 +114,8 @@ std::string Check_runner::File_controller::readline(const std::string &file_desc
         file.close();
         return line;
     }
-    throw Check_exceptions::FileControllerException(__LINE__, "Input file not opened with string file descriptor " +
-                                                              file_descriptor, __FILE_NAME__);
+    throw Check_exceptions::FileControllerException(__LINE__, ("Input file not opened with string file descriptor " +
+                                                               file_descriptor).c_str(), __FILE_NAME__);
 }
 
 /**
@@ -137,14 +152,17 @@ std::fstream Check_runner::File_controller::create_test_result_file(const std::s
 /**
 * Check for file extension.
 * @param file_name name of the file to check.
-* @return bool value of checking state.
+* @return bool value of checking state (1 - if txt file, 2 - empty ext, 3 - tf or rsf, otherwise 0).
 */
 int Check_runner::File_controller::check_file_extension(const std::string &file_name) {
-    if (file_name.ends_with(".txt") and not file_name.ends_with(".")) {
+    if (file_name.ends_with(TXT_F) and not file_name.ends_with(".")) {
         return 1;
     }
-    if (file_name.ends_with("")) {
+    if (file_name.ends_with("")) [[likely]] {
         return 2;
+    }
+    if (file_name.ends_with(RSF_F) or file_name.ends_with(TF)) [[likely]] {
+        return 3;
     }
     return 0;
 }
@@ -156,8 +174,10 @@ int Check_runner::File_controller::check_file_extension(const std::string &file_
 bool Check_runner::File_controller::check_file_existence(std::string &file_name) {
     //check for file extension existence
     if (check_file_extension(file_name) == 2) {
+#ifndef NEW_FILE_FORMAT
         //if true - user provided ext //else - user does not provide ext and need to append ext for correct utility work
         file_name += ".txt";
+#endif
     }
     auto [file, cond] = open_file(file_name);
     if (cond) {

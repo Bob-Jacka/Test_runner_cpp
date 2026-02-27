@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.4
+ Version - 1.24.5
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -463,6 +463,28 @@ export void print_one_element(const int *array, const int i) {
                 }
             }
             return str;
+        }
+
+        /**
+         * Split string into vector and return changed string.
+        * @param s source string to split
+        * @param delim delimiter to split on
+        * @return vector if you want to assign to variable.
+        */
+        std::vector<std::string> split_by_first_delim(const std::string &s, const char delim = ' ') {
+            size_t pos = s.find(delim);
+            if (pos != std::string::npos) {
+                std::stringstream        ss(s);
+                std::string              item;
+                std::vector<std::string> elems;
+
+                const std::string firstPart  = s.substr(0, pos);
+                const std::string secondPart = s.substr(pos + 1);
+                elems.push_back(firstPart);
+                elems.push_back(secondPart);
+                return elems;
+            }
+            throw std::runtime_error("split_by_first_delim: delimiter not found");
         }
 
         /**

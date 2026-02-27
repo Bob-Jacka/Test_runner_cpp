@@ -6,15 +6,18 @@
 #include "../../Exceptions/TestArtifactException.hpp"
 
 namespace Check_runner {
-    namespace TA {
+    /**
+     * Namespace for helper utility data
+     */
+    namespace TA_helper_data {
         /**
          * Enum class representing priority of the bug or test case.
          * Priority to execute test case or priority to fix bug.
          */
         enum class Priority {
-            Low = 0,
-            Medium = 1,
-            High = 2,
+            Low      = 0,
+            Medium   = 1,
+            High     = 2,
             Critical = 3,
         };
 
@@ -22,16 +25,17 @@ namespace Check_runner {
          * Enum class representing severity of the bug or test case.
          */
         enum class Severity {
-            Low = 0,
-            Medium = 1,
-            High = 2,
+            Low      = 0,
+            Medium   = 1,
+            High     = 2,
             Critical = 3,
-            Blocker = 4
+            Blocker  = 4
         };
 
         /**
          * Proceed string object to Priority value.
          * @param priority string object.
+         * @throw invalid_argument invalid priority given
          * @return Priority enum object.
          */
         inline Priority priority_to_object(const std::string &priority) {
@@ -53,6 +57,7 @@ namespace Check_runner {
         /**
          * Proceed string object to Severity value.
          * @param severity string object.
+         * @throw invalid_argument invalid severity given
          * @return Severity enum object.
          */
         inline Severity severity_to_object(const std::string &severity) {
@@ -77,6 +82,7 @@ namespace Check_runner {
         /**
          * Proceed string object to Priority value.
          * @param priority string object.
+         * @throw invalid_argument if invalide priority object was given
          * @return Priority enum object.
          */
         inline std::string priority_to_object(const Priority priority) {
@@ -98,6 +104,7 @@ namespace Check_runner {
         /**
          * Proceed string object to Severity value.
          * @param severity string object.
+         * @throw invalid_argument invalid severity object was given
          * @return Severity enum object.
          */
         inline std::string object_to_severity(const Severity severity) {
@@ -118,20 +125,22 @@ namespace Check_runner {
             }
             throw std::invalid_argument("Invalid severity object was given");
         }
+    }
 
+    namespace TA {
         /**
          * Abstract class for test artifacts in utility.
          * Base class for test cases, checklists, bugs, test results and test suit
          */
         class Test_artifact {
-        public:
-            Test_artifact() = default;
+            public:
+                Test_artifact() = default;
 
-            virtual ~Test_artifact() = default;
+                virtual ~Test_artifact() = default;
 
-            [[nodiscard]] virtual std::string get_name() const = 0;
+                [[nodiscard]] virtual std::string get_name() const = 0;
 
-            [[nodiscard]] virtual std::string to_string() const = 0;
+                [[nodiscard]] virtual std::string to_string() const = 0;
         };
     }
 }
