@@ -1,0 +1,85 @@
+\doxysection{File\+Indexer Namespace Reference}
+\hypertarget{namespace_file_indexer}{}\label{namespace_file_indexer}\index{FileIndexer@{FileIndexer}}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{namespace_file_indexer_a3283063e1b805b3efde625a5deb48e0f}{main\+\_\+cycle}} (str path)
+\item 
+\mbox{\hyperlink{namespace_file_indexer_a1f98131f6fd248509c1fc095e3983fc6}{print\+\_\+paths}} (str prefix, str input\+\_\+dir=None)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{namespace_file_indexer_a72d4cffbfbc9f5ce488fb9e06b300044}\label{namespace_file_indexer_a72d4cffbfbc9f5ce488fb9e06b300044} 
+list {\bfseries files\+\_\+path} = \mbox{[}$\,$\mbox{]}
+\item 
+list \mbox{\hyperlink{namespace_file_indexer_a8a83e6305d6ea07a0c786c1cfd487c57}{exclude\+\_\+file\+\_\+names}}
+\item 
+\Hypertarget{namespace_file_indexer_a67291bbeac49ddaa5c72f61de36fecb6}\label{namespace_file_indexer_a67291bbeac49ddaa5c72f61de36fecb6} 
+str {\bfseries CMAKE\+\_\+\+SEP} = \textquotesingle{}/\textquotesingle{}
+\item 
+\Hypertarget{namespace_file_indexer_abab1eed7cff3c0620218c748fcf9b3e4}\label{namespace_file_indexer_abab1eed7cff3c0620218c748fcf9b3e4} 
+str {\bfseries WINDOWS\+\_\+\+SEP} = \textquotesingle{}\textbackslash{}\textbackslash{}\textquotesingle{}
+\item 
+\Hypertarget{namespace_file_indexer_a540caeebe86d513750e527a98308ab46}\label{namespace_file_indexer_a540caeebe86d513750e527a98308ab46} 
+str {\bfseries LINUX\+\_\+\+SEP} = \textquotesingle{}/\textquotesingle{}
+\item 
+\Hypertarget{namespace_file_indexer_ae67bf70fd6d9058280eae95e98fd6648}\label{namespace_file_indexer_ae67bf70fd6d9058280eae95e98fd6648} 
+{\bfseries end}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}Script for cmake file in C++.
+Find all paths to files with cpp or hpp extensions.
+\end{DoxyVerb}
+ 
+
+\label{doc-func-members}
+\Hypertarget{namespace_file_indexer_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{namespace_file_indexer_a3283063e1b805b3efde625a5deb48e0f}\index{FileIndexer@{FileIndexer}!main\_cycle@{main\_cycle}}
+\index{main\_cycle@{main\_cycle}!FileIndexer@{FileIndexer}}
+\doxysubsubsection{\texorpdfstring{main\_cycle()}{main\_cycle()}}
+{\footnotesize\ttfamily \label{namespace_file_indexer_a3283063e1b805b3efde625a5deb48e0f} 
+File\+Indexer.\+main\+\_\+cycle (\begin{DoxyParamCaption}\item[{str}]{path}{}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Proceed filenames into list
+:param path: path to search for files
+:return: None
+\end{DoxyVerb}
+ \Hypertarget{namespace_file_indexer_a1f98131f6fd248509c1fc095e3983fc6}\index{FileIndexer@{FileIndexer}!print\_paths@{print\_paths}}
+\index{print\_paths@{print\_paths}!FileIndexer@{FileIndexer}}
+\doxysubsubsection{\texorpdfstring{print\_paths()}{print\_paths()}}
+{\footnotesize\ttfamily \label{namespace_file_indexer_a1f98131f6fd248509c1fc095e3983fc6} 
+File\+Indexer.\+print\+\_\+paths (\begin{DoxyParamCaption}\item[{str}]{prefix}{, }\item[{str }]{input\+\_\+dir}{ = {\ttfamily None}}\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}Print all paths starting with given prefix
+:param input_dir: start from input directory
+:param prefix: prefix to change
+:return: None
+\end{DoxyVerb}
+ 
+
+\label{doc-var-members}
+\Hypertarget{namespace_file_indexer_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{namespace_file_indexer_a8a83e6305d6ea07a0c786c1cfd487c57}\index{FileIndexer@{FileIndexer}!exclude\_file\_names@{exclude\_file\_names}}
+\index{exclude\_file\_names@{exclude\_file\_names}!FileIndexer@{FileIndexer}}
+\doxysubsubsection{\texorpdfstring{exclude\_file\_names}{exclude\_file\_names}}
+{\footnotesize\ttfamily \label{namespace_file_indexer_a8a83e6305d6ea07a0c786c1cfd487c57} 
+list File\+Indexer.\+exclude\+\_\+file\+\_\+names}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ =\ \ [\textcolor{stringliteral}{'.gitignore'},}
+\DoxyCodeLine{00002\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'README.md'},}
+\DoxyCodeLine{00003\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'External\ Libraries'},}
+\DoxyCodeLine{00004\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Scratches\ and\ Consoles'},}
+\DoxyCodeLine{00005\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'FileIndexer.py'},}
+\DoxyCodeLine{00006\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'CMakeLists.txt'},}
+\DoxyCodeLine{00007\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'.venv'},}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'cmake-\/build-\/debug'},}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'.git'}]}
+
+\end{DoxyCode}

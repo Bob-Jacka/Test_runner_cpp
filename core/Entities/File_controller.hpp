@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "../Exceptions/FileControllerException.hpp"
+
 #define TXT_F ".txt" //simple old txt files
 #define RSF_F ".rsf" //brave new file format for test results
 #define TF ".tf" //new format for test files

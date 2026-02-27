@@ -1,0 +1,131 @@
+\chapter{Check runner (aka Test\+\_\+runner CPP edition) }
+\hypertarget{md__r_e_a_d_m_e}{}\label{md__r_e_a_d_m_e}\index{Check runner (aka Test\_runner CPP edition)@{Check runner (aka Test\_runner CPP edition)}}
+\label{md__r_e_a_d_m_e_autotoc_md0}%
+\Hypertarget{md__r_e_a_d_m_e_autotoc_md0}%
+\hypertarget{md__r_e_a_d_m_e_autotoc_md1}{}\doxysection{\texorpdfstring{What is it?\+:}{What is it?\+:}}\label{md__r_e_a_d_m_e_autotoc_md1}
+New version of previous super very popular tool for QA, previously called Test\+\_\+runner. Fully rewritten from \textquotesingle{}Go\textquotesingle{} to \textquotesingle{}C++\textquotesingle{}, improve functionality and stability. Now supports directives in your test suit. Has become harder to understand what is going on in your test suits.\hypertarget{md__r_e_a_d_m_e_autotoc_md2}{}\doxysection{\texorpdfstring{Utility flags\+:}{Utility flags\+:}}\label{md__r_e_a_d_m_e_autotoc_md2}
+Utility can take various flags, that modify program behaviour Example of utility with flags usage\+: ./\+Check\+\_\+runner --suit="{}some-\/test-\/suit.\+txt"{} --colored=true --comments=true\hypertarget{md__r_e_a_d_m_e_autotoc_md3}{}\doxysubsection{\texorpdfstring{Available utility flags\+:}{Available utility flags\+:}}\label{md__r_e_a_d_m_e_autotoc_md3}
+Just write flag in command line interface and provide parameter\+:
+
+1) {\bfseries{strategy}} -\/ using for determining execution strategy, can take one of the following values\+: 1) {\itshape high\+\_\+prior} -\/ runs only test cases with priority that equal to High; 2) {\itshape random} -\/ pseudo random strategy, shuffle test cases and execute them; 3) {\itshape parallel} -\/ parallel test case search; 4) {\itshape everything\+\_\+now} -\/ print all tests cases in console for fully manual mode; 5) {\itshape usual} -\/ usually test case execution (do nothing with ts); 6) {\itshape choose$<$$>$} -\/ you can enter strat name, by default it will be all tests (if you do not write triangular brackets) or you may enter brackets and utility give test cases only with chosen priority, other will be ignored. 2) {\bfseries{devices}} -\/ provide text file with devices to test on, 3) {\bfseries{time\+\_\+record}} -\/ bool value, if set to true then each test case will count of execution, 4) {\bfseries{colored}} -\/ bool value, if set to true then utility output text will be colored in colors, 5) {\bfseries{comments}} -\/ bool value, if set to true then enables comments in test cases. 6) {\bfseries{interface}} -\/ bool value, if set to true starts graphical user interface\hypertarget{md__r_e_a_d_m_e_autotoc_md4}{}\doxysection{\texorpdfstring{Symbols meaning\+:}{Symbols meaning\+:}}\label{md__r_e_a_d_m_e_autotoc_md4}
+These symbols are using in simple text file (just .txt),\hypertarget{md__r_e_a_d_m_e_autotoc_md5}{}\doxysubsection{\texorpdfstring{Available special symbols\+:}{Available special symbols\+:}}\label{md__r_e_a_d_m_e_autotoc_md5}
+
+\begin{DoxyEnumerate}
+\item \textquotesingle{}\texorpdfstring{$\ast$}{*}\textquotesingle{} -\/ for comments in your suit
+\item \textquotesingle{}\#\textquotesingle{} -\/ for directive start
+\item \textquotesingle{}\texorpdfstring{$\vert$}{|}\textquotesingle{} -\/ test case separator, separate name, priority and check comment
+\item \textquotesingle{}\+:\textquotesingle{} -\/ for group directive start, also using in other directives
+\end{DoxyEnumerate}\hypertarget{md__r_e_a_d_m_e_autotoc_md6}{}\doxysection{\texorpdfstring{Allowed directives\+:}{Allowed directives\+:}}\label{md__r_e_a_d_m_e_autotoc_md6}
+1) {\itshape Group\+\_\+start} -\/ start group of test cases 2) {\itshape Group\+\_\+end} -\/ end directive for group start directive 3) {\itshape If} -\/ same as \textquotesingle{}if\textquotesingle{} operator in programming languages 4) {\itshape Elif} -\/ another (alternative) way of \textquotesingle{}if\textquotesingle{} operator 5) {\itshape Else} -\/ default way of \textquotesingle{}if\textquotesingle{} operator execute 6) {\itshape End\+\_\+if} -\/ end directive for \textquotesingle{}if\textquotesingle{} operators 7) {\itshape Import} -\/ import another suit into suit 8) {\itshape Steps\+\_\+start} -\/ add steps to test case 9) {\itshape Steps\+\_\+end} -\/ end directive for steps 10) {\itshape Ignore} -\/ ignore test case from execution (not add test to suit) 11) {\itshape Parameters} -\/ special directive for adding parameters into suit, can be in several files, if one suit include into another, then parameters accumulate; parse parameters till the line end\hypertarget{md__r_e_a_d_m_e_autotoc_md7}{}\doxysection{\texorpdfstring{Rules of writing\+:}{Rules of writing\+:}}\label{md__r_e_a_d_m_e_autotoc_md7}
+
+\begin{DoxyEnumerate}
+\item Parameters -\/ parameters should contain equal sign, that separates name and value of parameter, ex. first\+\_\+param=true, second\+\_\+param=false, third\+\_\+param=hav\+Value (third parameter contain string value \textquotesingle{}hav\+Value\textquotesingle{})
+\item Test case -\/ test case should contain \textquotesingle{}\texorpdfstring{$\vert$}{|}\textquotesingle{} symbol, that separates name, priority and comment, ex. Наличие версии игры на главном экране\texorpdfstring{$\vert$}{|}Высокий\texorpdfstring{$\vert$}{|}
+\end{DoxyEnumerate}\hypertarget{md__r_e_a_d_m_e_autotoc_md8}{}\doxysection{\texorpdfstring{Examples of usage\+:}{Examples of usage\+:}}\label{md__r_e_a_d_m_e_autotoc_md8}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md9}{}\doxysubsection{\texorpdfstring{Usage of group directive\+:}{Usage of group directive\+:}}\label{md__r_e_a_d_m_e_autotoc_md9}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#Group\_start\ Общие\ проверки:}
+\DoxyCodeLine{\ \ \ Наличие\ версии\ игры\ на\ главном\ экране|Высокий|}
+\DoxyCodeLine{\#Group\_end}
+
+\end{DoxyCode}
+
+
+\texorpdfstring{$\ast$}{*}\+Where "{}\#\+Group\+\_\+start"{} starts group directive and add test cases above this line until reach "{}\#\+Group\+\_\+end"{} directive\hypertarget{md__r_e_a_d_m_e_autotoc_md10}{}\doxysubsection{\texorpdfstring{Usage of branching operators\+:}{Usage of branching operators\+:}}\label{md__r_e_a_d_m_e_autotoc_md10}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md11}{}\doxysubsubsection{\texorpdfstring{If operator}{If operator}}\label{md__r_e_a_d_m_e_autotoc_md11}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#Parameters:\ a=1,\ b=2}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#If\ a\ <\ b:}
+\DoxyCodeLine{\ \ \ test1||}
+\DoxyCodeLine{\ \ \ test2||}
+\DoxyCodeLine{\ \ \ test3||}
+\DoxyCodeLine{\#End\_if}
+
+\end{DoxyCode}
+
+
+\texorpdfstring{$\ast$}{*}\+If "{}if"{} statement executes to true then next tests are added to suit\hypertarget{md__r_e_a_d_m_e_autotoc_md12}{}\doxysubsubsection{\texorpdfstring{Elif operator}{Elif operator}}\label{md__r_e_a_d_m_e_autotoc_md12}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#Parameters:\ a=1,\ b=2}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#If\ a\ >\ b:}
+\DoxyCodeLine{\ \ \ test1||}
+\DoxyCodeLine{\ \ \ test2||}
+\DoxyCodeLine{\ \ \ test3||}
+\DoxyCodeLine{\#Elif\ a\ <\ b:}
+\DoxyCodeLine{\ \ \ test4||}
+\DoxyCodeLine{\ \ \ test5||}
+\DoxyCodeLine{\ \ \ test6||}
+\DoxyCodeLine{\#End\_if}
+
+\end{DoxyCode}
+
+
+\texorpdfstring{$\ast$}{*}\+If "{}elif"{} statement executes to true then next tests are added to suit\hypertarget{md__r_e_a_d_m_e_autotoc_md13}{}\doxysubsubsection{\texorpdfstring{Else operator}{Else operator}}\label{md__r_e_a_d_m_e_autotoc_md13}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#Parameters:\ a=1,\ b=2}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#If\ a\ >\ b:}
+\DoxyCodeLine{\ \ \ test1||}
+\DoxyCodeLine{\ \ \ test2||}
+\DoxyCodeLine{\ \ \ test3||}
+\DoxyCodeLine{\#Elif\ a\ ==\ b:}
+\DoxyCodeLine{\ \ \ test4||}
+\DoxyCodeLine{\ \ \ test5||}
+\DoxyCodeLine{\ \ \ test6||}
+\DoxyCodeLine{\#Else:}
+\DoxyCodeLine{\ \ \ test7||}
+\DoxyCodeLine{\ \ \ test8||}
+\DoxyCodeLine{\ \ \ test9||}
+\DoxyCodeLine{\#End\_if}
+
+\end{DoxyCode}
+
+
+\texorpdfstring{$\ast$}{*}\+Last tests\hypertarget{md__r_e_a_d_m_e_autotoc_md14}{}\doxysubsection{\texorpdfstring{Other directives\+:}{Other directives\+:}}\label{md__r_e_a_d_m_e_autotoc_md14}
+\+\_\+\#\+Ignore\+\_\+ -\/ will not add test to suit, \+\_\+\#\+Parameters\+\_\+ -\/ add variables to suit, \+\_\+\#\+Import\+\_\+ -\/ add suit to another suit\hypertarget{md__r_e_a_d_m_e_autotoc_md15}{}\doxysection{\texorpdfstring{Config file in utility\+:}{Config file in utility\+:}}\label{md__r_e_a_d_m_e_autotoc_md15}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md16}{}\doxysubsection{\texorpdfstring{What is it?}{What is it?}}\label{md__r_e_a_d_m_e_autotoc_md16}
+Utility allowed to have settings in .ini files, it means that you can not provide arguments in command line interface, but provide by .ini file. Parameter might not be provided in .ini file, ex. comments might not be provided and utility starts without comments displaying.\hypertarget{md__r_e_a_d_m_e_autotoc_md17}{}\doxysubsection{\texorpdfstring{Example of usage\+:}{Example of usage\+:}}\label{md__r_e_a_d_m_e_autotoc_md17}
+Here is example of usage .ini file in setting utility parameters. {\bfseries{It is important to use same names in your .ini config file that in "{}\+Available utility flags"{} section of README.}} You can not provide any of these parameters.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[LoadParameters]}
+\DoxyCodeLine{colored=true}
+\DoxyCodeLine{comments=true}
+\DoxyCodeLine{time\_record=true\ ;\ or\ it\ can\ be\ false\ if\ you\ do\ not\ want\ to\ record\ time}
+\DoxyCodeLine{}
+\DoxyCodeLine{[FilePointers]\ ;\ files\ names,\ might\ be\ with\ .txt\ or\ not}
+\DoxyCodeLine{suit=one-\/time-\/test.txt}
+\DoxyCodeLine{devices=devices.txt}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Strategy]}
+\DoxyCodeLine{interface=true\ ;\ runs\ graphical\ user\ interface\ or\ console\ -\/\ runs\ console\ app}
+\DoxyCodeLine{strategy=usual}
+
+\end{DoxyCode}
+\hypertarget{md__r_e_a_d_m_e_autotoc_md18}{}\doxysubsection{\texorpdfstring{Test file style\+:}{Test file style\+:}}\label{md__r_e_a_d_m_e_autotoc_md18}
+This section is about writing test file style and some recommendations about writing;
+
+1) If you want to write comment in tf (test file) -\/ use one "{}star"{} symbol (\texorpdfstring{$\ast$}{*}) for upper level section and \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*} for second level
+
+\`{}\`{}\`{} Example\+: \texorpdfstring{$\ast$}{*}\+Upper level comment Some test in first section\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}
+
+\texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}\+Second level comment Some test in second section\texorpdfstring{$\vert$}{|}\texorpdfstring{$\vert$}{|}
+
+and so on... \`{}\`{}\`{}
+
+2) Write group tags into If statements, because group won\textquotesingle{}t be created if if statement is false \begin{DoxyVerb}```
+\end{DoxyVerb}
+ Example\+: \#\+If mode == single\+: \begin{DoxyVerb}#Group_start Singleplayer:
+    Some test||
+#Group_end
+\end{DoxyVerb}
+
+
+\#\+Elif mode == multiplayer\+: ... \`{}\`{}\`{} 

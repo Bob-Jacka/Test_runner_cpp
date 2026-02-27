@@ -12,16 +12,16 @@ namespace Strategy {
      * Header only class for strategy context
      */
     class StratContext {
-        std::unique_ptr<Strat> strategy_;
+        std::unique_ptr<Check_runner::Strategy::Strat> strategy_;
 
         public:
             explicit StratContext() = default;
 
-            void set_strategy(std::unique_ptr<Strat> &&strategy) {
+            void set_strategy(std::unique_ptr<Check_runner::Strategy::Strat> &&strategy) {
                 strategy_ = std::move(strategy);
             }
 
-            std::unique_ptr<Strat> get_strat() {
+            std::unique_ptr<Check_runner::Strategy::Strat> get_strat() {
                 if (strategy_ == nullptr) {
                     return nullptr;
                 }

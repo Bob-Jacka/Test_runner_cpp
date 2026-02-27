@@ -1,7 +1,7 @@
 #include "../declaration/Parallel_strat.hpp"
 
 /**
- *
+ * Execute tests in parallel manner
  * @param input
  * @return
  */

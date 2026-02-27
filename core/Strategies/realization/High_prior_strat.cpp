@@ -11,7 +11,7 @@ Strategy::High_prior_strat::doAlgorithm(std::vector<Check_runner::TA::Test_case>
     auto filter_func = [&](const Check_runner::TA::Test_case &elem) -> bool {
         const auto priority = elem.get_priority();
         const auto severity = elem.get_severity();
-        return (priority == Check_runner::TA::Priority::High or priority == Check_runner::TA::Priority::Critical) and
+        return (priority == Check_runner::TA_helper_data::Priority::High or priority == Check_runner::TA_helper_data::Priority::Critical) and
                (static_cast<int>(severity) >= 1);
     };
     auto view = std::ranges::filter_view{input, filter_func};

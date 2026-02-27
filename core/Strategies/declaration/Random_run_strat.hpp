@@ -4,7 +4,7 @@
 #include "Strat.hpp"
 
 namespace Strategy {
-    class Random_run_strat final : public Strat {
+    class Random_run_strat final : public Check_runner::Strategy::Strat {
     public:
         Random_run_strat() = default;
 

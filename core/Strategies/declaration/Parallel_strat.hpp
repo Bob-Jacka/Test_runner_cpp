@@ -10,7 +10,7 @@ namespace Strategy {
      * Different version of random strategy.
      * Run in parallel test case execution.
      */
-    class Parallel_strat final : public Strat {
+    class Parallel_strat final : public Check_runner::Strategy::Strat {
     public:
         Parallel_strat() = default;
 

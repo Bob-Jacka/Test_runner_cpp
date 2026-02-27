@@ -9,7 +9,7 @@ namespace Strategy {
      * --strat=choose<low> - will give only low priority test cases
      * --strat=choose<> or --strat=choose - will give default count of test cases
      */
-    class Choose_prior_strat final : public Strat {
+    class Choose_prior_strat final : public Check_runner::Strategy::Strat {
     public:
         ~Choose_prior_strat() override = default;
 

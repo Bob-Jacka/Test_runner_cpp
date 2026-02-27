@@ -1,5 +1,4 @@
 #include "File_controller.hpp"
-#include "../Exceptions/FileControllerException.hpp"
 
 /**
 * Open file and return condition variable of open

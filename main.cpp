@@ -124,7 +124,6 @@ namespace Check_runner {
                     return str.contains("=") and str.contains("--") and !str.empty();
                 };
                 using con_string_ref = const std::string &; ///short version of type for string values
-                using con_bool_ref   = const bool &;        ///short version of type for boolean values
 
                 if (libio::array::get_dynamic_array_size<std::string>(cont_to_check) != 0) {
                     throw Check_exceptions::MainException(__LINE__, "flags array is empty", __FILE_NAME__);
@@ -153,27 +152,31 @@ namespace Check_runner {
                         //strategies for utility execution:
                         if (flag_name == LP::Static_load_parameters_names::strat) {
                             const auto strat_value = reinterpret_cast<con_string_ref>(flag_value);
-                            Entities::context      = std::make_unique<Strategy::StratContext>();
+                            Entities::context      = std::make_unique<::Strategy::StratContext>();
 
 #ifdef EXTENDED_FUNCTIONALITY //strategies disables due to errors in import
 #pragma message("Using extended utility strategies")
 
                             if (strat_value == LP::Static_load_parameters_names::high_prior_strat) {
+                                Entities::load_parameters->SET_HIGH_PRIOR_STRAT();
                                 libio::output::println("Using 'high priority' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::High_prior_strat>()
                                 );
                             } else if (strat_value == LP::Static_load_parameters_names::random_strat) {
+                                Entities::load_parameters->SET_RANDOM_STRAT();
                                 libio::output::println("Using 'pseudo run' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Random_run_strat>()
                                 );
                             } else if (strat_value == LP::Static_load_parameters_names::parallel_strat) [[unlikely]] {
+                                Entities::load_parameters->SET_PARALLEL_STRAT();
                                 libio::output::println("Using 'parallel' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Parallel_strat>()
                                 );
                             } else if (strat_value == LP::Static_load_parameters_names::choose_strat) {
+                                Entities::load_parameters->SET_CHOOSE_STRAT();
                                 libio::output::println("Using 'choose' strategy.");
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Choose_prior_strat>()
@@ -183,9 +186,10 @@ namespace Check_runner {
                             else
 #endif
                             if (strat_value == LP::Static_load_parameters_names::usual_strat) [[likely]] {
+                                Entities::load_parameters->SET_USUAL_STRAT();
                                 libio::output::println("Using 'usual' strategy.");
                                 Entities::context->set_strategy(
-                                    std::make_unique<Strategy::Usual_strat>()
+                                    std::make_unique<::Strategy::Usual_strat>()
                                 );
                             } else {
                                 throw Check_exceptions::MainException(__LINE__,
@@ -234,9 +238,9 @@ namespace Check_runner {
                 //Apply default strategy if no strategy was given
 #ifdef USUALSTRAT_HPP
                 if (Entities::context == nullptr) {
-                    Entities::context = std::make_unique<Strategy::StratContext>();
+                    Entities::context = std::make_unique<::Strategy::StratContext>();
                     Entities::context->set_strategy(
-                        std::make_unique<Strategy::Usual_strat>()
+                        std::make_unique<::Strategy::Usual_strat>()
                     );
                 }
 #elifndef USUALSTRAT_HPP
@@ -350,8 +354,8 @@ namespace Check_runner {
                     switch (user_action) {
 #ifdef EXTENDED_FUNCTIONALITY
                         case 1:
-                                save_load_menu();
-                                break;
+                            save_load_menu();
+                            break;
 #endif
                         case 2:
                             Print::see_bugs();
@@ -372,7 +376,7 @@ namespace Check_runner {
             int user_action;
             REPEAT_FOREVER {
                 libio::output::println();
-                Utility::userInput(user_action);
+                USER_INPUT(user_action);
                 switch (user_action) {
                     //
                     }
@@ -383,7 +387,7 @@ namespace Check_runner {
                 int user_action;
                 REPEAT_FOREVER {
                     libio::output::println();
-                    Utility::userInput(user_action);
+                    USER_INPUT(user_action);
                     switch (user_action) {
                         //
                     }
@@ -399,7 +403,7 @@ namespace Check_runner {
                     libio::output::println("1. Save current progress");
                     libio::output::println("2. Load progress");
                     libio::output::println("3. Close menu");
-                    Utility::userInput(user_action);
+                    USER_INPUT(user_action);
                     switch (user_action) {
                         case 1:
                             save_current_progress();
@@ -422,7 +426,7 @@ namespace Check_runner {
                     libio::output::println("1. Train model");
                     libio::output::println("2. List models");
                     libio::output::println("3. Close menu");
-                    Utility::userInput(user_action);
+                    USER_INPUT(user_action);
                     switch (user_action) {
                         case 1:
                             break;
@@ -495,12 +499,12 @@ namespace Check_runner {
             const bool is_time    = Entities::load_parameters->GET_IS_TIME_REC();
 
             start_util_work = steady_clock::now();
-            for (const auto &ts: vtc) {
+            for (const auto &tс: vtc) {
                 //proceed test case one by one:
-                libio::output::println_w(L"Name: " + libio::output::to_wstring(ts.get_name()));
+                libio::output::println_w(L"Name: " + libio::output::to_wstring(tс.get_name()));
                 if (is_comment) {
                     libio::output::println_w(
-                        L"Comment: " + libio::output::to_wstring(ts.get_comment())); //output comments to console
+                        L"Comment: " + libio::output::to_wstring(tс.get_comment())); //output comments to console
                 }
                 if (is_time) {
                     start = steady_clock::now(); //get start time of the test case execution:
@@ -530,25 +534,23 @@ namespace Check_runner {
                     }
                     //test case result user input
                     auto test_res = TA::Test_result(); {
-                        if (result == Translation::Console_translation::accept or
-                            result == Translation::Console_translation::accept_short) {
-                            test_res.set_name(ts.get_name());
+                        if (result == Translation::Console_translation::accept or result == Translation::Console_translation::accept_short) {
+                            test_res.set_name(tс.get_name());
                             test_res.set_result(Translation::Console_translation::suc_res); //apply success result
-                        } else if (result == Translation::Console_translation::question or
-                                   result == Translation::Console_translation::enhance) {
+                        } else if (result == Translation::Console_translation::question or result == Translation::Console_translation::enhance) {
                             auto quest_or_enhance = TA::Question_or_enhance();
                             TA::enter_question_or_enhance(quest_or_enhance);
-                            test_res.set_name(ts.get_name()); //if Question or Enhance
+                            test_res.set_name(tс.get_name()); //if Question or Enhance
                             test_res.set_result(Translation::Console_translation::skip_res);
                             test_res.add_quest_enhance(quest_or_enhance);
                             vtr.push_back(test_res); //add question or enhance to test results
                             goto Ask_again_label;    //Return back, because user inputted question or enhance, but not test result
                         } else if (result == Translation::Console_translation::skip) {
-                            test_res.set_name(ts.get_name());
+                            test_res.set_name(tс.get_name());
                             test_res.set_result(Translation::Console_translation::skip_res);
                         } else if (result == Translation::Console_translation::disaccept or result ==
                                    Translation::Console_translation::disaccept_short) {
-                            test_res.set_name(ts.get_name());
+                            test_res.set_name(tс.get_name());
                             test_res.set_result(Translation::Console_translation::fail_res);
 
                             libio::output::colored::colored_print("To exit enter 'exit' word", "\n",
@@ -877,11 +879,7 @@ int main(int argc, char *argv[]
                 }
             }
         }
-    } else if (
-        const String conv_arg = *argv;
-        Console::arg_count == 2 and
-        conv_arg.contains(LP::Static_load_parameters_names::help)
-    ) {
+    } else if (const String conv_arg = *argv; Console::arg_count == 2 and conv_arg.contains(LP::Static_load_parameters_names::help)) {
         //print help to user if user wants help to be printed
         Console::Print::print_help();
         Console::Low_level::exit_utility(EXIT_SUCCESS);

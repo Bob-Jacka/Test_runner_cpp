@@ -4,7 +4,7 @@
 #include "Strat.hpp"
 
 namespace Strategy {
-    class High_prior_strat final : public Strat {
+    class High_prior_strat final : public Check_runner::Strategy::Strat {
     public:
         High_prior_strat() = default;
 

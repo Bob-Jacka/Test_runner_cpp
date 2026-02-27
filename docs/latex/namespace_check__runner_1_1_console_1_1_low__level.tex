@@ -1,0 +1,46 @@
+\doxysection{Check\+\_\+runner\+::Console\+::Low\+\_\+level Namespace Reference}
+\hypertarget{namespace_check__runner_1_1_console_1_1_low__level}{}\label{namespace_check__runner_1_1_console_1_1_low__level}\index{Check\_runner::Console::Low\_level@{Check\_runner::Console::Low\_level}}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{namespace_check__runner_1_1_console_1_1_low__level_a2143f32d171bcab131b68debf075286e}{write\+\_\+test\+\_\+results\+\_\+2file}} (const Vec\+\_\+t$<$ TA\+::\+Test\+\_\+result $>$ \&test\+\_\+results)
+\item 
+void \mbox{\hyperlink{namespace_check__runner_1_1_console_1_1_low__level_a90288f572445f2061eae0e92596aab44}{exit\+\_\+utility}} (const int \+\_\+\+Code, const String \&system\+\_\+msg="{}"{})
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Low level functionality (filesystem actions) in utility 
+
+\label{doc-func-members}
+\Hypertarget{namespace_check__runner_1_1_console_1_1_low__level_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{namespace_check__runner_1_1_console_1_1_low__level_a90288f572445f2061eae0e92596aab44}\index{Check\_runner::Console::Low\_level@{Check\_runner::Console::Low\_level}!exit\_utility@{exit\_utility}}
+\index{exit\_utility@{exit\_utility}!Check\_runner::Console::Low\_level@{Check\_runner::Console::Low\_level}}
+\doxysubsubsection{\texorpdfstring{exit\_utility()}{exit\_utility()}}
+{\footnotesize\ttfamily \label{namespace_check__runner_1_1_console_1_1_low__level_a90288f572445f2061eae0e92596aab44} 
+void Check\+\_\+runner\+::\+Console\+::\+Low\+\_\+level\+::exit\+\_\+utility (\begin{DoxyParamCaption}\item[{const int}]{\+\_\+\+Code}{, }\item[{const String \&}]{system\+\_\+msg}{ = {\ttfamily "{}"{}}}\end{DoxyParamCaption})}
+
+Function for gracefully exit from utility. 
+\begin{DoxyParams}{Parameters}
+{\em \+\_\+\+Code} & exit code. \\
+\hline
+{\em system\+\_\+msg} & optional message for message before exit (due to error in utility work) \\
+\hline
+\end{DoxyParams}
+\Hypertarget{namespace_check__runner_1_1_console_1_1_low__level_a2143f32d171bcab131b68debf075286e}\index{Check\_runner::Console::Low\_level@{Check\_runner::Console::Low\_level}!write\_test\_results\_2file@{write\_test\_results\_2file}}
+\index{write\_test\_results\_2file@{write\_test\_results\_2file}!Check\_runner::Console::Low\_level@{Check\_runner::Console::Low\_level}}
+\doxysubsubsection{\texorpdfstring{write\_test\_results\_2file()}{write\_test\_results\_2file()}}
+{\footnotesize\ttfamily \label{namespace_check__runner_1_1_console_1_1_low__level_a2143f32d171bcab131b68debf075286e} 
+void Check\+\_\+runner\+::\+Console\+::\+Low\+\_\+level\+::write\+\_\+test\+\_\+results\+\_\+2file (\begin{DoxyParamCaption}\item[{const Vec\+\_\+t$<$ TA\+::\+Test\+\_\+result $>$ \&}]{test\+\_\+results}{}\end{DoxyParamCaption})}
+
+Write down test results to file. 
+\begin{DoxyParams}{Parameters}
+{\em test\+\_\+results} & vector with test results. \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em File\+Controller\+Exception} & if unknown bug severity \\
+\hline
+\end{DoxyExceptions}

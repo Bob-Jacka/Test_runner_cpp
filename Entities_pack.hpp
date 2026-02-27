@@ -32,7 +32,7 @@ namespace Check_runner {
         //Other entities:
         static std::unique_ptr<LP::Load_parameters>                   load_parameters;  ///load parameters of the utility
         static std::unique_ptr<TA::Test_artifact_fabric>              test_case_fabric; ///test artifacts fabric entity
-        static std::unique_ptr<Strategy::StratContext>                context;          ///context for determining utility strategy
+        static std::unique_ptr<::Strategy::StratContext>              context;          ///context for determining utility strategy
         static std::unique_ptr<Interpreter_ns::Directive_interpreter> parser;           ///entity for text parsing in suit
 
 #ifdef EXTENDED_FUNCTIONALITY
