@@ -15,6 +15,7 @@
 #include "spell_corrector.hpp"
 #endif
 
+#include <memory>
 #include "core/Strategies/declaration/StratContex.hpp"
 #include "core/Test_artifacts/declaration/Test_result.hpp"
 

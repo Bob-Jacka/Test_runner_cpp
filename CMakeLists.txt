@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.31)
 project(Check_runner)
 
 set(CMAKE_CXX_STANDARD 23)
+
+add_compile_options(-Wall -Wextra)
 include(FetchContent)
 
 FetchContent_Declare(

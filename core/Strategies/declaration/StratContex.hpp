@@ -1,7 +1,6 @@
 #ifndef STRATCONTEX_HPP
 #define STRATCONTEX_HPP
 
-#include <memory>
 #include "Strat.hpp"
 
 /**

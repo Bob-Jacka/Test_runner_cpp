@@ -55,15 +55,27 @@ namespace Check_runner {
 
             static bool check_file_existence(std::string &);
 
-            static std::tuple<std::ifstream, bool> open_file(const std::string &);
+            /**
+            * Open file and return condition variable of open
+            * @param file_name name of the file to open
+            * @tparam T generic type (which type of file to create)
+            * @return tuple with file handler and bool (true if file open or error)
+            */
+            template<typename T>
+                requires std::is_same_v<T, std::fstream> || std::is_same_v<T, std::ifstream>
+            static std::tuple<T, bool> open_file(const std::string &file_name) {
+                if (auto file = T(file_name); file.is_open()) {
+                    return std::make_tuple<T, bool>(std::move(file), true);
+                }
+                return std::make_tuple(T(), false); //File not exist with name
+            }
 
 #ifdef NEW_FILE_FORMAT
             static std::tuple<std::ifstream, bool> create_tf_file(const std::string &file_name); ///file for tests
             static std::tuple<std::ifstream, bool> create_rsf_file(const std::string &file_name); ///file for test results
-#elifndef NEW_FILE_FORMAT
+#endif
             //Test result document file
             static std::fstream create_test_result_file(const std::string & = "results.txt");
-#endif
     };
 }
 #endif
