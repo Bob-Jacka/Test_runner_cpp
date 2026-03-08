@@ -16,32 +16,33 @@ import UtilFuncs_mod;
  * Namespace for directive interpreter and other things
  */
 namespace Interpreter_ns {
-#ifdef GLOBAL_MAPS
     /**
      * Global statement of the parser
      */
-    template<typename K = std::string, typename V = std::string>
     struct Global {
         private:
-            std::map<K, V> *global_parameters; ///global parameters, key is param name, value is param value
-            std::map<K, V> *global_functions;
+            using GlobalFunc = std::function<bool(const std::vector<std::string>&)>;
+            std::map<std::string, std::string> *global_parameters; ///global parameters, key is param name, value is param value
+            std::map<std::string, GlobalFunc> *global_functions;
 
+            void init_global_functions();
+            bool call_global_function(const std::string& name, const std::string& args);
+            
         public:
-            Global() = default;
+            Global();
 
-            ~Global() = default;
+            ~Global();
 
-            bool contains_global(K key);
+            bool contains_global(std::string key);
 
-            void add_global_parameters(const K &key, const V &value);
+            void add_global_parameters(const std::string &key, const V &value);
 
-            void remove_global_parameters(const K &key);
+            void remove_global_parameters(const std::string &key);
 
-            void add_global_functions(const K &key, const V &value);
+            void add_global_functions(const std::string &key, const V &value);
 
-            V get_global_function(K key);
+            std::string get_global_function(std::string key);
     };
-#endif
 
     /**
      * Class for directive interpreter
@@ -53,6 +54,8 @@ namespace Interpreter_ns {
             std::vector<std::string> inner_vector_to_proceed; ///main vector with lines
 
             std::vector<std::string> *output_vector; ///vector that will be output result of parse directives and further creating test cases
+
+            Global<std::string, std::string> *global_map; ///global map for storing parameters and functions
 
         private:
             [[nodiscard]] static bool interpret_logical_expression(const std::string &);
@@ -83,10 +86,8 @@ namespace Interpreter_ns {
 
             Directive_interpreter &operator=(const Directive_interpreter &) = delete;
 
-#ifdef GLOBAL_MAPS
             //parameters getter:
             [[nodiscard]] std::map<std::string, std::string> get_suit_parameters() const;
-#endif
 
             [[nodiscard]] std::vector<std::string> get_output_vector() const;
 
