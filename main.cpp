@@ -1,5 +1,4 @@
 #include <chrono>
-#include <concepts>
 
 #include "Entities_pack.hpp"
 #include "core/Data/Translation.hpp"
@@ -181,9 +180,7 @@ namespace Check_runner {
                                 Entities::context->set_strategy(
                                     std::make_unique<Strategy::Choose_prior_strat>()
                                 );
-                            }
-
-                            else
+                            } else
 #endif
                             if (strat_value == LP::Static_load_parameters_names::usual_strat) [[likely]] {
                                 Entities::load_parameters->SET_USUAL_STRAT();
@@ -373,12 +370,12 @@ namespace Check_runner {
              * Menu for bug entering
              */
             [[noreturn]] void bug_menu() {
-            int user_action;
-            REPEAT_FOREVER {
-                libio::output::println();
-                USER_INPUT(user_action);
-                switch (user_action) {
-                    //
+                int user_action;
+                REPEAT_FOREVER {
+                    libio::output::println();
+                    USER_INPUT(user_action);
+                    switch (user_action) {
+                            //
                     }
                 }
             }
@@ -389,7 +386,7 @@ namespace Check_runner {
                     libio::output::println();
                     USER_INPUT(user_action);
                     switch (user_action) {
-                        //
+                            //
                     }
                 }
             }
@@ -399,20 +396,24 @@ namespace Check_runner {
              */
             [[noreturn]] void save_load_menu() {
                 int user_action;
-                REPEAT_FOREVER {
+                REPEAT_FOREVER{
                     libio::output::println("1. Save current progress");
                     libio::output::println("2. Load progress");
                     libio::output::println("3. Close menu");
                     USER_INPUT(user_action);
                     switch (user_action) {
                         case 1:
-                            save_current_progress();
+                        save_current_progress();
                         case 2:
-                            load_current_progress();
+                        load_current_progress();
                         case 3:
                             break;
                         default:
                             continue;
+
+
+
+
                     }
                 }
             }
@@ -422,7 +423,7 @@ namespace Check_runner {
              */
             [[noreturn]] void ai_menu() {
                 int user_action;
-                REPEAT_FOREVER {
+                REPEAT_FOREVER{
                     libio::output::println("1. Train model");
                     libio::output::println("2. List models");
                     libio::output::println("3. Close menu");
@@ -436,6 +437,10 @@ namespace Check_runner {
                             break;
                         default:
                             continue;
+
+
+
+
                     }
                 }
             }
@@ -759,13 +764,13 @@ namespace Check_runner {
  */
 int main(int argc, char *argv[]
 #ifdef EXTENDED_FUNCTIONALITY
-        , char *envp[]
+         , char *envp[]
 #endif
 ) {
     using namespace Check_runner;
 
 #ifdef EXTENDED_FUNCTIONALITY
-    Extended_begin_label:
+Extended_begin_label:
 #endif
 
     if (argc > 1) {
@@ -796,7 +801,7 @@ int main(int argc, char *argv[]
                 return Fl::run();
             }
 #endif
-            Entities::parser = std::make_unique<Interpreter_ns::Directive_interpreter>();
+            Entities::parser = std::make_unique<Interpreter_ns::Directive_parser>();
         }
 
         //Pre strategy actions block
@@ -805,8 +810,7 @@ int main(int argc, char *argv[]
             //global state of everything_now strategy to not use load_parameters
             //1) Get data from entry point file
             auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
-            //TODO can cause a double work, need first include all files and then delete comments
-            lines_from_file = Entities::parser->delete_comments(lines_from_file); //2) Delete comments from file
+            lines_from_file      = Entities::parser->delete_comments(lines_from_file); //2) Delete comments from file
             if (not Entities::load_parameters->get_parameters().empty()) {
                 //2.25 Parse given in console parameters
                 Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
@@ -888,8 +892,8 @@ int main(int argc, char *argv[]
     //Config read branch
     else {
         if (File_controller::check_file_existence(config_file_name)) {
-            auto config_lines = File_controller::readlines(config_file_name);
-            const auto ini_parser = std::make_unique<Interpreter_ns::Ini_parser>(config_lines);
+            auto       config_lines = File_controller::readlines(config_file_name);
+            const auto ini_parser   = std::make_unique<Interpreter_ns::Ini_parser>(config_lines);
             //increment arguments count and return back
             argc = ini_parser->get_section_count();
             argv = ini_parser->convert_to_char_array();

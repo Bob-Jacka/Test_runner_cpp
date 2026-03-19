@@ -1,8 +1,6 @@
 #ifndef ENTITIES_PACK_HPP
 #define ENTITIES_PACK_HPP
 
-#include <vector>
-
 #include "Load_parameters.hpp"
 #include "core/Entities/Test_Artifact_Fabric.hpp"
 #include "core/Entities/Line/Line_parser.hpp"
@@ -31,13 +29,13 @@ namespace Check_runner {
     */
     struct Entities {
         //Other entities:
-        static std::unique_ptr<LP::Load_parameters>                   load_parameters;  ///load parameters of the utility
-        static std::unique_ptr<TA::Test_artifact_fabric>              test_case_fabric; ///test artifacts fabric entity
-        static std::unique_ptr<::Strategy::StratContext>              context;          ///context for determining utility strategy
-        static std::unique_ptr<Interpreter_ns::Directive_interpreter> parser;           ///entity for text parsing in suit
+        static std::unique_ptr<LP::Load_parameters>              load_parameters;  ///load parameters of the utility
+        static std::unique_ptr<TA::Test_artifact_fabric>         test_case_fabric; ///test artifacts fabric entity
+        static std::unique_ptr<::Strategy::StratContext>         context;          ///context for determining utility strategy
+        static std::unique_ptr<Interpreter_ns::Directive_parser> parser;           ///entity for text parsing in suit
 
 #ifdef EXTENDED_FUNCTIONALITY
-        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser;           ///entity for text parsing ini file
+        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser; ///entity for text parsing ini file
 #endif
 
 #ifdef GUI_LANG_CHECKER
@@ -55,45 +53,45 @@ namespace Check_runner {
      * Group of test cases
      */
     struct TS_group {
-    private:
-        std::string group_id; ///id of the group
-        Vec_t<Check_runner::TA::Test_case> tests_in_group;
+        private:
+            std::string                        group_id; ///id of the group
+            Vec_t<Check_runner::TA::Test_case> tests_in_group;
 
-    public:
-        TS_group() = delete;
+        public:
+            TS_group() = delete;
 
-        ~TS_group() = default;
+            ~TS_group() = default;
 
-        explicit TS_group(const Vec_t<Check_runner::TA::Test_case> &tests_in_group) {
-            this->tests_in_group = tests_in_group;
-        }
+            explicit TS_group(const Vec_t<Check_runner::TA::Test_case> &tests_in_group) {
+                this->tests_in_group = tests_in_group;
+            }
 
-        void add_test(const Check_runner::TA::Test_case &new_test_line) {
-            tests_in_group.push_back(new_test_line);
-        }
+            void add_test(const Check_runner::TA::Test_case &new_test_line) {
+                tests_in_group.push_back(new_test_line);
+            }
     };
 
     /**
      * Group of groups of tests cases
      */
     struct TS_groups {
-    private:
-        std::unique_ptr<std::map<std::string, TS_group> > groups; ///groups of groups, key - group id, value - ts_group with test cases
-        std::string group_parameters; ///parameters directive data in group
+        private:
+            std::unique_ptr<std::map<std::string, TS_group> > groups;           ///groups of groups, key - group id, value - ts_group with test cases
+            std::string                                       group_parameters; ///parameters directive data in group
 
-    public:
-        TS_groups() = delete;
+        public:
+            TS_groups() = delete;
 
-        ~TS_groups() = default;
+            ~TS_groups() = default;
 
-        explicit TS_groups(const std::string &group_parameters = "") {
-            this->groups = std::make_unique<std::map<std::string, TS_group> >();
-            this->group_parameters = group_parameters;
-        }
+            explicit TS_groups(const std::string &group_parameters = "") {
+                this->groups           = std::make_unique<std::map<std::string, TS_group> >();
+                this->group_parameters = group_parameters;
+            }
 
-        void add_group(const std::string &group_id, const TS_group &group) const {
-            this->groups->insert(std::make_pair(group_id, group));
-        }
+            void add_group(const std::string &group_id, const TS_group &group) const {
+                this->groups->insert(std::make_pair(group_id, group));
+            }
     };
 #endif
 }

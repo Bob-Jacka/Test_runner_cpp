@@ -25,7 +25,7 @@ add_executable(Check_runner
         core/Data/Translation.hpp
         core/Exceptions/Base_exception.hpp
         core/Exceptions/FileControllerException.hpp
-        core/Exceptions/LineInterpreterException.hpp
+        core/Exceptions/LineParserException.hpp
         core/Exceptions/MainException.hpp
         core/Exceptions/StrategyException.hpp
         core/Exceptions/TestArtifactException.hpp

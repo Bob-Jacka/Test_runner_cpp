@@ -1,23 +1,22 @@
 #include "../Line/Line_parser.hpp"
 
-class File_controller;
-
 /**
  * Increment interpreter position
  */
-#define INCR_POS ++this->interpreter_position;
+#define INCR_POS ++this->parser_position;
 
 /**
  * Get current interpreter position
  */
-#define GET_POS this->interpreter_position
+#define GET_POS this->parser_position
 
-#define GLOBAL_PARAMS this->global_parameters
+#define GLOBAL_PARAMS this->global_map
 
-Interpreter_ns::Directive_interpreter::Directive_interpreter() {
-    this->interpreter_position    = 0; //start position in interpreter
+Interpreter_ns::Directive_parser::Directive_parser() {
+    this->parser_position         = 0; //start position in interpreter
     this->output_vector           = new std::vector<std::string>();
     this->inner_vector_to_proceed = std::vector<std::string>();
+    this->global_map              = new Global();
 }
 
 /**
@@ -25,19 +24,22 @@ Interpreter_ns::Directive_interpreter::Directive_interpreter() {
  * @param parameters_line line that contains arguments and comparison sign.
  * @return bool value of result, where false means left operand is not equal (less) that right operand.
  */
-bool Interpreter_ns::Directive_interpreter::interpret_logical_expression(const std::string &parameters_line) {
-    const auto arguments = libio::string::split(parameters_line, " ");
-    std::string op_1 = arguments[0];
-    const std::string &operat = arguments[1];
-    std::string op_2 = arguments[2];
-    
-    if (global_map->contains_global(op_1)) {
-        op_1 = global_parameters->at(op_1);
+bool Interpreter_ns::Directive_parser::interpret_logical_expression(const std::string &parameters_line) const {
+    const auto         arguments = libio::string::split(parameters_line, " ");
+    std::string        op_1      = arguments[0];
+    const std::string &operat    = arguments[1];
+    std::string        op_2      = arguments[2];
+
+    //if map already contains values:
+    {
+        if (global_map->contains_global(op_1)) {
+            op_1 = global_map->get_global_parameter(op_1);
+        }
+        if (global_map->contains_global(op_2)) {
+            op_2 = global_map->get_global_parameter(op_2);
+        }
     }
-    if (global_map->contains_global(op_2)) {
-        op_2 = global_parameters->at(op_2);
-    }
-    
+
     bool result = false;
     if (operat == "<") [[unlikely]] {
         result = op_1 < op_2;
@@ -48,9 +50,9 @@ bool Interpreter_ns::Directive_interpreter::interpret_logical_expression(const s
     } else if (operat == "!=") {
         result = op_1 != op_2;
     } else {
-        throw Check_exceptions::LineInterpreterException(__LINE__, 
-            ("Unknown parameter form given: " + parameters_line).c_str(),
-            __FILE_NAME__);
+        throw Check_exceptions::LineParserException(__LINE__,
+                                                    ("Unknown parameter form given: " + parameters_line).c_str(),
+                                                    __FILE_NAME__);
     }
     return result;
 }
@@ -61,7 +63,7 @@ bool Interpreter_ns::Directive_interpreter::interpret_logical_expression(const s
  *  ...
  *  Global function should start with uppercase letter.
  */
-void Interpreter_ns::Directive_interpreter::parse_global_func() {
+void Interpreter_ns::Directive_parser::parse_global_func() {
 }
 
 /**
@@ -69,27 +71,17 @@ void Interpreter_ns::Directive_interpreter::parse_global_func() {
  * @param directive_to_jump name of the directive to jump on
  * @return bool value of directive next position, return true if directive is found, false if directive not found
  */
-bool Interpreter_ns::Directive_interpreter::jmp_to(const std::string &directive_to_jump) {
-    for (size_t i = interpreter_position; i < inner_vector_to_proceed.size(); ++i) {
+bool Interpreter_ns::Directive_parser::jmp_to(const std::string &directive_to_jump) {
+    for (int i = parser_position; i < inner_vector_to_proceed.size(); ++i) {
         if (inner_vector_to_proceed[i].contains(directive_to_jump)) {
-            interpreter_position = i;
+            parser_position = i;
             return true;
         }
     }
     return false;
 }
 
-#ifdef GLOBAL_MAPS
-/**
- * Method for receiving global parameters
- * @return map with key and value for global parameters
- */
-std::map<std::string, std::string> Interpreter_ns::Directive_interpreter::get_suit_parameters() const {
-
-}
-#endif
-
-std::vector<std::string> Interpreter_ns::Directive_interpreter::get_output_vector() const {
+std::vector<std::string> Interpreter_ns::Directive_parser::get_output_vector() const {
     return *this->output_vector;
 }
 
@@ -98,33 +90,33 @@ std::vector<std::string> Interpreter_ns::Directive_interpreter::get_output_vecto
  * @param directive_args name of the directive (its name).
  * @throw LineInterpreterException if line not end with semicolon
 */
-void Interpreter_ns::Directive_interpreter::directive_group(const std::string &directive_args) {
+void Interpreter_ns::Directive_parser::directive_group(const std::string &directive_args) {
     using High_str = std::string;
     if (directive_args.ends_with(group_indicator)) {
         //check for directive ending and process inner test cases in group if they exist
         High_str hashed;
         while (true) {
-            auto inner_line = inner_vector_to_proceed[this->interpreter_position];
+            auto inner_line = inner_vector_to_proceed[this->parser_position];
             if (!inner_line.contains(suit_directive_end)) {
                 //add hash identifier to line and push it
 #ifdef DEBUG
                 auto cleared = libio::string::delete_whitespaces(inner_line);
-                auto hash = Utility::hash<4>(directive_args);
-                hashed = hash + cleared;
+                auto hash    = Utility::hash<4>(directive_args);
+                hashed       = hash + cleared;
 #elifndef DEBUG
                 hashed = Utility::hash<4>(directive_args) + libio::string::delete_whitespaces(inner_line);
 #endif
                 output_vector->push_back(hashed);
-                ++this->interpreter_position;
+                ++this->parser_position;
             } else {
                 break;
             }
         }
     } else {
-        throw Check_exceptions::LineInterpreterException(__LINE__,
-                                                         ("Expected group ending in line with semicolon (:), but given " +
-                                                          directive_args).c_str(),
-                                                         __FILE_NAME__);
+        throw Check_exceptions::LineParserException(__LINE__,
+                                                    ("Expected group ending in line with semicolon (:), but given " +
+                                                     directive_args).c_str(),
+                                                    __FILE_NAME__);
     }
 }
 
@@ -133,7 +125,7 @@ void Interpreter_ns::Directive_interpreter::directive_group(const std::string &d
  * @param parameters_line string line to parse for parameters.
  * @throw LineInterpreterException if given parameters are in wrong form.
  */
-void Interpreter_ns::Directive_interpreter::parse_parameters(const std::string &parameters_line) const {
+void Interpreter_ns::Directive_parser::parse_parameters(const std::string &parameters_line) const {
     using namespace libio::string;
     auto check_lambda = [&](const std::string &to_check) -> bool {
         return to_check.contains("=");
@@ -147,33 +139,33 @@ void Interpreter_ns::Directive_interpreter::parse_parameters(const std::string &
 
     for (const auto &parameter: split_line) {
         if (check_lambda(parameter)) {
-            auto name_and_value = Utility::split(parameter, '=');
-            global_parameters->insert({name_and_value[0], name_and_value[1]}); //attach name to value in global parameters
+            auto name_and_value = split(parameter, "=");
+            global_map->add_global_parameters(name_and_value[0], name_and_value[1]); //attach name to value in global parameters
         } else {
-            throw Check_exceptions::LineInterpreterException(__LINE__,
-                                                             ("Suit parameters should contain equal sign (=), but given " +
-                                                              parameter).c_str(),
-                                                             __FILE_NAME__);
+            throw Check_exceptions::LineParserException(__LINE__,
+                                                        ("Suit parameters should contain equal sign (=), but given " +
+                                                         parameter).c_str(),
+                                                        __FILE_NAME__);
         }
     }
     //It can be an error, because no parameters are given, but on the other hand it is just a message and user might not provide any parameters
-    if (this->global_parameters->empty()) {
+    if (this->global_map->empty()) {
         libio::output::println("Expected parameters directive with valid attributes");
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool Interpreter_ns::Directive_interpreter::process_block_until_next() {
+bool Interpreter_ns::Directive_parser::process_block_until_next() {
     int nesting_level = 1;
-    
-    while (interpreter_position < inner_vector_to_proceed.size()) {
-        const auto& line = inner_vector_to_proceed[interpreter_position];
-        
+
+    while (parser_position < inner_vector_to_proceed.size()) {
+        const auto &line = inner_vector_to_proceed[parser_position];
+
         if (line.starts_with(directive_start_sym)) {
-            auto split_line = libio::string::split_by_first_delim(line, ' ');
+            auto        split_line     = libio::string::split_by_first_delim(line, ' ');
             std::string directive_name = split_line[0].substr(1);
-            
+
             if (directive_name == if_directive) {
                 ++nesting_level;
             } else if (directive_name == endif_directive) {
@@ -181,17 +173,17 @@ bool Interpreter_ns::Directive_interpreter::process_block_until_next() {
                 if (nesting_level == 0) {
                     return false;
                 }
-            } else if (nesting_level == 1 && 
-                      (directive_name == elif_directive || directive_name == else_directive)) {
+            } else if (nesting_level == 1 &&
+                       (directive_name == elif_directive || directive_name == else_directive)) {
                 return true;
             }
         }
-        
-        ++interpreter_position;
+
+        ++parser_position;
     }
-    
-    throw Check_exceptions::LineInterpreterException(__LINE__, 
-        "Missing #End_if directive", __FILE_NAME__);
+
+    throw Check_exceptions::LineParserException(__LINE__,
+                                                "Missing #End_if directive", __FILE_NAME__);
 }
 
 /**
@@ -200,6 +192,7 @@ bool Interpreter_ns::Directive_interpreter::process_block_until_next() {
  *
  * #Parameters: a=1, b=3
  *
+ * @code
  * #If a == 2:
  *  <some action>
  * #Elif b > 2:
@@ -207,49 +200,25 @@ bool Interpreter_ns::Directive_interpreter::process_block_until_next() {
  * #Else:
  *  <some else action>
  * #End_if
+ * @endcode
  * @param _arguments arguments that will be given to if, elif or else directives.
  * @throw LineInterpreterException if wrong method usage
  */
-bool Interpreter_ns::Directive_interpreter::high_level_branch_wrapper(const std::string &_arguments) {
-    /**
-     * Check for equal operators in given string
-     */
-    const auto check_func_full = [&](const std::string &to_check) -> bool {
-        const auto allowed_operators = std::vector<std::string>{"<", ">", "==", "!="};
-        for (const auto &allowed_operator: allowed_operators) {
-            if (to_check.contains(allowed_operator)) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    /**
-     * Lambda func for conditions like just - "true_cond" or "a" (where "a" is the name of variable, given in parameters directive)
-     * And if that condition is true, method will include test cases
-     */
-    const auto check_func_short = [&](const std::string &to_check) -> bool {
-        return !to_check.contains("=");
-    };
-
-    if (interpret_logical_expression(condition)) {
-        // Условие истинно — выполняем блок
-        process_block_until_next({"#Elif", "#Else", "#End_if"});
-        skip_to_endif(); // пропускаем остальные ветки
+bool Interpreter_ns::Directive_parser::high_level_branch_wrapper(const std::string &_arguments) {
+    if (interpret_logical_expression(_arguments)) {
+        // if true - proceed until
+        process_block_until_next();
+        skip_to_endif();
         return true;
-    } else {
-        // Условие ложно — ищем следующую ветку
-        skip_to_next_branch();
-        return false;
     }
-    throw Check_exceptions::LineInterpreterException(__LINE__, ("Unknown if directive state: " + _arguments).c_str(),
-                                                     __FILE_NAME__);
+    skip_to_next_branch();
+    return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Interpreter_ns::Directive_interpreter::set_interpreter_position(const int &interpreter_position) {
-    this->interpreter_position = interpreter_position;
+void Interpreter_ns::Directive_parser::set_parser_position(const int &parser_position) {
+    this->parser_position = parser_position;
 }
 
 /**
@@ -259,35 +228,36 @@ void Interpreter_ns::Directive_interpreter::set_interpreter_position(const int &
  * @return vector with parsed lines
  */
 std::vector<std::string>
-Interpreter_ns::Directive_interpreter::exec(const std::vector<std::string> &input_vector) {
+Interpreter_ns::Directive_parser::exec(const std::vector<std::string> &input_vector) {
     inner_vector_to_proceed = input_vector;
     include_cycle(); //first wave of execution
 
     //Second wave of execution, proceed other directives
-    while (interpreter_position != input_vector.size() - 1) {
-        const auto &line = inner_vector_to_proceed[interpreter_position++];
+    while (parser_position != input_vector.size() - 1) {
+        const auto &line = inner_vector_to_proceed[parser_position++];
         if (line.starts_with(directive_start_sym)) {
             const auto split_string_line = libio::string::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
             const auto directive_name    = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
             const auto directive_value   = libio::string::delete_whitespaces(split_string_line[1]); //current directive value
 
             if (directive_value.contains("\"")) {
-                throw Check_exceptions::LineInterpreterException(__LINE__, "Value should not contain \" symbol",
-                                                                 __FILE_NAME__);
+                throw Check_exceptions::LineParserException(__LINE__, "Value should not contain \" symbol",
+                                                            __FILE_NAME__);
             }
 
             if (directive_name == group_directive_start) [[likely]] {
+                //for groups
                 directive_group(directive_value);
-            }
-#ifdef EXTENDED_FUNCTIONALITY_IF
+            } else if (directive_name == if_directive) [[likely]] {
+                //for branches
                 high_level_branch_wrapper(directive_value);
-#endif
-           else if (directive_name == parameters_directive) {
+            } else if (directive_name == parameters_directive) {
+                //for parameters
                 parse_parameters(directive_value);
             } else {
-                throw Check_exceptions::LineInterpreterException(__LINE__,
-                                                                 ("Invalid line directive detected: " + directive_name).c_str(),
-                                                                 __FILE_NAME__);
+                throw Check_exceptions::LineParserException(__LINE__,
+                                                            ("Invalid line directive detected: " + directive_name).c_str(),
+                                                            __FILE_NAME__);
             }
         }
     }
@@ -300,7 +270,7 @@ Interpreter_ns::Directive_interpreter::exec(const std::vector<std::string> &inpu
  * @return vector with lines
  */
 std::vector<std::string>
-Interpreter_ns::Directive_interpreter::delete_comments(std::vector<std::string> &input_vector) const {
+Interpreter_ns::Directive_parser::delete_comments(std::vector<std::string> &input_vector) const {
     for (int i = 0; i < input_vector.size();) {
         const auto line = libio::string::delete_whitespaces(input_vector[i]);
         if (line.starts_with(comment_sym) or line.starts_with(ignore_directive) or line.empty()) {
@@ -318,7 +288,7 @@ Interpreter_ns::Directive_interpreter::delete_comments(std::vector<std::string> 
  * Simply adds all elements from input vector to inner output
  * @param input_vector source vector with strings
  */
-void Interpreter_ns::Directive_interpreter::add_to_output_vector(const std::vector<std::string> &input_vector) const {
+void Interpreter_ns::Directive_parser::add_to_output_vector(const std::vector<std::string> &input_vector) const {
     for (auto &input_elem: input_vector) {
         output_vector->push_back(input_elem);
     }
@@ -328,137 +298,182 @@ void Interpreter_ns::Directive_interpreter::add_to_output_vector(const std::vect
  * Include all files into.
  * First cycle in processing directives
  */
-void Interpreter_ns::Directive_interpreter::include_cycle() {
-    interpreter_position = 0;
+void Interpreter_ns::Directive_parser::include_cycle() {
+    parser_position = 0;
     std::vector<std::string> processed;
-    
-    while (interpreter_position < inner_vector_to_proceed.size()) {
-        const auto& line = inner_vector_to_proceed[interpreter_position];
-        
+
+    while (parser_position < inner_vector_to_proceed.size()) {
+        const auto &line = inner_vector_to_proceed[parser_position];
+
         if (line.starts_with(directive_start_sym)) {
-            auto split_line = libio::string::split_by_first_delim(line, ' ');
+            auto        split_line     = libio::string::split_by_first_delim(line, ' ');
             std::string directive_name = split_line[0].substr(1); //delete #
-            
+
             if (directive_name == import_directive) {
-                std::string file_path = libio::string::delete_whitespaces(split_line[1]);
-                auto imported_lines = File_controller::readlines(file_path);
-                for (const auto& imported : imported_lines) {
+                std::string file_path      = libio::string::delete_whitespaces(split_line[1]);
+                auto        imported_lines = Check_runner::File_controller::readlines(file_path);
+                for (const auto &imported: imported_lines) {
                     processed.push_back(imported);
                 }
-                ++interpreter_position;
+                ++parser_position;
                 continue;
             }
         }
         processed.push_back(line);
-        ++interpreter_position;
+        ++parser_position;
     }
-    
+
     inner_vector_to_proceed = std::move(processed);
-    interpreter_position = 0;
+    parser_position         = 0;
 }
 
-void skip_to_next_branch() {
+///increase until next branching
+void Interpreter_ns::Directive_parser::skip_to_next_branch() {
     int nesting = 1; // inside #If
-    while (interpreter_position < inner_vector_to_proceed.size() && nesting > 0) {
-        const auto& line = inner_vector_to_proceed[interpreter_position];
+    while (parser_position < inner_vector_to_proceed.size() && nesting > 0) {
+        const auto &line = inner_vector_to_proceed[parser_position];
         if (line.contains(if_directive)) {
             ++nesting;
+        } else if (line.contains(endif_directive)) {
+            --nesting;
         }
-        else if {
-            (line.contains(endif_directive)) --nesting;
-        }
-        ++interpreter_position;
+        ++parser_position;
     }
 }
 
-// skip all lines until #End_if
-void skip_to_endif() {
-    int nesting = 1;
-    while (interpreter_position < inner_vector_to_proceed.size()) {
-        const auto& line = inner_vector_to_proceed[interpreter_position];
-        if (line.contains(if_directive)) ++nesting;
-        else if (line.contains(endif_directive)) --nesting;
-        if (nesting == 0) break;
-        ++interpreter_position;
+/// skip all lines until #End_if
+void Interpreter_ns::Directive_parser::skip_to_endif() {
+    int        nesting = 1;
+    const auto size    = inner_vector_to_proceed.size();
+    while (parser_position < size) {
+        const auto &line = inner_vector_to_proceed[parser_position];
+        if (line.contains(if_directive)) {
+            ++nesting;
+        } else if (line.contains(endif_directive)) {
+            --nesting;
+        }
+        if (nesting == 0) {
+            break;
+        }
+        ++parser_position;
     }
 }
 
-Global() : global_parameters(new std::map<std::string, std::string>()), 
-           global_functions(new std::map<std::string, std::string>()) {}
-
-~Global() { 
-    delete global_parameters; 
-    delete global_functions; 
+Interpreter_ns::Global::Global() {
+    global_parameters = new std::map<std::string, std::string>();
+    global_functions  = new std::map<std::string, glob_func>();
 }
 
-bool Interpreter_ns::Global::contains_global(std::string key) {
+Interpreter_ns::Global::~Global() {
+    delete global_parameters;
+    delete global_functions;
+}
+
+bool Interpreter_ns::Global::empty() const {
+    return global_parameters->empty() && global_functions->empty();
+}
+
+bool Interpreter_ns::Global::contains_global(const std::string &key) const {
     return global_parameters->contains(key);
 }
 
-void Interpreter_ns::Global::add_global_parameters(const std::string &key, const std::string &value) {
+void Interpreter_ns::Global::add_global_parameters(const std::string &key, const std::string &value) const {
     global_parameters->insert_or_assign(key, value);
 }
 
-void Interpreter_ns::Global::remove_global_parameters(const std::string &key) {
-    global_parameters->erase(key);
-}
-
-void Interpreter_ns::Global::add_global_functions(const std::string &key, const std::string &value) {
+void Interpreter_ns::Global::add_global_functions(const std::string &key, glob_func value) const {
     global_functions->insert_or_assign(key, value);
 }
 
-std::string Interpreter_ns::Global::get_global_function(std::string key) {
+void Interpreter_ns::Global::remove_global_parameters(const std::string &key) const {
+    global_parameters->erase(key);
+}
+
+Interpreter_ns::glob_func Interpreter_ns::Global::get_global_function(const std::string &key) const {
     if (global_functions->contains(key)) {
         return global_functions->at(key);
     }
-    throw Check_exceptions::LineInterpreterException(__LINE__, 
-        ("Global function not found: " + key).c_str(), __FILE_NAME__);
+    throw Check_exceptions::LineParserException(__LINE__,
+                                                ("Global function not found: " + key).c_str(), __FILE_NAME__);
 }
 
-void Interpreter_ns::Global::init_global_functions() {
-    global_functions["Contains"] = [](const std::vector<std::string>& args) {
-        if (args.size() != 2) {
-            return false;
-        }
-        return args[0].contains(args[1]);
-    };
-    
-    global_functions["Starts_with"] = [](const std::vector<std::string>& args) {
-        if (args.size() != 2) {
-            return false;
-        }
-        return args[0].starts_with(args[1]);
-    };
-    
-    global_functions["Empty"] = [](const std::vector<std::string>& args) {
-        if (args.size() != 1) {
-            return false;
-        }
-        return args[0].empty();
-    };
-}
-
-bool Interpreter_ns::Global::call_global_function(const std::string& name, const std::string& args) {
-    if (!global_functions.contains(name)) {
-        throw Check_exceptions::LineInterpreterException(__LINE__,
-            ("Unknown global function: " + name).c_str(), __FILE_NAME__);
+std::string Interpreter_ns::Global::get_global_parameter(const std::string &key) const {
+    if (global_parameters->contains(key)) {
+        return global_parameters->at(key);
     }
-    
+    throw Check_exceptions::LineParserException(__LINE__,
+                                                ("Global function not found: " + key).c_str(), __FILE_NAME__);
+}
+
+/**
+ * Initialize global functions in interpreter
+ */
+void Interpreter_ns::Global::init_global_functions() const {
+    global_functions->insert({
+        "Contains", [](const std::vector<std::string> &args) {
+            if (args.size() != 2) {
+                return false;
+            }
+            return args[0].starts_with(args[1]);
+        }
+    });
+
+    global_functions->insert({
+        "Starts_with", [](const std::vector<std::string> &args) {
+            if (args.size() != 2) {
+                return false;
+            }
+            return args[0].starts_with(args[1]);
+        }
+    });
+
+    global_functions->insert({
+        "Empty", [](const std::vector<std::string> &args) {
+            if (args.size() != 1) {
+                return false;
+            }
+            return args[0].starts_with(args[1]);
+        }
+    });
+
+#ifdef EXPERIMENTAL
+#pragma message("Using experimental built in functions")
+
+    global_functions->insert({
+        "Error", [](const std::string &msg) {
+            printf(msg.c_str());
+        }
+    });
+
+    global_functions->insert({
+        "Message", [](const std::string &msg) {
+            printf(msg.c_str());
+        }
+    });
+#endif
+}
+
+bool Interpreter_ns::Global::call_global_function(const std::string &name, const std::string &args) const {
+    if (!global_functions->contains(name)) {
+        throw Check_exceptions::LineParserException(__LINE__,
+                                                    ("Unknown global function: " + name).c_str(), __FILE_NAME__);
+    }
+
     std::vector<std::string> parsed_args;
-    auto raw_args = libio::string::split(args, ",");
-    
-    for (auto& arg : raw_args) {
+    auto                     raw_args = libio::string::split(args, ",");
+
+    for (auto &arg: raw_args) {
         arg = libio::string::delete_whitespaces(arg);
-        
+
         if (arg.starts_with("\"") && arg.ends_with("\"")) {
             arg = arg.substr(1, arg.length() - 2);
         }
-        
+
         if (global_parameters && global_parameters->contains(arg)) {
             arg = global_parameters->at(arg);
         }
-        
+
         parsed_args.push_back(arg);
     }
-    return global_functions.at(name)(parsed_args);
+    return global_functions->at(name)(parsed_args);
 }

@@ -6,7 +6,7 @@
 // #define DEBUG //to turn on debug mode in utility
 // #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e. version 2.0
 #define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
-// #define EXTENDED_FUNCTIONALITY_IF //turn on if directive in directive interpreter
+#define EXTENDED_FUNCTIONALITY_IF //turn on if directive in directive interpreter
 // #define TEST //turns on tests of the utility
 // #define GUI_LANG_CHECKER //turns on language checker functionality in utility
 #define NEW_FILE_FORMAT
@@ -56,14 +56,12 @@ JUST_CONSTANT config_file_name         = "config.txt";  ///static file name for 
 DIRECTIVE group_directive_start = "Group_start"; ///for group of test cases start, option argument after directive - suit name
 DIRECTIVE suit_directive_end    = "Group_end";   ///for group end
 
-#ifdef EXTENDED_FUNCTIONALITY_IF
 //Branch operators:
 #pragma message("Using extended functionality if statement")
-DIRECTIVE if_directive = "If"; ///used for selecting branches of test cases, require one argument after directive
-DIRECTIVE elif_directive = "Elif"; ///Additional if directive
-DIRECTIVE else_directive = "Else"; ///another branch, require one argument after directive
+DIRECTIVE if_directive    = "If";     ///used for selecting branches of test cases, require one argument after directive
+DIRECTIVE elif_directive  = "Elif";   ///Additional if directive
+DIRECTIVE else_directive  = "Else";   ///another branch, require one argument after directive
 DIRECTIVE endif_directive = "End_if"; ///close if directive in test suit
-#endif
 
 DIRECTIVE import_directive = "Import"; ///for importing another suit, require one argument after directive
 

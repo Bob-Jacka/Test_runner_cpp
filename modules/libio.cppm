@@ -2,22 +2,26 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.5
+ Version - 1.24.7
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
  You can connect module file by writing:
+
  target_sources(<Project name>
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
         libio.cppm
 )
+
  In your cmake file
 */
 
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <regex>
 
 /**
@@ -32,9 +36,8 @@ module;
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #pragma message("Using experimental features")
 
-#include <filesystem>
 #include <cmath>
-#incldue <vector>
+#include <vector>
 #include <iterator>
 #include <sstream>
 #endif
@@ -143,28 +146,28 @@ namespace libio {
 
 #ifdef UNSTABLE
 #warning "Using unstable functions in libio, be careful"
-/**
- * Print given generic message in console with new line. By default, equal to "".
- * @warning If using C++23 - use std::println.
- * @param str string to output
- * @tparam T generic parameter of type to console print
- */
-export template<typename T = std::string>
-void println(const T &str = "\n") {
-    std::cout << str << std::endl;
-}
+        /**
+         * Print given generic message in console with new line. By default, equal to "".
+         * @warning If using C++23 - use std::println.
+         * @param str string to output
+         * @tparam T generic parameter of type to console print
+         */
+        export template<typename T = std::string>
+        void println(const T &str = "\n") {
+            std::cout << str << std::endl;
+        }
 
-/**
- * Print given generic message in console without new line.
- * @warning If using C++23 - use std::print.
- * @tparam T generic type
- * @param str string to output
- * @param separator text separator
- */
-export template<typename T>
-void print(const T &str, std::string separator = "") {
-    std::cout << str << separator;
-}
+        /**
+         * Print given generic message in console without new line.
+         * @warning If using C++23 - use std::print.
+         * @tparam T generic type
+         * @param str string to output
+         * @param separator text separator
+         */
+        export template<typename T>
+        void print(const T &str, std::string separator = "") {
+            std::cout << str << separator;
+        }
 
 #elifndef UNSTABLE
 
@@ -211,7 +214,7 @@ void print(const T &str, std::string separator = "") {
             std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
                                                                       str.data() + str.size(),
                                                                       buf.data());
-            return std::wstring(buf.data(), buf.size());
+            return std::wstring{buf.data(), buf.size()};
         }
 
         /**
@@ -338,41 +341,41 @@ void print(const T &str, std::string separator = "") {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
-/**
-* Print pyramid object one line by line
-* @param array
-* @param n
-*/
-export void print_pyramid(const int *array, const int n) {
-    for (int i = 0; i < n; ++i) {
-        const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
+        /**
+        * Print pyramid object one line by line
+        * @param array
+        * @param n
+        */
+        export void print_pyramid(const int *array, const int n) {
+            for (int i = 0; i < n; ++i) {
+                const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
 
-        if (i == 0) {
-            std::cout << level << " root " << array[i] << '\n';
-        } else {
-            const int p = (i - 1) / 2;
-            const char *side = (i == 2 * p + 1) ? "left" : "right";
-            std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+                if (i == 0) {
+                    std::cout << level << " root " << array[i] << '\n';
+                } else {
+                    const int   p    = (i - 1) / 2;
+                    const char *side = (i == 2 * p + 1) ? "left" : "right";
+                    std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+                }
+            }
         }
-    }
-}
 
-/**
- *
- * @param array pyramid object in array
- * @param i
- */
-export void print_one_element(const int *array, const int i) {
-    const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
+        /**
+         *
+         * @param array pyramid object in array
+         * @param i
+         */
+        export void print_one_element(const int *array, const int i) {
+            const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
 
-    if (i == 0) {
-        std::cout << level << " root " << array[i] << '\n';
-    } else {
-        const int p = (i - 1) / 2;
-        const char *side = (i == 2 * p + 1) ? "left" : "right";
-        std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
-    }
-}
+            if (i == 0) {
+                std::cout << level << " root " << array[i] << '\n';
+            } else {
+                const int   p    = (i - 1) / 2;
+                const char *side = (i == 2 * p + 1) ? "left" : "right";
+                std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+            }
+        }
 
 #endif
     }
@@ -501,41 +504,13 @@ export void print_one_element(const int *array, const int i) {
             return str.substr(first, last - first + 1);
         }
 
-        template<typename T>
-        T convert_to_t(const std::string &source);
-
-        template<>
-        int convert_to_t(const std::string &source) {
-            try {
-                return std::stoi(source);
-            } catch (const std::exception &e) {
-                throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
-            }
-        }
-
-        template<>
-        std::string convert_to_t(const std::string &source) {
-            return source.empty() ? "0" : source;
-        }
-
-        template<>
-        bool convert_to_t(const std::string &source) {
-            if (source == "false" || source == "False") {
-                return false;
-            }
-            if (source == "true" || source == "True") {
-                return true;
-            }
-            return false;
-        }
-
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     * Replace string with another string
-     */
-    inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
-        //
-    }
+        /**
+         * Replace string with another string
+         */
+        inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
+            //
+        }
 #endif
     }
 
@@ -545,35 +520,35 @@ export void print_one_element(const int *array, const int i) {
     export namespace input {
 #ifdef LIBIO_DEPRECATED
 #warning "Using deprecated libio features"
-    /**
-     * Writes down int value into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void int_user_input(int &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
+        /**
+         * Writes down int value into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void int_user_input(int &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
         }
-    }
 
-    /**
-     * Writes down long value into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void long_user_input(long &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
+        /**
+         * Writes down long value into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void long_user_input(long &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
         }
-    }
 
-    /**
-     * Writes down string into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void string_user_input(std::string &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
+        /**
+         * Writes down string into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void string_user_input(std::string &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
         }
-    }
 #endif
         /**
          * Writes down value into variable by address.
@@ -703,41 +678,41 @@ export void print_one_element(const int *array, const int i) {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     *
-     * @tparam T generic type
-     * @param sizes
-     * @return
-     */
-    template<typename T>
-    std::vector<T> create_ndim_array(const std::vector<size_t> &sizes) {
-        if (sizes.empty())
-            return std::vector<T>();
+        /**
+         *
+         * @tparam T generic type
+         * @param sizes
+         * @return
+         */
+        template<typename T>
+        std::vector<T> create_ndim_array(const std::vector<size_t> &sizes) {
+            if (sizes.empty())
+                return std::vector<T>();
 
-        std::vector<T> flat;
-        if (sizes.size() == 1) {
-            return std::vector<T>(sizes[0]);
-        }
-        if (sizes.size() == 2) {
-            std::vector<std::vector<T> > result(sizes[0], std::vector<T>(sizes[1]));
-            return result;
-        }
-        return;
-    }
-
-    std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
-        if (arr != nullptr) {
-            actual_size *= 2;
-            auto new_arr = new int[actual_size];
-            for (int i = 0; i < logical_size; ++i) {
-                new_arr[i] = arr[i];
+            std::vector<T> flat;
+            if (sizes.size() == 1) {
+                return std::vector<T>(sizes[0]);
             }
-            delete[] arr;
-            return {new_arr, logical_size, actual_size};
+            if (sizes.size() == 2) {
+                std::vector<std::vector<T> > result(sizes[0], std::vector<T>(sizes[1]));
+                return result;
+            }
+            return;
         }
-        std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
-        throw;
-    }
+
+        std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
+            if (arr != nullptr) {
+                actual_size  *= 2;
+                auto new_arr = new int[actual_size];
+                for (int i = 0; i < logical_size; ++i) {
+                    new_arr[i] = arr[i];
+                }
+                delete[] arr;
+                return {new_arr, logical_size, actual_size};
+            }
+            std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
+            throw;
+        }
 #endif
     }
     /**
@@ -748,12 +723,32 @@ export void print_one_element(const int *array, const int i) {
         /**
          * Creates file for read and write.
          * @param fileName name of the file, create if not exists.
-         * @return file handler.
+         * @return file handler or nullptr if error occurred.
          */
         inline std::ofstream create_write_file(const std::string &fileName) {
-            std::ofstream file(fileName);
-            return file;
+            try {
+                std::ofstream file(fileName);
+                return file;
+            } catch (const std::exception &e) {
+                std::cerr << e.what() << "\n";
+            }
+            return nullptr;
         }
+
+#ifdef LIBIO_EXPERIMENTAL
+        /**
+         * Creates file for read and write.
+         * @param fileName name of the file, create if not exists.
+         * @param is_create create if not exist
+         * @return file handler.
+         */
+        inline std::ofstream create_write_file(const std::string &fileName, bool is_create) {
+            if (is_create and check_existance()) {
+                std::ofstream file(fileName);
+                return file;
+            }
+        }
+#endif
 
         /**
          * Read file line by line.
@@ -800,7 +795,6 @@ export void print_one_element(const int *array, const int i) {
             return out;
         }
 
-#define LIBIO_EXPERIMENTAL
 #ifdef LIBIO_EXPERIMENTAL
         /**
         * Open file and return condition variable of open
@@ -828,44 +822,56 @@ export void print_one_element(const int *array, const int i) {
             file.close();
             return false;
         }
-#undef LIBIO_EXPERIMENTAL
+
 #endif
 
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     * Function for receiving few lines from file.
-     * @tparam T generic type.
-     * @param fileName name of the file.
-     * @param count how many lines to get.
-     * @return vector with string values.
-     */
-    template<typename T>
-    std::vector<T> getFewLinesFrom(const std::string &fileName, const int count) {
-        std::ifstream file(fileName);
-        auto lines = std::vector<T>();
-        int inner_counter = 0;
-        std::string line;
-        while (std::getline(file, line)) {
-            ++inner_counter;
-            if (inner_counter == count) {
-                break;
+        /**
+         * Function for receiving few lines from file.
+         * @tparam T generic type.
+         * @param fileName name of the file.
+         * @param count how many lines to get.
+         * @return vector with string values.
+         */
+        template<typename T>
+        std::vector<T> get_few_lines_from(const std::string &fileName, const int count) {
+            std::ifstream file(fileName);
+            auto          lines         = std::vector<T>();
+            int           inner_counter = 0;
+            std::string   line;
+            while (std::getline(file, line)) {
+                ++inner_counter;
+                if (inner_counter == count) {
+                    break;
+                }
+                lines.emplace_back(line);
             }
-            lines.emplace_back(line);
+            return lines;
         }
-        return lines;
-    }
-
-    /**
-     * Platform independent filepath getter.
-     * @deprecated because crashes program due to strange path get.
-     * @return string value of current path
-     */
-    inline std::string getCwd() {
-        const std::filesystem::path currentPath = std::filesystem::current_path();
-        return currentPath.string();
-    }
 
 #endif
+
+        /**
+         * Platform independent filepath getter.
+         * @return string value of current path
+         */
+        std::string get_current_dir_name(const std::string &optional_file_name = "") {
+            return std::filesystem::current_path().string() + "/" + optional_file_name;
+        }
+
+        /**
+         * Get current dir name and split it into list
+         * @return list with strings
+         */
+        std::list<std::string> get_file_path() {
+            const auto current_dir    = std::filesystem::current_path().string();
+            const auto split_dir_name = string::split(current_dir, "/");
+            auto       output         = std::list<std::string>();
+            for (auto &s: split_dir_name) {
+                output.push_back(s);
+            }
+            return output;
+        }
     }
 
     /**
@@ -883,12 +889,12 @@ export void print_one_element(const int *array, const int i) {
          * Methods of sql execution
          */
         struct Sql_methods {
-            static libio::String SELECT;
-            static libio::String DELETE;
-            static libio::String UPDATE;
-            static libio::String INSERT;
-            static libio::String CREATE;
-            static libio::String DROP;
+            static String SELECT;
+            static String DELETE;
+            static String UPDATE;
+            static String INSERT;
+            static String CREATE;
+            static String DROP;
         };
 
         String Sql_methods::SELECT = "SELECT";
@@ -902,24 +908,24 @@ export void print_one_element(const int *array, const int i) {
             //
         };
 #ifdef LIBIO_EXPERIMENTAL
-    void create_connection(const std::string& database_name) {
-        //
-    }
+        void create_connection(const std::string &database_name) {
+            //
+        }
 
-    void close_connection(const std::string& database_name) {
-        //
-    }
+        void close_connection(const std::string &database_name) {
+            //
+        }
 #endif
     }
 
 #ifdef LIBIO_EXPERIMENTAL
 #pragma message("Using libio assembler functions")
-/**
- * Namespace for inline assembler code and other
- */
-namespace other {
-    extern "C" int func(int x);
-    asm(R"(
+    /**
+     * Namespace for inline assembler code and other
+     */
+    namespace other {
+        extern "C" int func(int x);
+        asm(R"(
         .globl func
         .type func, @function
         func:
@@ -929,7 +935,7 @@ namespace other {
         ret
         .cfi_endproc
     )");
-}
+    }
 #endif
 
     /**
@@ -961,5 +967,68 @@ namespace other {
             }
             throw;
         }
+
+        template<typename T>
+        T convert_to_t(const std::string &source);
+
+        template<>
+        int convert_to_t<int>(const std::string &source) {
+            try {
+                return std::stoi(source);
+            } catch (const std::exception &e) {
+                throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
+            }
+        }
+
+        template<>
+        std::string convert_to_t<std::string>(const std::string &source) = delete;
+
+        template<>
+        bool convert_to_t<bool>(const std::string &source) {
+            if (source == "false" || source == "False") {
+                return false;
+            }
+            if (source == "true" || source == "True") {
+                return true;
+            }
+            return false;
+        }
+
+#ifdef LIBIO_EXPERIMENTAL
+        template<>
+        int convert_to_t<int>(const std::string &str) {
+            if (!str) {
+                return 0;
+            }
+
+            int sign = 1;
+            int i    = 0;
+
+            while (str[i] == ' ') {
+                ++i;
+            }
+
+            if (str[i] == '-' || str[i] == '+') {
+                sign = (str[++i] == '-') ? -1 : 1;
+            }
+
+            while (str[i] >= '0' && str[i] <= '9') {
+                result = result * 10 + (str[++i] - '0');
+
+                if (result *sign
+                >
+                std::numeric_limits<int>::max()
+                ) {
+                    return std::numeric_limits<int>::max();
+                }
+                if (result *sign<std::numeric_limits<int>::min()) {
+                    return std::numeric_limits<int>::min();
+                }
+            }
+
+            return static_cast<int>(result * sign);
+        }
+
+#endif
     }
 }

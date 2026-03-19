@@ -1,8 +1,6 @@
 #ifndef LOAD_PARAMETERS_HPP
 #define LOAD_PARAMETERS_HPP
 
-#include <string>
-
 #define BITSET_FLAGS_UPDATE //flag for turn on bit flags
 
 #ifdef BITSET_FLAGS_UPDATE
@@ -200,7 +198,7 @@ namespace Check_runner {
                 flags.set(position, true);
                 flags.flip();
             } else {
-                throw std::out_of_range("Position value cannot be - " + position);
+                throw std::out_of_range("Position value cannot be - " + std::to_string(position));
             }
         }
 

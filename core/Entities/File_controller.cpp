@@ -25,7 +25,7 @@ std::tuple<std::ifstream, bool> Check_runner::File_controller::create_rsf_file(c
  */
 std::fstream Check_runner::File_controller::create_test_result_file(const std::string &results_file_name) {
     if (auto [file, cond] = open_file<std::fstream>(results_file_name); cond) {
-        return file;
+        return std::move(file);
     }
     throw Check_exceptions::FileControllerException(__LINE__, "Cannot create test result file", __FILE_NAME__);
 }

@@ -4,12 +4,12 @@
 #include "Base_exception.hpp"
 
 namespace Check_exceptions {
-    class LineInterpreterException final : public BaseException {
+    class LineParserException final : public BaseException {
         public:
-            explicit LineInterpreterException(int line, const char *msg, const char *filename);
+            explicit LineParserException(int line, const char *msg, const char *filename);
     };
 
-    inline LineInterpreterException::LineInterpreterException(const int   line, const char *msg,
+    inline LineParserException::LineParserException(const int   line, const char *msg,
                                                               const char *filename) {
         std::cout << "Error: " << msg << " at line " << line << " at file " << filename << std::endl;
     }
