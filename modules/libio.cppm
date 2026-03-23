@@ -18,7 +18,6 @@ module;
 */
 
 #include <cstring>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -850,28 +849,6 @@ namespace libio {
         }
 
 #endif
-
-        /**
-         * Platform independent filepath getter.
-         * @return string value of current path
-         */
-        std::string get_current_dir_name(const std::string &optional_file_name = "") {
-            return std::filesystem::current_path().string() + "/" + optional_file_name;
-        }
-
-        /**
-         * Get current dir name and split it into list
-         * @return list with strings
-         */
-        std::list<std::string> get_file_path() {
-            const auto current_dir    = std::filesystem::current_path().string();
-            const auto split_dir_name = string::split(current_dir, "/");
-            auto       output         = std::list<std::string>();
-            for (auto &s: split_dir_name) {
-                output.push_back(s);
-            }
-            return output;
-        }
     }
 
     /**

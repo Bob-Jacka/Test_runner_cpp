@@ -1,6 +1,8 @@
 #ifndef ENTITIES_PACK_HPP
 #define ENTITIES_PACK_HPP
 
+#include <memory>
+
 #include "Load_parameters.hpp"
 #include "core/Entities/Test_Artifact_Fabric.hpp"
 #include "core/Entities/Line/Line_parser.hpp"
@@ -13,14 +15,12 @@
 #include "spell_corrector.hpp"
 #endif
 
-#include <memory>
 #include "core/Strategies/declaration/StratContex.hpp"
 #include "core/Test_artifacts/declaration/Test_result.hpp"
 
 template<typename T>
-using Vec_t = std::vector<T>; ///short type for vector with generic type
-
-using String = std::string; ///short version of std::string
+using Vec_t  = std::vector<T>; ///short type for vector with generic type
+using String = std::string;    ///short version of std::string
 
 namespace Check_runner {
     /**

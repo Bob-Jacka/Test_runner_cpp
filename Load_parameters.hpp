@@ -68,7 +68,7 @@ namespace Check_runner {
                   * 7 bit - is high prior strategy
                   * 8 bit - is everything now strategy
                   * 9 bit - is usual strategy
-                  * 10 bit - is choose strategy
+                  * 10 bit - is choose strategy applied
                   *
                   * 11 bit - reserved for future operations.
                   * 12 bit - reserved for future operations.
@@ -81,7 +81,7 @@ namespace Check_runner {
 #elifndef BITSET_FLAGS_UPDATE
 #pragma message("Using usual flag functionality")
 
-                bool        is_gui{};             ///is need to run in graphics user interface. true - 'gui', false - 'console' (default).
+                bool is_gui{}; ///is need to run in graphics user interface. true - 'gui', false - 'console' (default).
 
                 //other utility parameters:
                 bool is_colored{};     ///is need for colored output.
@@ -203,13 +203,6 @@ namespace Check_runner {
         }
 
 #elifndef BITSET_FLAGS_UPDATE
-        inline int Load_parameters::get_check_device_count() const {
-            return check_device_count;
-        }
-
-        inline std::string Load_parameters::get_entry_point() const {
-            return entry_point;
-        }
 
         inline bool Load_parameters::get_is_colored() const {
             return is_colored;
@@ -243,32 +236,16 @@ namespace Check_runner {
             return is_choose_run;
         }
 
-        inline std::string Load_parameters::get_devices_entry_point() const {
-            return devices_entry_point;
-        }
-
         inline bool Load_parameters::get_is_file_write() const {
             return is_file_write;
-        }
-
-        inline std::string Load_parameters::get_parameters() const {
-            return parameters;
         }
 
         inline bool Load_parameters::get_gui() const {
             return is_gui;
         }
 
-        inline void Load_parameters::set_entry_point(const std::string &new_entry_point) {
-            this->entry_point = new_entry_point;
-        }
-
         inline void Load_parameters::set_check_device_count(const int new_check_device_count) {
             this->check_device_count = new_check_device_count;
-        }
-
-        inline void Load_parameters::set_devices_entry_point(const std::string &devices_entry_point) {
-            this->devices_entry_point = devices_entry_point;
         }
 
         inline void Load_parameters::set_is_colored(const bool colored) {
@@ -307,15 +284,40 @@ namespace Check_runner {
             this->is_file_write = get_devices;
         }
 
-        inline void Load_parameters::set_parameters(const std::string &parameters) {
-            this->parameters = parameters;
-        }
-
         inline void Load_parameters::set_is_gui(const bool gui) {
             this->is_gui = gui;
         }
 
 #endif
+
+        inline void Load_parameters::set_entry_point(const std::string &new_entry_point) {
+            this->entry_point = new_entry_point;
+        }
+
+        inline void Load_parameters::set_devices_entry_point(const std::string &entr_point) {
+            this->devices_entry_point = entr_point;
+        }
+
+        inline void Load_parameters::set_parameters(const std::string &parameter) {
+            this->parameters = parameter;
+        }
+
+        inline int Load_parameters::get_check_device_count() const {
+            return check_device_count;
+        }
+
+        inline std::string Load_parameters::get_entry_point() const {
+            return entry_point;
+        }
+
+        inline std::string Load_parameters::get_devices_entry_point() const {
+            return devices_entry_point;
+        }
+
+        inline std::string Load_parameters::get_parameters() const {
+            return parameters;
+        }
+
         /**
          * Static names of utility parameters.
          * Ex. --suit=<filename> or --strategy=high_prior

@@ -16,7 +16,7 @@ namespace Interpreter_ns {
     typedef bool (*glob_func)(const std::vector<std::string> &); //using c-style functions instead of functional
 
     /**
-     * Global statement of the parser, i.e Global scope in parser
+     * Global statement of the parser, i.e. Global scope in parser
      */
     struct Global {
         private:

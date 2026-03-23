@@ -2,8 +2,6 @@
 #define FILEREADER_HPP
 
 //File controller dependencies:
-#include <fstream>
-#include <string>
 #include <utility>
 #include <vector>
 

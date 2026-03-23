@@ -1,5 +1,7 @@
 #include "File_controller.hpp"
 
+#include <fstream>
+
 #ifdef NEW_FILE_FORMAT
 #pragma message ("Using New file format")
 
