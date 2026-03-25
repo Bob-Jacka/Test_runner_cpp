@@ -1,20 +1,24 @@
 #include <cassert>
+#include <memory>
 
 #include "bloom_filter.hpp"
 
-#include <contrib/bloom/bloom_filter.hpp>
-#include <contrib/handypack/handypack.hpp>
+#include "../contrib/bloom/bloom_filter.hpp"
+#include "../contrib/handypack/handypack.hpp"
 
 namespace NJamSpell {
+    struct TBloomFilter::Impl : bloom_filter {
+        Impl() : bloom_filter() {
+        }
 
-    struct TBloomFilter::Impl : public bloom_filter {
-        Impl() : bloom_filter() {}
+        Impl(const bloom_parameters &params) : bloom_filter(params) {
+        }
 
-        Impl(const bloom_parameters &params) : bloom_filter(params) {}
+        Impl(const TBloomFilter::Impl &bloomFilter) : bloom_filter(bloomFilter) {
+        }
 
-        Impl(const TBloomFilter::Impl &bloomFilter) : bloom_filter(bloomFilter) {}
-
-        ~Impl() {}
+        ~Impl() override {
+        }
 
         void Dump(std::ostream &out) const {
             NHandyPack::Dump(out, salt_, bit_table_, salt_count_, table_size_,
@@ -30,23 +34,22 @@ namespace NJamSpell {
     };
 
     TBloomFilter::TBloomFilter() {
-        BloomFilter.reset(new TBloomFilter::Impl());
+        BloomFilter = std::make_unique<Impl>();
     }
 
-    TBloomFilter::TBloomFilter(uint64_t elements, double falsePositiveRate) {
+    TBloomFilter::TBloomFilter(const uint64_t elements, const double falsePositiveRate) {
         bloom_parameters parameters;
-        parameters.projected_element_count = elements;
+        parameters.projected_element_count    = elements;
         parameters.false_positive_probability = falsePositiveRate;
-        parameters.random_seed = 42;
+        parameters.random_seed                = 42;
         parameters.compute_optimal_parameters();
-        assert(!(!parameters));
-        BloomFilter.reset(new TBloomFilter::Impl(parameters));
+        assert(parameters);
+        BloomFilter = std::make_unique<Impl>(parameters);
     }
 
-    TBloomFilter::~TBloomFilter() {
-    }
+    TBloomFilter::~TBloomFilter() = default;
 
-    void TBloomFilter::Insert(const std::string &element) {
+    void TBloomFilter::Insert(const std::string &element) const {
         BloomFilter->insert(element);
     }
 
@@ -54,12 +57,11 @@ namespace NJamSpell {
         return BloomFilter->contains(element);
     }
 
-    void TBloomFilter::dump(std::ostream &out) const {
+    void TBloomFilter::Dump(std::ostream &out) const {
         BloomFilter->Dump(out);
     }
 
-    void TBloomFilter::load(std::istream &in) {
+    void TBloomFilter::Load(std::istream &in) {
         BloomFilter->Load(in);
     }
-
 } // NJamSpell

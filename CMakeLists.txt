@@ -20,6 +20,7 @@ if (DEFINED TEST_INCLUDE)
     )
 endif ()
 
+#TODO make cmake more comfort
 add_executable(Check_runner
         core/Data/Constants.hpp
         core/Data/Translation.hpp
@@ -77,10 +78,39 @@ add_executable(Check_runner
         core/GUI/declaration/Gui_vars.hpp
         core/GUI/declaration/Elements_callbacks.hpp
         core/GUI/realization/Elements_callbacks.cpp
-)
+        core/GUI/Gui_translate.hpp
 
-target_include_directories(Check_runner PUBLIC core/GUI/jamspell)
-target_include_directories(Check_runner PUBLIC core/GUI/contrib)
+        core/GUI/jamspell/bloom_filter.hpp
+        core/GUI/jamspell/bloom_filter.cpp
+        core/GUI/jamspell/utils.hpp
+        core/GUI/jamspell/utils.cpp
+        core/GUI/jamspell/spell_corrector.hpp
+        core/GUI/jamspell/spell_corrector.cpp
+        core/GUI/jamspell/lang_model.hpp
+        core/GUI/jamspell/lang_model.cpp
+        core/GUI/jamspell/perfect_hash.hpp
+        core/GUI/jamspell/perfect_hash.cpp
+
+        core/GUI/contrib/handypack/handypack.hpp
+        core/GUI/contrib/handypack/handypack.cpp
+        core/GUI/contrib/tsl/robin_map.h
+        core/GUI/contrib/tsl/robin_set.h
+        core/GUI/contrib/tsl/robin_map.cpp
+        core/GUI/contrib/tsl/robin_growth_policy.h
+        core/GUI/contrib/tsl/robin_hash.h
+        core/GUI/contrib/phf/phf.h
+        core/GUI/contrib/phf/phf.cc
+        core/GUI/contrib/nlohmann/json.hpp
+        core/GUI/contrib/nlohmann/json.cpp
+        core/GUI/contrib/httplib/httplib.h
+        core/GUI/contrib/httplib/httplib.cpp
+        core/GUI/contrib/cityhash/citycrc.h
+        core/GUI/contrib/cityhash/config.h
+        core/GUI/contrib/cityhash/city.h
+        core/GUI/contrib/cityhash/city.cc
+        core/GUI/contrib/bloom/bloom_filter.hpp
+        core/GUI/contrib/bloom/bloom_filter.cpp
+)
 
 FetchContent_MakeAvailable(fltk)
 target_link_libraries(Check_runner PRIVATE fltk)

@@ -52,7 +52,7 @@ namespace Check_runner {
 
         /**
          * Not a bug, but there is a question due to functionality or visual;
-         * Not a bug, but some improvement to functionality or visual
+         * Not a bug, but some improvement to functionality or visual user experience
          */
         class Question_or_enhance final : Test_artifact {
             std::string name;
@@ -83,7 +83,9 @@ namespace Check_runner {
 
         void enter_question_or_enhance(Question_or_enhance &object);
 
-        std::string convert_type_str(const Question_or_enhance &object);
+        std::string convert_type_2str(const Question_or_enhance &object);
+
+        Type convert_str_2type(const std::string &object);
     }
 }
 #endif

@@ -3,7 +3,6 @@
 
 #include <locale>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "../contrib/handypack/handypack.hpp"
@@ -34,7 +33,6 @@ namespace NJamSpell {
     };
 
     struct TWordHashPtr {
-        public:
             std::size_t operator()(const TWord &x) const {
                 return (size_t) x.Ptr;
             }

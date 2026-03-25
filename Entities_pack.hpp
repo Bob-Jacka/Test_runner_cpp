@@ -12,7 +12,7 @@
 #endif
 
 #ifdef GUI_LANG_CHECKER
-#include "spell_corrector.hpp"
+#include "core/GUI/jamspell/spell_corrector.hpp"
 #endif
 
 #include "core/Strategies/declaration/StratContex.hpp"
@@ -35,10 +35,11 @@ namespace Check_runner {
         static std::unique_ptr<Interpreter_ns::Directive_parser> parser;           ///entity for text parsing in suit
 
 #ifdef EXTENDED_FUNCTIONALITY
-        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser; ///entity for text parsing ini file
+        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser; ///entity for text parsing ini file with parameters
 #endif
 
 #ifdef GUI_LANG_CHECKER
+#pragma message("Using corrector entity")
         static std::unique_ptr<NJamSpell::TSpellCorrector> corrector;
 #endif
 

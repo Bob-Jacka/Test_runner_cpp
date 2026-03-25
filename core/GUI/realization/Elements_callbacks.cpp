@@ -1,33 +1,33 @@
 #include "../declaration/Elements_callbacks.hpp"
 
+#include <cstring>
 #include <FL/Fl_File_Chooser.H>
 #include <FL/Fl_Text_Editor.H>
 #include "../declaration/Main_window.hpp"
 
 //Local flags:
 bool changed;
-bool loading; //TODO maybe replace bool values with bitset
+bool loading;
 char filename[256];
 
 //Global parse data:
-auto compare_keywords_func = [](const void *current,
-                                const void *in_structures) -> int {
-    return 0;
-}; //func for compare keywords
-
-constexpr char code_types[] = {
+const char *code_types[] = {
     "has"
 }; //For F color type
-constexpr char code_keywords[] = {
-    "|"
+
+const char *code_keywords[] = {
+    "Низкий",
+    "Средний",
+    "Высокий"
 }; //For G color type
 
 /**
  * Injects buffer from top window text editor:
  * @param widget insert widget
  * @return text buffer
+
  */
-auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) {
+auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->buffer();
 };
 
@@ -36,7 +36,7 @@ auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) {
  * @param widget insert widget
  * @return style buffer object
  */
-auto GET_STYLE_BUFFER_FROM = [](const Fl_Widget *widget) {
+auto GET_STYLE_BUFFER_FROM = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->style_buffer();
 };
 
@@ -45,7 +45,7 @@ auto GET_STYLE_BUFFER_FROM = [](const Fl_Widget *widget) {
  * @param view unknown memory address
  * @return Self cast from unknown memory
  */
-auto GET_SELF_FROM_VOID = [](void *view) {
+auto GET_SELF_FROM_VOID = [](void *view) -> Check_runner::GUI::Main_window * {
     return static_cast<Check_runner::GUI::Main_window *>(view);
 };
 
@@ -54,7 +54,7 @@ auto GET_SELF_FROM_VOID = [](void *view) {
  * @param view unknown memory address
  * @return Window casted from unknown memory
  */
-auto GET_WINDOW_FROM_VOID = [](void *view) {
+auto GET_WINDOW_FROM_VOID = [](void *view) -> Fl_Window * {
     return static_cast<Fl_Window *>(view);
 };
 
@@ -226,48 +226,97 @@ extern "C" void style_parser(const char *text, char *style, int length) {
                 continue;
             } else if (*text == '\"') {
                 current = 'D';
-            } else if (!last && islower(*text)) {
-                // Might be a keyword...
-                for (temp = text, buf_p = buf;
-                     islower(*temp) && buf_p < buf + sizeof(buf) - 1;
-                     *buf_p++ = *temp++) {
-                    //Empty braces
+            } else if (*text == '|') {
+                // Vertical bar - highlight as keyword
+                *style++ = 'G';
+                ++col;
+                last = 0;
+                continue;
+            } else if (!last) {
+                // Keyword detection by matching words from code_keywords
+                bool   found_keyword = false;
+                size_t keyword_len   = 0;
+
+                for (size_t i = 0; i < std::size(code_keywords); ++i) {
+                    keyword_len = strlen(code_keywords[i]);
+                    if (keyword_len > 0 && strncmp(text, code_keywords[i], keyword_len) == 0) {
+                        // Check that next char is separator or end
+                        char next = *(text + keyword_len);
+                        if (next == '\0' || next == '|' || next == '\n' || next == ' ' || next == '\t') {
+                            found_keyword = true;
+                            break;
+                        }
+                    }
                 }
 
-                if (!islower(*temp)) {
-                    *buf_p = '\0';
-
-                    buf_p = buf;
-
-                    if (bsearch(&buf_p, code_types,
-                                std::size(code_types),
-                                sizeof(code_types[0]), compare_keywords_func)) {
-                        while (text < temp) {
-                            *style++ = 'F';
-                            ++text;
-                            --length;
-                            ++col;
-                        }
-
-                        --text;
-                        ++length;
-                        last = 1;
-                        continue;
+                if (found_keyword) {
+                    for (size_t j = 0; j < keyword_len; ++j) {
+                        *style++ = 'G';
+                        ++text;
+                        --length;
+                        ++col;
                     }
-                    if (bsearch(&buf_p, code_keywords,
-                                std::size(code_keywords),
-                                sizeof(code_keywords[0]), compare_keywords_func)) {
-                        while (text < temp) {
-                            *style++ = 'G';
-                            ++text;
-                            --length;
-                            ++col;
+
+                    --text;
+                    ++length;
+                    last = 0;
+                    continue;
+                }
+
+                // Latin keyword detection
+                if (islower(*text)) {
+                    for (temp = text, buf_p = buf;
+                         islower(*temp) && buf_p < buf + sizeof(buf) - 1;
+                         *buf_p++ = *temp++) {
+                        //Empty braces
+                    }
+
+                    if (!islower(*temp)) {
+                        *buf_p = '\0';
+
+                        bool found_type = false;
+                        for (size_t i = 0; i < std::size(code_types); ++i) {
+                            if (strcmp(buf, code_types[i]) == 0) {
+                                found_type = true;
+                                break;
+                            }
                         }
 
-                        --text;
-                        ++length;
-                        last = 1;
-                        continue;
+                        if (found_type) {
+                            while (text < temp) {
+                                *style++ = 'F';
+                                ++text;
+                                --length;
+                                ++col;
+                            }
+
+                            --text;
+                            ++length;
+                            last = 1;
+                            continue;
+                        }
+
+                        bool found_latin_keyword = false;
+                        for (size_t i = 0; i < std::size(code_keywords); ++i) {
+                            if (strcmp(buf, code_keywords[i]) == 0) {
+                                found_latin_keyword = true;
+                                break;
+                            }
+                        }
+
+                        if (found_latin_keyword) {
+                            while (text < temp) {
+                                *style++ = 'G';
+                                ++text;
+                                --length;
+                                ++col;
+                            }
+
+                            --text;
+                            ++length;
+                            last = 1;
+                            continue;
+                        }
                     }
                 }
             }
@@ -278,7 +327,7 @@ extern "C" void style_parser(const char *text, char *style, int length) {
             ++text;
             --length;
             current = 'A';
-            col += 2;
+            col     += 2;
             continue;
         } else if (current == 'D') {
             // Continuing in string...
@@ -308,7 +357,7 @@ extern "C" void style_parser(const char *text, char *style, int length) {
         }
         ++col;
 
-        last = isalnum(*text) || *text == '.';
+        last = isalnum(*text) || *text == '.' || static_cast<unsigned char>(*text) >= 0x80;
 
         if (*text == '\n') {
             // Reset column and possibly reset the style
@@ -343,8 +392,8 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
             *style, // Style data
             *text;  // Text data
 
-    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject text buffer
-    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));
+    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));   //inject text buffer
+    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject style buffer
 
     // If this is just a selection change, just unselect the style buffer...
     if (nInserted == 0 && nColorized == 0) {
@@ -519,8 +568,7 @@ void delete_сallback(Fl_Widget *widget) {
 void add_tc_callback(Fl_Widget *widget, void *v) {
     const auto window = GET_SELF_FROM_VOID(v);
     const auto editor = window->m_editor;
-    auto       pos    = editor->insert_position(); //TODO might be deleted
-    editor->insert("\n<tc name>|<tc prior>|\n");   //insert default template tc
+    editor->insert("<tc name>|<tc prior>|\n"); //insert default template tc
 }
 
 void undo_сallback(Fl_Widget *widget) {
@@ -595,7 +643,7 @@ void increase_font_callback(Fl_Widget *widget, void *v) {
 #ifdef DEBUG
     printf("Current font size - %d\n", self->m_editor->textsize());
 #endif
-    self->m_editor->redraw();
+    self->m_editor->redraw(); //redraw editor after increasing font size
 }
 
 void decrease_font_callback(Fl_Widget *widget, void *v) {
@@ -605,7 +653,7 @@ void decrease_font_callback(Fl_Widget *widget, void *v) {
 #ifdef DEBUG
     printf("Current font size - %d\n", self->m_editor->textsize());
 #endif
-    self->m_editor->redraw();
+    self->m_editor->redraw(); //redraw editor after decreasing font size
 }
 
 /**
@@ -614,16 +662,21 @@ void decrease_font_callback(Fl_Widget *widget, void *v) {
  * @param v view
  */
 void AI_chat_callback(Fl_Widget *widget, void *v) {
-    auto       buffer      = Fl_Text_Buffer();
+    const auto buffer      = new Fl_Text_Buffer();
     const auto chat_window = new Fl_Double_Window(600, 600, "AI chat");
     chat_window->begin();
 
-    const auto txt_input = new Fl_Text_Editor(20, 550, 500, 50);
+    const auto txt_input = new Fl_Text_Editor(5, 550, 500, 50);
     txt_input->buffer(buffer);
-    txt_input->textsize(15);
+    txt_input->textsize(16);
+    const auto send_btn = new Fl_Button(510, 550, 90, 50, "Send");
+    // send_btn->callback([](Fl_Callback*cb, void *p) {
+    //     //
+    // });
 
 #ifdef DEBUG
     printf("User entered to AI chat");
+    printf((static_cast<std::string>("The enter was: ") + buffer->text()).c_str());
 #endif
     chat_window->end();
     chat_window->show();

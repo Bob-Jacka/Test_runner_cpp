@@ -67,13 +67,13 @@ namespace NJamSpell {
 
             ~TLangModel() = default;
 
-            bool train(const std::string &fileName, const std::string &alphabetFile);
+            bool Train(const std::string &fileName, const std::string &alphabetFile);
 
-            double score(const TWords &words) const;
+            double Score(const TWords &words) const;
 
-            double score(const std::wstring &str) const;
+            double Score(const std::wstring &str) const;
 
-            TWord get_word(const std::wstring &word) const;
+            TWord Get_word(const std::wstring &word) const;
 
             const std::unordered_set<wchar_t> &GetAlphabet() const;
 
@@ -100,8 +100,7 @@ namespace NJamSpell {
             uint64_t GetCheckSum() const;
 
             HANDYPACK(WordToId, LastWordID, TotalWords, VocabSize,
-                      PerfectHash, buckets, Tokenizer, CheckSum
-            )
+                      PerfectHash, buckets, Tokenizer, CheckSum)
 
         private: //private methods
             TIdSentences convert_2_id(const TSentences &sentences);

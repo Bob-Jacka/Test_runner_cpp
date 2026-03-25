@@ -82,20 +82,17 @@ typedef int socket_t;
 #define CPPHTTPLIB_KEEPALIVE_TIMEOUT_USECOND 0
 
 namespace httplib {
-
     namespace detail {
-
         struct ci {
             bool operator()(const std::string &s1, const std::string &s2) const {
                 return std::lexicographical_compare(
-                        s1.begin(), s1.end(),
-                        s2.begin(), s2.end(),
-                        [](char c1, char c2) {
-                            return ::tolower(c1) < ::tolower(c2);
-                        });
+                    s1.begin(), s1.end(),
+                    s2.begin(), s2.end(),
+                    [](char c1, char c2) {
+                        return ::tolower(c1) < ::tolower(c2);
+                    });
             }
         };
-
     } // namespace detail
 
     enum class HttpVersion {
@@ -108,27 +105,28 @@ namespace httplib {
     template<typename uint64_t, typename... Args>
     std::pair<std::string, std::string> make_range_header(uint64_t value, Args... args);
 
-    typedef std::multimap<std::string, std::string> Params;
-    typedef std::smatch Match;
+    typedef std::multimap<std::string, std::string>               Params;
+    typedef std::smatch                                           Match;
     typedef std::function<void(uint64_t current, uint64_t total)> Progress;
 
     struct MultipartFile {
         std::string filename;
         std::string content_type;
-        size_t offset = 0;
-        size_t length = 0;
+        size_t      offset = 0;
+        size_t      length = 0;
     };
+
     typedef std::multimap<std::string, MultipartFile> MultipartFiles;
 
     struct Request {
-        std::string version;
-        std::string method;
-        std::string path;
-        Headers headers;
-        std::string body;
-        Params params;
+        std::string    version;
+        std::string    method;
+        std::string    path;
+        Headers        headers;
+        std::string    body;
+        Params         params;
         MultipartFiles files;
-        Match matches;
+        Match          matches;
 
         Progress progress;
 
@@ -149,8 +147,8 @@ namespace httplib {
 
     struct Response {
         std::string version;
-        int status;
-        Headers headers;
+        int         status;
+        Headers     headers;
         std::string body;
 
         bool has_header(const char *key) const;
@@ -165,238 +163,243 @@ namespace httplib {
 
         void set_content(const std::string &s, const char *content_type);
 
-        Response() : status(-1) {}
+        Response() : status(-1) {
+        }
     };
 
     class Stream {
-    public:
-        virtual ~Stream() {}
+        public:
+            virtual ~Stream() {
+            }
 
-        virtual int read(char *ptr, size_t size) = 0;
+            virtual int read(char *ptr, size_t size) = 0;
 
-        virtual int write(const char *ptr, size_t size1) = 0;
+            virtual int write(const char *ptr, size_t size1) = 0;
 
-        virtual int write(const char *ptr) = 0;
+            virtual int write(const char *ptr) = 0;
 
-        virtual std::string get_remote_addr() = 0;
+            virtual std::string get_remote_addr() = 0;
 
-        template<typename ...Args>
-        void write_format(const char *fmt, const Args &...args);
+            template<typename... Args>
+            void write_format(const char *fmt, const Args &... args);
     };
 
     class SocketStream : public Stream {
-    public:
-        SocketStream(socket_t sock);
+        public:
+            SocketStream(socket_t sock);
 
-        virtual ~SocketStream();
+            virtual ~SocketStream();
 
-        virtual int read(char *ptr, size_t size);
+            virtual int read(char *ptr, size_t size);
 
-        virtual int write(const char *ptr, size_t size);
+            virtual int write(const char *ptr, size_t size);
 
-        virtual int write(const char *ptr);
+            virtual int write(const char *ptr);
 
-        virtual std::string get_remote_addr();
+            virtual std::string get_remote_addr();
 
-    private:
-        socket_t sock_;
+        private:
+            socket_t sock_;
     };
 
     class Server {
-    public:
-        typedef std::function<void(const Request &, Response &)> Handler;
-        typedef std::function<void(const Request &, const Response &)> Logger;
+        public:
+            typedef std::function<void(const Request &, Response &)>       Handler;
+            typedef std::function<void(const Request &, const Response &)> Logger;
 
-        Server();
+            Server();
 
-        virtual ~Server();
+            virtual ~Server();
 
-        virtual bool is_valid() const;
+            [[nodiscard]] virtual bool is_valid() const;
 
-        Server &Get(const char *pattern, Handler handler);
+            Server &Get(const char *pattern, Handler handler);
 
-        Server &Post(const char *pattern, Handler handler);
+            Server &Post(const char *pattern, Handler handler);
 
-        Server &Put(const char *pattern, Handler handler);
+            Server &Put(const char *pattern, Handler handler);
 
-        Server &Delete(const char *pattern, Handler handler);
+            Server &Delete(const char *pattern, Handler handler);
 
-        Server &Options(const char *pattern, Handler handler);
+            Server &Options(const char *pattern, Handler handler);
 
-        bool set_base_dir(const char *path);
+            bool set_base_dir(const char *path);
 
-        void set_error_handler(Handler handler);
+            void set_error_handler(Handler handler);
 
-        void set_logger(Logger logger);
+            void set_logger(Logger logger);
 
-        int bind_to_any_port(const char *host, int socket_flags = 0);
+            int bind_to_any_port(const char *host, int socket_flags = 0);
 
-        bool listen_after_bind();
+            bool listen_after_bind();
 
-        bool listen(const char *host, int port, int socket_flags = 0);
+            bool listen(const char *host, int port, int socket_flags = 0);
 
-        bool is_running() const;
+            bool is_running() const;
 
-        void stop();
+            void stop();
 
-    protected:
-        bool process_request(Stream &strm, bool last_connection, bool &connection_close);
+        protected:
+            bool process_request(Stream &strm, bool last_connection, bool &connection_close);
 
-    private:
-        typedef std::vector<std::pair<std::regex, Handler>> Handlers;
+        private:
+            typedef std::vector<std::pair<std::regex, Handler> > Handlers;
 
-        socket_t create_server_socket(const char *host, int port, int socket_flags) const;
+            socket_t create_server_socket(const char *host, int port, int socket_flags) const;
 
-        int bind_internal(const char *host, int port, int socket_flags);
+            int bind_internal(const char *host, int port, int socket_flags);
 
-        bool listen_internal();
+            bool listen_internal();
 
-        bool routing(Request &req, Response &res);
+            bool routing(Request &req, Response &res);
 
-        bool handle_file_request(Request &req, Response &res);
+            bool handle_file_request(Request &req, Response &res);
 
-        bool dispatch_request(Request &req, Response &res, Handlers &handlers);
+            bool dispatch_request(Request &req, Response &res, Handlers &handlers);
 
-        bool parse_request_line(const char *s, Request &req);
+            bool parse_request_line(const char *s, Request &req);
 
-        void write_response(Stream &strm, bool last_connection, const Request &req, Response &res);
+            void write_response(Stream &strm, bool last_connection, const Request &req, Response &res);
 
-        virtual bool read_and_close_socket(socket_t sock);
+            virtual bool read_and_close_socket(socket_t sock);
 
-        bool is_running_;
-        socket_t svr_sock_;
-        std::string base_dir_;
-        Handlers get_handlers_;
-        Handlers post_handlers_;
-        Handlers put_handlers_;
-        Handlers delete_handlers_;
-        Handlers options_handlers_;
-        Handler error_handler_;
-        Logger logger_;
+            bool        is_running_;
+            socket_t    svr_sock_;
+            std::string base_dir_;
+            Handlers    get_handlers_;
+            Handlers    post_handlers_;
+            Handlers    put_handlers_;
+            Handlers    delete_handlers_;
+            Handlers    options_handlers_;
+            Handler     error_handler_;
+            Logger      logger_;
 
-        // TODO: Use thread pool...
-        std::mutex running_threads_mutex_;
-        int running_threads_;
+            // TODO: Use thread pool...
+            std::mutex running_threads_mutex_;
+            int        running_threads_;
     };
 
     class Client {
-    public:
-        Client(
+        public:
+            Client(
                 const char *host,
-                int port = 80,
-                size_t timeout_sec = 300);
+                int         port        = 80,
+                size_t      timeout_sec = 300);
 
-        virtual ~Client();
+            virtual ~Client();
 
-        virtual bool is_valid() const;
+            [[nodiscard]] virtual bool is_valid() const;
 
-        std::shared_ptr<Response> Get(const char *path, Progress progress = nullptr);
+            std::shared_ptr<Response> Get(const char *path, Progress progress = nullptr);
 
-        std::shared_ptr<Response> Get(const char *path, const Headers &headers, Progress progress = nullptr);
+            std::shared_ptr<Response> Get(const char *path, const Headers &headers, Progress progress = nullptr);
 
-        std::shared_ptr<Response> Head(const char *path);
+            std::shared_ptr<Response> Head(const char *path);
 
-        std::shared_ptr<Response> Head(const char *path, const Headers &headers);
+            std::shared_ptr<Response> Head(const char *path, const Headers &headers);
 
-        std::shared_ptr<Response> Post(const char *path, const std::string &body, const char *content_type);
+            std::shared_ptr<Response> Post(const char *path, const std::string &body, const char *content_type);
 
-        std::shared_ptr<Response> Post(const char *path, const Headers &headers, const std::string &body, const char *content_type);
+            std::shared_ptr<Response> Post(const char *path, const Headers &headers, const std::string &body, const char *content_type);
 
-        std::shared_ptr<Response> Post(const char *path, const Params &params);
+            std::shared_ptr<Response> Post(const char *path, const Params &params);
 
-        std::shared_ptr<Response> Post(const char *path, const Headers &headers, const Params &params);
+            std::shared_ptr<Response> Post(const char *path, const Headers &headers, const Params &params);
 
-        std::shared_ptr<Response> Put(const char *path, const std::string &body, const char *content_type);
+            std::shared_ptr<Response> Put(const char *path, const std::string &body, const char *content_type);
 
-        std::shared_ptr<Response> Put(const char *path, const Headers &headers, const std::string &body, const char *content_type);
+            std::shared_ptr<Response> Put(const char *path, const Headers &headers, const std::string &body, const char *content_type);
 
-        std::shared_ptr<Response> Delete(const char *path);
+            std::shared_ptr<Response> Delete(const char *path);
 
-        std::shared_ptr<Response> Delete(const char *path, const Headers &headers);
+            std::shared_ptr<Response> Delete(const char *path, const Headers &headers);
 
-        std::shared_ptr<Response> Options(const char *path);
+            std::shared_ptr<Response> Options(const char *path);
 
-        std::shared_ptr<Response> Options(const char *path, const Headers &headers);
+            std::shared_ptr<Response> Options(const char *path, const Headers &headers);
 
-        bool send(Request &req, Response &res);
+            bool send(Request &req, Response &res);
 
-    protected:
-        bool process_request(Stream &strm, Request &req, Response &res, bool &connection_close);
+        protected:
+            bool process_request(Stream &strm, Request &req, Response &res, bool &connection_close);
 
-        const std::string host_;
-        const int port_;
-        size_t timeout_sec_;
-        const std::string host_and_port_;
+            const std::string host_;
+            const int         port_;
+            size_t            timeout_sec_;
+            const std::string host_and_port_;
 
-    private:
-        socket_t create_client_socket() const;
+        private:
+            [[nodiscard]] socket_t create_client_socket() const;
 
-        bool read_response_line(Stream &strm, Response &res);
+            bool read_response_line(Stream &strm, Response &res);
 
-        void write_request(Stream &strm, Request &req);
+            void write_request(Stream &strm, Request &req);
 
-        virtual bool read_and_close_socket(socket_t sock, Request &req, Response &res);
+            virtual bool read_and_close_socket(socket_t sock, Request &req, Response &res);
     };
 
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
     class SSLSocketStream : public Stream {
-    public:
-        SSLSocketStream(socket_t sock, SSL* ssl);
-        virtual ~SSLSocketStream();
+        public:
+            SSLSocketStream(socket_t sock, SSL *ssl);
 
-        virtual int read(char* ptr, size_t size);
-        virtual int write(const char* ptr, size_t size);
-        virtual int write(const char* ptr);
-        virtual std::string get_remote_addr();
+            virtual ~SSLSocketStream();
 
-    private:
-        socket_t sock_;
-        SSL* ssl_;
+            virtual int read(char *ptr, size_t size);
+
+            virtual int write(const char *ptr, size_t size);
+
+            virtual int write(const char *ptr);
+
+            virtual std::string get_remote_addr();
+
+        private:
+            socket_t sock_;
+            SSL *    ssl_;
     };
 
     class SSLServer : public Server {
-    public:
-        SSLServer(
-            const char* cert_path, const char* private_key_path);
+        public:
+            SSLServer(
+                const char *cert_path, const char *private_key_path);
 
-        virtual ~SSLServer();
+            virtual ~SSLServer();
 
-        virtual bool is_valid() const;
+            virtual bool is_valid() const;
 
-    private:
-        virtual bool read_and_close_socket(socket_t sock);
+        private:
+            virtual bool read_and_close_socket(socket_t sock);
 
-        SSL_CTX* ctx_;
-        std::mutex ctx_mutex_;
+            SSL_CTX *  ctx_;
+            std::mutex ctx_mutex_;
     };
 
     class SSLClient : public Client {
-    public:
-        SSLClient(
-            const char* host,
-            int port = 80,
-            size_t timeout_sec = 300);
+        public:
+            SSLClient(
+                const char *host,
+                int         port        = 80,
+                size_t      timeout_sec = 300);
 
-        virtual ~SSLClient();
+            virtual ~SSLClient();
 
-        virtual bool is_valid() const;
+            virtual bool is_valid() const;
 
-    private:
-        virtual bool read_and_close_socket(socket_t sock, Request& req, Response& res);
+        private:
+            virtual bool read_and_close_socket(socket_t sock, Request &req, Response &res);
 
-        SSL_CTX* ctx_;
-        std::mutex ctx_mutex_;
+            SSL_CTX *  ctx_;
+            std::mutex ctx_mutex_;
     };
 #endif
 
-/*
- * Implementation
- */
+    /*
+     * Implementation
+     */
     namespace detail {
-
         template<class Fn>
         void split(const char *b, const char *e, char d, Fn fn) {
-            int i = 0;
+            int i   = 0;
             int beg = 0;
 
             while (e ? (b + i != e) : (b[i] != '\0')) {
@@ -412,72 +415,72 @@ namespace httplib {
             }
         }
 
-// NOTE: until the read size reaches `fixed_buffer_size`, use `fixed_buffer`
-// to store data. The call can set memory on stack for performance.
+        // NOTE: until the read size reaches `fixed_buffer_size`, use `fixed_buffer`
+        // to store data. The call can set memory on stack for performance.
         class stream_line_reader {
-        public:
-            stream_line_reader(Stream &strm, char *fixed_buffer, size_t fixed_buffer_size)
+            public:
+                stream_line_reader(Stream &strm, char *fixed_buffer, size_t fixed_buffer_size)
                     : strm_(strm), fixed_buffer_(fixed_buffer), fixed_buffer_size_(fixed_buffer_size) {
-            }
-
-            const char *ptr() const {
-                if (glowable_buffer_.empty()) {
-                    return fixed_buffer_;
-                } else {
-                    return glowable_buffer_.data();
                 }
-            }
 
-            bool getline() {
-                fixed_buffer_used_size_ = 0;
-                glowable_buffer_.clear();
+                [[nodiscard]] const char *ptr() const {
+                    if (glowable_buffer_.empty()) {
+                        return fixed_buffer_;
+                    } else {
+                        return glowable_buffer_.data();
+                    }
+                }
 
-                for (size_t i = 0;; i++) {
-                    char byte;
-                    auto n = strm_.read(&byte, 1);
+                bool getline() {
+                    fixed_buffer_used_size_ = 0;
+                    glowable_buffer_.clear();
 
-                    if (n < 0) {
-                        return false;
-                    } else if (n == 0) {
-                        if (i == 0) {
+                    for (size_t i = 0;; i++) {
+                        char byte;
+                        auto n = strm_.read(&byte, 1);
+
+                        if (n < 0) {
                             return false;
-                        } else {
+                        } else if (n == 0) {
+                            if (i == 0) {
+                                return false;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        append(byte);
+
+                        if (byte == '\n') {
                             break;
                         }
                     }
 
-                    append(byte);
+                    return true;
+                }
 
-                    if (byte == '\n') {
-                        break;
+            private:
+                void append(const char c) {
+                    if (fixed_buffer_used_size_ < fixed_buffer_size_ - 1) {
+                        fixed_buffer_[fixed_buffer_used_size_++] = c;
+                        fixed_buffer_[fixed_buffer_used_size_]   = '\0';
+                    } else {
+                        if (glowable_buffer_.empty()) {
+                            assert(fixed_buffer_[fixed_buffer_used_size_] == '\0');
+                            glowable_buffer_.assign(fixed_buffer_, fixed_buffer_used_size_);
+                        }
+                        glowable_buffer_ += c;
                     }
                 }
 
-                return true;
-            }
-
-        private:
-            void append(char c) {
-                if (fixed_buffer_used_size_ < fixed_buffer_size_ - 1) {
-                    fixed_buffer_[fixed_buffer_used_size_++] = c;
-                    fixed_buffer_[fixed_buffer_used_size_] = '\0';
-                } else {
-                    if (glowable_buffer_.empty()) {
-                        assert(fixed_buffer_[fixed_buffer_used_size_] == '\0');
-                        glowable_buffer_.assign(fixed_buffer_, fixed_buffer_used_size_);
-                    }
-                    glowable_buffer_ += c;
-                }
-            }
-
-            Stream &strm_;
-            char *fixed_buffer_;
-            const size_t fixed_buffer_size_;
-            size_t fixed_buffer_used_size_;
-            std::string glowable_buffer_;
+                Stream &     strm_;
+                char *       fixed_buffer_;
+                const size_t fixed_buffer_size_;
+                size_t       fixed_buffer_used_size_;
+                std::string  glowable_buffer_;
         };
 
-        inline int close_socket(socket_t sock) {
+        inline int close_socket(const socket_t sock) {
 #ifdef _WIN32
             return closesocket(sock);
 #else
@@ -491,7 +494,7 @@ namespace httplib {
             FD_SET(sock, &fds);
 
             timeval tv;
-            tv.tv_sec = sec;
+            tv.tv_sec  = sec;
             tv.tv_usec = usec;
 
             return select(sock + 1, &fds, NULL, NULL, &tv);
@@ -506,14 +509,14 @@ namespace httplib {
             auto fdse = fdsr;
 
             timeval tv;
-            tv.tv_sec = sec;
+            tv.tv_sec  = sec;
             tv.tv_usec = usec;
 
             if (select(sock + 1, &fdsr, &fdsw, &fdse, &tv) < 0) {
                 return false;
             } else if (FD_ISSET(sock, &fdsr) || FD_ISSET(sock, &fdsw)) {
-                int error = 0;
-                socklen_t len = sizeof(error);
+                int       error = 0;
+                socklen_t len   = sizeof(error);
                 if (getsockopt(sock, SOL_SOCKET, SO_ERROR, (char *) &error, &len) < 0 || error) {
                     return false;
                 }
@@ -535,8 +538,8 @@ namespace httplib {
                                            CPPHTTPLIB_KEEPALIVE_TIMEOUT_SECOND,
                                            CPPHTTPLIB_KEEPALIVE_TIMEOUT_USECOND) > 0) {
                     SocketStream strm(sock);
-                    auto last_connection = count == 1;
-                    auto connection_close = false;
+                    auto         last_connection  = count == 1;
+                    auto         connection_close = false;
 
                     ret = callback(strm, last_connection, connection_close);
                     if (!ret || connection_close) {
@@ -547,8 +550,8 @@ namespace httplib {
                 }
             } else {
                 SocketStream strm(sock);
-                auto dummy_connection_close = false;
-                ret = callback(strm, true, dummy_connection_close);
+                auto         dummy_connection_close = false;
+                ret                                 = callback(strm, true, dummy_connection_close);
             }
 
             close_socket(sock);
@@ -574,13 +577,13 @@ namespace httplib {
 #endif
 
             // Get address info
-            struct addrinfo hints;
+            struct addrinfo  hints;
             struct addrinfo *result;
 
             memset(&hints, 0, sizeof(struct addrinfo));
-            hints.ai_family = AF_UNSPEC;
+            hints.ai_family   = AF_UNSPEC;
             hints.ai_socktype = SOCK_STREAM;
-            hints.ai_flags = socket_flags;
+            hints.ai_flags    = socket_flags;
             hints.ai_protocol = 0;
 
             auto service = std::to_string(port);
@@ -633,7 +636,7 @@ namespace httplib {
 
         inline std::string get_remote_addr(socket_t sock) {
             struct sockaddr_storage addr;
-            socklen_t len = sizeof(addr);
+            socklen_t               len = sizeof(addr);
 
             if (!getpeername(sock, (struct sockaddr *) &addr, &len)) {
                 char ipstr[NI_MAXHOST];
@@ -659,7 +662,7 @@ namespace httplib {
 
         inline bool is_valid_path(const std::string &path) {
             size_t level = 0;
-            size_t i = 0;
+            size_t i     = 0;
 
             // Skip slash
             while (i < path.size() && path[i] == '/') {
@@ -676,7 +679,8 @@ namespace httplib {
                 auto len = i - beg;
                 assert(len > 0);
 
-                if (!path.compare(beg, len, ".")) { ;
+                if (!path.compare(beg, len, ".")) {
+                    ;
                 } else if (!path.compare(beg, len, "..")) {
                     if (level == 0) {
                         return false;
@@ -706,7 +710,7 @@ namespace httplib {
 
         inline std::string file_extension(const std::string &path) {
             std::smatch m;
-            auto pat = std::regex("\\.([a-zA-Z0-9]+)$");
+            auto        pat = std::regex("\\.([a-zA-Z0-9]+)$");
             if (std::regex_search(path, m, pat)) {
                 return m[1].str();
             }
@@ -781,7 +785,7 @@ namespace httplib {
             static std::regex re(R"((.+?):\s*(.+?)\s*\r\n)");
 
             const auto bufsiz = 2048;
-            char buf[bufsiz];
+            char       buf[bufsiz];
 
             stream_line_reader reader(strm, buf, bufsiz);
 
@@ -839,7 +843,7 @@ namespace httplib {
 
         inline bool read_content_chunked(Stream &strm, std::string &out) {
             const auto bufsiz = 16;
-            char buf[bufsiz];
+            char       buf[bufsiz];
 
             stream_line_reader reader(strm, buf, bufsiz);
 
@@ -931,7 +935,7 @@ namespace httplib {
                     default:
                         if (s[i] < 0) {
                             result += '%';
-                            char hex[4];
+                            char   hex[4];
                             size_t len = snprintf(hex, sizeof(hex) - 1, "%02X", (unsigned char) s[i]);
                             assert(len == 2);
                             result.append(hex, len);
@@ -988,7 +992,8 @@ namespace httplib {
                 buff[1] = (0x80 | ((code >> 6) & 0x3F));
                 buff[2] = (0x80 | (code & 0x3F));
                 return 3;
-            } else if (code < 0xE000) { // D800 - DFFF is invalid...
+            } else if (code < 0xE000) {
+                // D800 - DFFF is invalid...
                 return 0;
             } else if (code < 0x10000) {
                 buff[0] = (0xE0 | ((code >> 12) & 0xF));
@@ -1016,7 +1021,7 @@ namespace httplib {
                         int val = 0;
                         if (from_hex_to_i(s, i + 2, 4, val)) {
                             // 4 digits Unicode codes
-                            char buff[4];
+                            char   buff[4];
                             size_t len = to_utf8(val, buff);
                             if (len > 0) {
                                 result.append(buff, len);
@@ -1030,7 +1035,7 @@ namespace httplib {
                         if (from_hex_to_i(s, i + 1, 2, val)) {
                             // 2 digits hex codes
                             result += val;
-                            i += 2; // '00'
+                            i      += 2; // '00'
                         } else {
                             result += s[i];
                         }
@@ -1071,16 +1076,16 @@ namespace httplib {
         }
 
         inline bool parse_multipart_formdata(
-                const std::string &boundary, const std::string &body, MultipartFiles &files) {
+            const std::string &boundary, const std::string &body, MultipartFiles &files) {
             static std::string dash = "--";
             static std::string crlf = "\r\n";
 
             static std::regex re_content_type(
-                    "Content-Type: (.*?)", std::regex_constants::icase);
+                "Content-Type: (.*?)", std::regex_constants::icase);
 
             static std::regex re_content_disposition(
-                    "Content-Disposition: form-data; name=\"(.*?)\"(?:; filename=\"(.*?)\")?",
-                    std::regex_constants::icase);
+                "Content-Disposition: form-data; name=\"(.*?)\"(?:; filename=\"(.*?)\")?",
+                std::regex_constants::icase);
 
             auto dash_boundary = dash + boundary;
 
@@ -1104,7 +1109,7 @@ namespace httplib {
                     return false;
                 }
 
-                std::string name;
+                std::string   name;
                 MultipartFile file;
 
                 auto header = body.substr(pos, (next_pos - pos));
@@ -1114,7 +1119,7 @@ namespace httplib {
                     if (std::regex_match(header, m, re_content_type)) {
                         file.content_type = m[1];
                     } else if (std::regex_match(header, m, re_content_disposition)) {
-                        name = m[1];
+                        name          = m[1];
                         file.filename = m[2];
                     }
 
@@ -1156,7 +1161,7 @@ namespace httplib {
 
         inline std::string to_lower(const char *beg, const char *end) {
             std::string out;
-            auto it = beg;
+            auto        it = beg;
             while (it != end) {
                 out += ::tolower(*it);
                 it++;
@@ -1164,7 +1169,8 @@ namespace httplib {
             return out;
         }
 
-        inline void make_range_header_core(std::string &) {}
+        inline void make_range_header_core(std::string &) {
+        }
 
         template<typename uint64_t>
         inline void make_range_header_core(std::string &field, uint64_t value) {
@@ -1184,20 +1190,19 @@ namespace httplib {
         }
 
 #ifdef CPPHTTPLIB_ZLIB_SUPPORT
-        inline bool can_compress(const std::string& content_type) {
+        inline bool can_compress(const std::string &content_type) {
             return !content_type.find("text/") ||
-                content_type == "image/svg+xml" ||
-                content_type == "application/javascript" ||
-                content_type == "application/json" ||
-                content_type == "application/xml" ||
-                content_type == "application/xhtml+xml";
+                   content_type == "image/svg+xml" ||
+                   content_type == "application/javascript" ||
+                   content_type == "application/json" ||
+                   content_type == "application/xml" ||
+                   content_type == "application/xhtml+xml";
         }
 
-        inline void compress(std::string& content)
-        {
+        inline void compress(std::string &content) {
             z_stream strm;
             strm.zalloc = Z_NULL;
-            strm.zfree = Z_NULL;
+            strm.zfree  = Z_NULL;
             strm.opaque = Z_NULL;
 
             auto ret = deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
@@ -1206,15 +1211,15 @@ namespace httplib {
             }
 
             strm.avail_in = content.size();
-            strm.next_in = (Bytef *)content.data();
+            strm.next_in  = (Bytef *) content.data();
 
             std::string compressed;
 
             const auto bufsiz = 16384;
-            char buff[bufsiz];
+            char       buff[bufsiz];
             do {
                 strm.avail_out = bufsiz;
-                strm.next_out = (Bytef *)buff;
+                strm.next_out  = (Bytef *) buff;
                 deflate(&strm, Z_FINISH);
                 compressed.append(buff, bufsiz - strm.avail_out);
             } while (strm.avail_out == 0);
@@ -1224,11 +1229,10 @@ namespace httplib {
             deflateEnd(&strm);
         }
 
-        inline void decompress(std::string& content)
-        {
+        inline void decompress(std::string &content) {
             z_stream strm;
             strm.zalloc = Z_NULL;
-            strm.zfree = Z_NULL;
+            strm.zfree  = Z_NULL;
             strm.opaque = Z_NULL;
 
             // 15 is the value of wbits, which should be at the maximum possible value to ensure
@@ -1240,15 +1244,15 @@ namespace httplib {
             }
 
             strm.avail_in = content.size();
-            strm.next_in = (Bytef *)content.data();
+            strm.next_in  = (Bytef *) content.data();
 
             std::string decompressed;
 
             const auto bufsiz = 16384;
-            char buff[bufsiz];
+            char       buff[bufsiz];
             do {
                 strm.avail_out = bufsiz;
-                strm.next_out = (Bytef *)buff;
+                strm.next_out  = (Bytef *) buff;
                 inflate(&strm, Z_NO_FLUSH);
                 decompressed.append(buff, bufsiz - strm.avail_out);
             } while (strm.avail_out == 0);
@@ -1262,23 +1266,22 @@ namespace httplib {
 #ifdef _WIN32
 
         class WSInit {
-        public:
-            WSInit() {
-                WSADATA wsaData;
-                WSAStartup(0x0002, &wsaData);
-            }
+            public:
+                WSInit() {
+                    WSADATA wsaData;
+                    WSAStartup(0x0002, &wsaData);
+                }
 
-            ~WSInit() {
-                WSACleanup();
-            }
+                ~WSInit() {
+                    WSACleanup();
+                }
         };
 
         static WSInit wsinit_;
 #endif
-
     } // namespace detail
 
-// Header utilities
+    // Header utilities
     template<typename uint64_t, typename... Args>
     inline std::pair<std::string, std::string> make_range_header(uint64_t value, Args... args) {
         std::string field;
@@ -1287,7 +1290,7 @@ namespace httplib {
         return std::make_pair("Range", field);
     }
 
-// Request implementation
+    // Request implementation
     inline bool Request::has_header(const char *key) const {
         return headers.find(key) != headers.end();
     }
@@ -1324,7 +1327,7 @@ namespace httplib {
         return MultipartFile();
     }
 
-// Response implementation
+    // Response implementation
     inline bool Response::has_header(const char *key) const {
         return headers.find(key) != headers.end();
     }
@@ -1352,11 +1355,11 @@ namespace httplib {
         set_header("Content-Type", content_type);
     }
 
-// Rstream implementation
-    template<typename ...Args>
-    inline void Stream::write_format(const char *fmt, const Args &...args) {
+    // Rstream implementation
+    template<typename... Args>
+    inline void Stream::write_format(const char *fmt, const Args &... args) {
         const auto bufsiz = 2048;
-        char buf[bufsiz];
+        char       buf[bufsiz];
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
         auto n = _snprintf_s(buf, bufsiz, bufsiz - 1, fmt, args...);
@@ -1382,7 +1385,7 @@ namespace httplib {
         }
     }
 
-// Socket stream implementation
+    // Socket stream implementation
     inline SocketStream::SocketStream(socket_t sock) : sock_(sock) {
     }
 
@@ -1405,9 +1408,9 @@ namespace httplib {
         return detail::get_remote_addr(sock_);
     }
 
-// HTTP server implementation
+    // HTTP server implementation
     inline Server::Server()
-            : is_running_(false), svr_sock_(INVALID_SOCKET), running_threads_(0) {
+        : is_running_(false), svr_sock_(INVALID_SOCKET), running_threads_(0) {
 #ifndef _WIN32
         signal(SIGPIPE, SIG_IGN);
 #endif
@@ -1490,8 +1493,8 @@ namespace httplib {
         std::cmatch m;
         if (std::regex_match(s, m, re)) {
             req.version = std::string(m[4]);
-            req.method = std::string(m[1]);
-            req.path = detail::decode_url(m[2]);
+            req.method  = std::string(m[1]);
+            req.path    = detail::decode_url(m[2]);
 
             // Parse query text
             auto len = std::distance(m[3].first, m[3].second);
@@ -1527,7 +1530,7 @@ namespace httplib {
         if (!res.body.empty()) {
 #ifdef CPPHTTPLIB_ZLIB_SUPPORT
             // TODO: 'Accpet-Encoding' has gzip, not gzip;q=0
-            const auto& encodings = req.get_header_value("Accept-Encoding");
+            const auto &encodings = req.get_header_value("Accept-Encoding");
             if (encodings.find("gzip") != std::string::npos &&
                 detail::can_compress(res.get_header_value("Content-Type"))) {
                 detail::compress(res.body);
@@ -1584,7 +1587,8 @@ namespace httplib {
                                          if (::bind(sock, ai.ai_addr, ai.ai_addrlen)) {
                                              return false;
                                          }
-                                         if (::listen(sock, 5)) { // Listen through 5 channels
+                                         if (::listen(sock, 5)) {
+                                             // Listen through 5 channels
                                              return false;
                                          }
                                          return true;
@@ -1603,7 +1607,7 @@ namespace httplib {
 
         if (port == 0) {
             struct sockaddr_in sin;
-            socklen_t len = sizeof(sin);
+            socklen_t          len = sizeof(sin);
             if (getsockname(svr_sock_, reinterpret_cast<struct sockaddr *>(&sin), &len) == -1) {
                 return -1;
             }
@@ -1621,7 +1625,8 @@ namespace httplib {
         for (;;) {
             auto val = detail::select_read(svr_sock_, 0, 100000);
 
-            if (val == 0) { // Timeout
+            if (val == 0) {
+                // Timeout
                 if (svr_sock_ == INVALID_SOCKET) {
                     // The server socket was closed by 'stop' method.
                     break;
@@ -1635,7 +1640,8 @@ namespace httplib {
                 if (svr_sock_ != INVALID_SOCKET) {
                     detail::close_socket(svr_sock_);
                     ret = false;
-                } else { ; // The server socket was closed by user.
+                } else {
+                    ; // The server socket was closed by user.
                 }
                 break;
             }
@@ -1647,9 +1653,7 @@ namespace httplib {
                     running_threads_++;
                 }
 
-                read_and_close_socket(sock);
-
-                {
+                read_and_close_socket(sock); {
                     std::lock_guard<std::mutex> guard(running_threads_mutex_);
                     running_threads_--;
                 }
@@ -1704,7 +1708,7 @@ namespace httplib {
 
     inline bool Server::process_request(Stream &strm, bool last_connection, bool &connection_close) {
         const auto bufsiz = 2048;
-        char buf[bufsiz];
+        char       buf[bufsiz];
 
         detail::stream_line_reader reader(strm, buf, bufsiz);
 
@@ -1713,7 +1717,7 @@ namespace httplib {
             return false;
         }
 
-        Request req;
+        Request  req;
         Response res;
 
         res.version = "HTTP/1.1";
@@ -1784,17 +1788,17 @@ namespace httplib {
 
     inline bool Server::read_and_close_socket(socket_t sock) {
         return detail::read_and_close_socket(
-                sock,
-                true,
-                [this](Stream &strm, bool last_connection, bool &connection_close) {
-                    return process_request(strm, last_connection, connection_close);
-                });
+            sock,
+            true,
+            [this](Stream &strm, bool last_connection, bool &connection_close) {
+                return process_request(strm, last_connection, connection_close);
+            });
     }
 
-// HTTP client implementation
+    // HTTP client implementation
     inline Client::Client(
-            const char *host, int port, size_t timeout_sec)
-            : host_(host), port_(port), timeout_sec_(timeout_sec), host_and_port_(host_ + ":" + std::to_string(port_)) {
+        const char *host, int port, size_t timeout_sec)
+        : host_(host), port_(port), timeout_sec_(timeout_sec), host_and_port_(host_ + ":" + std::to_string(port_)) {
     }
 
     inline Client::~Client() {
@@ -1825,7 +1829,7 @@ namespace httplib {
 
     inline bool Client::read_response_line(Stream &strm, Response &res) {
         const auto bufsiz = 2048;
-        char buf[bufsiz];
+        char       buf[bufsiz];
 
         detail::stream_line_reader reader(strm, buf, bufsiz);
 
@@ -1838,7 +1842,7 @@ namespace httplib {
         std::cmatch m;
         if (std::regex_match(reader.ptr(), m, re)) {
             res.version = std::string(m[1]);
-            res.status = std::stoi(std::string(m[2]));
+            res.status  = std::stoi(std::string(m[2]));
         }
 
         return true;
@@ -1936,11 +1940,11 @@ namespace httplib {
 
     inline bool Client::read_and_close_socket(socket_t sock, Request &req, Response &res) {
         return detail::read_and_close_socket(
-                sock,
-                false,
-                [&](Stream &strm, bool /*last_connection*/, bool &connection_close) {
-                    return process_request(strm, req, res, connection_close);
-                });
+            sock,
+            false,
+            [&](Stream &strm, bool /*last_connection*/, bool &connection_close) {
+                return process_request(strm, req, res, connection_close);
+            });
     }
 
     inline std::shared_ptr<Response> Client::Get(const char *path, Progress progress) {
@@ -1949,9 +1953,9 @@ namespace httplib {
 
     inline std::shared_ptr<Response> Client::Get(const char *path, const Headers &headers, Progress progress) {
         Request req;
-        req.method = "GET";
-        req.path = path;
-        req.headers = headers;
+        req.method   = "GET";
+        req.path     = path;
+        req.headers  = headers;
         req.progress = progress;
 
         auto res = std::make_shared<Response>();
@@ -1965,9 +1969,9 @@ namespace httplib {
 
     inline std::shared_ptr<Response> Client::Head(const char *path, const Headers &headers) {
         Request req;
-        req.method = "HEAD";
+        req.method  = "HEAD";
         req.headers = headers;
-        req.path = path;
+        req.path    = path;
 
         auto res = std::make_shared<Response>();
 
@@ -1975,16 +1979,16 @@ namespace httplib {
     }
 
     inline std::shared_ptr<Response> Client::Post(
-            const char *path, const std::string &body, const char *content_type) {
+        const char *path, const std::string &body, const char *content_type) {
         return Post(path, Headers(), body, content_type);
     }
 
     inline std::shared_ptr<Response> Client::Post(
-            const char *path, const Headers &headers, const std::string &body, const char *content_type) {
+        const char *path, const Headers &headers, const std::string &body, const char *content_type) {
         Request req;
-        req.method = "POST";
+        req.method  = "POST";
         req.headers = headers;
-        req.path = path;
+        req.path    = path;
 
         req.headers.emplace("Content-Type", content_type);
         req.body = body;
@@ -2013,16 +2017,16 @@ namespace httplib {
     }
 
     inline std::shared_ptr<Response> Client::Put(
-            const char *path, const std::string &body, const char *content_type) {
+        const char *path, const std::string &body, const char *content_type) {
         return Put(path, Headers(), body, content_type);
     }
 
     inline std::shared_ptr<Response> Client::Put(
-            const char *path, const Headers &headers, const std::string &body, const char *content_type) {
+        const char *path, const Headers &headers, const std::string &body, const char *content_type) {
         Request req;
-        req.method = "PUT";
+        req.method  = "PUT";
         req.headers = headers;
-        req.path = path;
+        req.path    = path;
 
         req.headers.emplace("Content-Type", content_type);
         req.body = body;
@@ -2038,8 +2042,8 @@ namespace httplib {
 
     inline std::shared_ptr<Response> Client::Delete(const char *path, const Headers &headers) {
         Request req;
-        req.method = "DELETE";
-        req.path = path;
+        req.method  = "DELETE";
+        req.path    = path;
         req.headers = headers;
 
         auto res = std::make_shared<Response>();
@@ -2053,8 +2057,8 @@ namespace httplib {
 
     inline std::shared_ptr<Response> Client::Options(const char *path, const Headers &headers) {
         Request req;
-        req.method = "OPTIONS";
-        req.path = path;
+        req.method  = "OPTIONS";
+        req.path    = path;
         req.headers = headers;
 
         auto res = std::make_shared<Response>();
@@ -2062,109 +2066,98 @@ namespace httplib {
         return send(req, *res) ? res : nullptr;
     }
 
-/*
- * SSL Implementation
- */
+    /*
+     * SSL Implementation
+     */
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
     namespace detail {
+        template<typename U, typename V, typename T>
+        inline bool read_and_close_socket_ssl(
+            socket_t sock, bool keep_alive,
+            // TODO: OpenSSL 1.0.2 occasionally crashes...
+            // The upcoming 1.1.0 is going to be thread safe.
+            SSL_CTX *ctx, std::mutex &        ctx_mutex,
+            U        SSL_connect_or_accept, V setup,
+            T        callback) {
+            SSL *ssl = nullptr; {
+                std::lock_guard<std::mutex> guard(ctx_mutex);
 
-    template <typename U, typename V, typename T>
-    inline bool read_and_close_socket_ssl(
-        socket_t sock, bool keep_alive,
-        // TODO: OpenSSL 1.0.2 occasionally crashes...
-        // The upcoming 1.1.0 is going to be thread safe.
-        SSL_CTX* ctx, std::mutex& ctx_mutex,
-        U SSL_connect_or_accept, V setup,
-        T callback)
-    {
-        SSL* ssl = nullptr;
-        {
-            std::lock_guard<std::mutex> guard(ctx_mutex);
-
-            ssl = SSL_new(ctx);
-            if (!ssl) {
-                return false;
-            }
-        }
-
-        auto bio = BIO_new_socket(sock, BIO_NOCLOSE);
-        SSL_set_bio(ssl, bio, bio);
-
-        setup(ssl);
-
-        SSL_connect_or_accept(ssl);
-
-        bool ret = false;
-
-        if (keep_alive) {
-            auto count = CPPHTTPLIB_KEEPALIVE_MAX_COUNT;
-            while (count > 0 &&
-                   detail::select_read(sock,
-                       CPPHTTPLIB_KEEPALIVE_TIMEOUT_SECOND,
-                       CPPHTTPLIB_KEEPALIVE_TIMEOUT_USECOND) > 0) {
-                SSLSocketStream strm(sock, ssl);
-                auto last_connection = count == 1;
-                auto connection_close = false;
-
-                ret = callback(strm, last_connection, connection_close);
-                if (!ret || connection_close) {
-                    break;
+                ssl = SSL_new(ctx);
+                if (!ssl) {
+                    return false;
                 }
-
-                count--;
             }
-        } else {
-            SSLSocketStream strm(sock, ssl);
-            auto dummy_connection_close = false;
-            ret = callback(strm, true, dummy_connection_close);
+
+            auto bio = BIO_new_socket(sock, BIO_NOCLOSE);
+            SSL_set_bio(ssl, bio, bio);
+
+            setup(ssl);
+
+            SSL_connect_or_accept(ssl);
+
+            bool ret = false;
+
+            if (keep_alive) {
+                auto count = CPPHTTPLIB_KEEPALIVE_MAX_COUNT;
+                while (count > 0 &&
+                       detail::select_read(sock,
+                                           CPPHTTPLIB_KEEPALIVE_TIMEOUT_SECOND,
+                                           CPPHTTPLIB_KEEPALIVE_TIMEOUT_USECOND) > 0) {
+                    SSLSocketStream strm(sock, ssl);
+                    auto            last_connection  = count == 1;
+                    auto            connection_close = false;
+
+                    ret = callback(strm, last_connection, connection_close);
+                    if (!ret || connection_close) {
+                        break;
+                    }
+
+                    count--;
+                }
+            } else {
+                SSLSocketStream strm(sock, ssl);
+                auto            dummy_connection_close = false;
+                ret                                    = callback(strm, true, dummy_connection_close);
+            }
+
+            SSL_shutdown(ssl); {
+                std::lock_guard<std::mutex> guard(ctx_mutex);
+                SSL_free(ssl);
+            }
+
+            close_socket(sock);
+
+            return ret;
         }
 
-        SSL_shutdown(ssl);
+        class SSLInit {
+            public:
+                SSLInit() {
+                    SSL_load_error_strings();
+                    SSL_library_init();
+                }
+        };
 
-        {
-            std::lock_guard<std::mutex> guard(ctx_mutex);
-            SSL_free(ssl);
-        }
-
-        close_socket(sock);
-
-        return ret;
-    }
-
-    class SSLInit {
-    public:
-        SSLInit() {
-            SSL_load_error_strings();
-            SSL_library_init();
-        }
-    };
-
-    static SSLInit sslinit_;
-
+        static SSLInit sslinit_;
     } // namespace detail
 
     // SSL socket stream implementation
-    inline SSLSocketStream::SSLSocketStream(socket_t sock, SSL* ssl)
-        : sock_(sock), ssl_(ssl)
-    {
+    inline SSLSocketStream::SSLSocketStream(socket_t sock, SSL *ssl)
+        : sock_(sock), ssl_(ssl) {
     }
 
-    inline SSLSocketStream::~SSLSocketStream()
-    {
+    inline SSLSocketStream::~SSLSocketStream() {
     }
 
-    inline int SSLSocketStream::read(char* ptr, size_t size)
-    {
+    inline int SSLSocketStream::read(char *ptr, size_t size) {
         return SSL_read(ssl_, ptr, size);
     }
 
-    inline int SSLSocketStream::write(const char* ptr, size_t size)
-    {
+    inline int SSLSocketStream::write(const char *ptr, size_t size) {
         return SSL_write(ssl_, ptr, size);
     }
 
-    inline int SSLSocketStream::write(const char* ptr)
-    {
+    inline int SSLSocketStream::write(const char *ptr) {
         return write(ptr, strlen(ptr));
     }
 
@@ -2173,8 +2166,7 @@ namespace httplib {
     }
 
     // SSL HTTP server implementation
-    inline SSLServer::SSLServer(const char* cert_path, const char* private_key_path)
-    {
+    inline SSLServer::SSLServer(const char *cert_path, const char *private_key_path) {
         ctx_ = SSL_CTX_new(SSLv23_server_method());
 
         if (ctx_) {
@@ -2195,65 +2187,58 @@ namespace httplib {
         }
     }
 
-    inline SSLServer::~SSLServer()
-    {
+    inline SSLServer::~SSLServer() {
         if (ctx_) {
             SSL_CTX_free(ctx_);
         }
     }
 
-    inline bool SSLServer::is_valid() const
-    {
+    inline bool SSLServer::is_valid() const {
         return ctx_;
     }
 
-    inline bool SSLServer::read_and_close_socket(socket_t sock)
-    {
+    inline bool SSLServer::read_and_close_socket(socket_t sock) {
         return detail::read_and_close_socket_ssl(
             sock,
             true,
             ctx_, ctx_mutex_,
             SSL_accept,
-            [](SSL* /*ssl*/) {},
-            [this](Stream& strm, bool last_connection, bool& connection_close) {
+            [](SSL * /*ssl*/) {
+            },
+            [this](Stream &strm, bool last_connection, bool &connection_close) {
                 return process_request(strm, last_connection, connection_close);
             });
     }
 
     // SSL HTTP client implementation
-    inline SSLClient::SSLClient(const char* host, int port, size_t timeout_sec)
-        : Client(host, port, timeout_sec)
-    {
+    inline SSLClient::SSLClient(const char *host, int port, size_t timeout_sec)
+        : Client(host, port, timeout_sec) {
         ctx_ = SSL_CTX_new(SSLv23_client_method());
     }
 
-    inline SSLClient::~SSLClient()
-    {
+    inline SSLClient::~SSLClient() {
         if (ctx_) {
             SSL_CTX_free(ctx_);
         }
     }
 
-    inline bool SSLClient::is_valid() const
-    {
+    inline bool SSLClient::is_valid() const {
         return ctx_;
     }
 
-    inline bool SSLClient::read_and_close_socket(socket_t sock, Request& req, Response& res)
-    {
+    inline bool SSLClient::read_and_close_socket(socket_t sock, Request &req, Response &res) {
         return is_valid() && detail::read_and_close_socket_ssl(
-            sock, false,
-            ctx_, ctx_mutex_,
-            SSL_connect,
-            [&](SSL* ssl) {
-                SSL_set_tlsext_host_name(ssl, host_.c_str());
-            },
-            [&](Stream& strm, bool /*last_connection*/, bool& connection_close) {
-                return process_request(strm, req, res, connection_close);
-            });
+                   sock, false,
+                   ctx_, ctx_mutex_,
+                   SSL_connect,
+                   [&](SSL *ssl) {
+                       SSL_set_tlsext_host_name(ssl, host_.c_str());
+                   },
+                   [&](Stream &strm, bool /*last_connection*/, bool &connection_close) {
+                       return process_request(strm, req, res, connection_close);
+                   });
     }
 #endif
-
 } // namespace httplib
 
 #endif

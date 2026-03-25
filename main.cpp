@@ -1,5 +1,4 @@
 #include <chrono>
-
 #include "Entities_pack.hpp"
 #include "core/Data/Translation.hpp"
 #include "core/Exceptions/FileControllerException.hpp"
@@ -26,6 +25,7 @@
 
 #ifdef GUI_LANG_CHECKER
 
+#include <future>
 #include "core/GUI/jamspell/spell_corrector.hpp"
 
 #endif
@@ -371,22 +371,22 @@ namespace Check_runner {
              */
             [[noreturn]] void bug_menu() {
                 int user_action;
-                REPEAT_FOREVER {
+                REPEAT_FOREVER{
                     libio::output::println();
                     USER_INPUT(user_action);
                     switch (user_action) {
-                            //
+                        //
                     }
                 }
             }
 
             [[noreturn]] void run_menu() {
                 int user_action;
-                REPEAT_FOREVER {
+                REPEAT_FOREVER{
                     libio::output::println();
                     USER_INPUT(user_action);
                     switch (user_action) {
-                            //
+                        //
                     }
                 }
             }
@@ -411,9 +411,6 @@ namespace Check_runner {
                         default:
                             continue;
 
-
-
-
                     }
                 }
             }
@@ -437,9 +434,6 @@ namespace Check_runner {
                             break;
                         default:
                             continue;
-
-
-
 
                     }
                 }
@@ -638,8 +632,8 @@ namespace Check_runner {
             {FL_GRAY, FL_COURIER_ITALIC, COMMENT_FONT_SIZE},             // C - Block comments
             {FL_BLUE, FL_COURIER_BOLD, FONT_SIZE},                       // D - Strings (Parameters)
             {FL_DARK_YELLOW, FL_COURIER | FL_BOLD, DIRECTIVE_FONT_SIZE}, // E - Directives
-            {FL_BLACK, FL_COURIER_BOLD, FONT_SIZE},                      // F - Types, !disable strings with default color
-            {FL_DARK_RED, FL_COURIER_BOLD, FONT_SIZE}                    // G - Keywords
+            {FL_MAGENTA, FL_COURIER_BOLD, FONT_SIZE},                    // F - Types, !disable strings with default color
+            {FL_RED, FL_COURIER_BOLD, FONT_SIZE}                         // G - Keywords
         };
 
 #include "core/GUI/Gui_translate.hpp"
@@ -682,7 +676,7 @@ namespace Check_runner {
                     {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
                     {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
                     {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
-                    {"&Add TC", FL_ALT + 'n', add_tc_callback, window, FL_MENU_DIVIDER}, //add empty tc to file
+                    {"Add TC (Test case)", FL_ALT + 'n', add_tc_callback, window, FL_MENU_DIVIDER}, //add empty tc to file
 
                     {nullptr},
 
@@ -759,20 +753,12 @@ namespace Check_runner {
  * Program entry point
  * @param argc count of arguments in utility cli
  * @param argv given arguments to utility
- * @param envp environmental arguments
  * @throw MainException if necessary files not found
  */
-int main(int argc, char *argv[]
-#ifdef EXTENDED_FUNCTIONALITY
-         , char *envp[]
-#endif
-) {
+int main(int argc, char *argv[]) {
     using namespace Check_runner;
 
-#ifdef EXTENDED_FUNCTIONALITY
 Extended_begin_label:
-#endif
-
     if (argc > 1) {
         ///Entity init block
         Console::arg_count = argc; {
@@ -785,16 +771,16 @@ Extended_begin_label:
                 const auto window = GUI::create_view();
 
 #ifdef GUI_LANG_CHECKER
-                ///lang model for text correction
-                std::future<void> result = std::async(std::launch::async, []() {
+                ///Load lang model for text correction in utility
+                std::future<void> result = std::async(std::launch::async, [] {
                     auto load_res = Entities::corrector->load_lang_model(model_name);
                     if (load_res) {
-                        libio::output::println("Failed to load language model from file");
+                        libio::output::println("Failed to load language model from file"); //debug output print
                     } else {
-                        libio::output::println("Model loaded successfully");
+                        libio::output::println("Model loaded successfully"); //debug output print
                     }
                 });
-
+                result.get();
 #endif
 
                 window->show();

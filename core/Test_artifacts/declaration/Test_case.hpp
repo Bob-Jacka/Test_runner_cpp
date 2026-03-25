@@ -15,7 +15,7 @@ namespace Check_runner {
             std::vector<std::string> steps; ///steps of the test case to execute
 
             TA_helper_data::Priority priority;
-            TA_helper_data::Severity severity; //useless parameter, delete later
+            TA_helper_data::Severity severity; //TODO useless parameter, delete later
 
             public:
                 Test_case() = delete;

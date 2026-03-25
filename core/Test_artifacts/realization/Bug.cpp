@@ -100,12 +100,22 @@ void Check_runner::TA::enter_question_or_enhance(Question_or_enhance &object) {
     }
 }
 
-std::string Check_runner::TA::convert_type_str(const Question_or_enhance &object) {
+std::string Check_runner::TA::convert_type_2str(const Question_or_enhance &object) {
     switch (object.get_type()) {
         case Type::QUESTION:
             return "Question";
         case Type::ENHANCE:
             return "Enhance";
         default: throw;
+    }
+}
+
+Check_runner::TA::Type Check_runner::TA::convert_str_2type(const std::string &object) {
+    if (object == "Question") {
+        return Type::QUESTION;
+    } else if (object == "Enhance") {
+        return Type::ENHANCE;
+    } else {
+        throw;
     }
 }

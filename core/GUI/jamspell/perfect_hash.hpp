@@ -4,33 +4,31 @@
 #include <ostream>
 
 namespace NJamSpell {
-
     class TPerfectHash {
-    public:
-        TPerfectHash();
+        public:
+            TPerfectHash();
 
-        TPerfectHash(const TPerfectHash &other) = delete;
+            TPerfectHash(const TPerfectHash &other) = delete;
 
-        ~TPerfectHash();
+            ~TPerfectHash();
 
-        void Dump(std::ostream &out) const;
+            void Dump(std::ostream &out) const;
 
-        void Load(std::istream &in);
+            void Load(std::istream &in);
 
-        bool Init(const std::vector<std::string> &keys);
+            bool Init(const std::vector<std::string> &keys);
 
-        void Clear();
+            void Clear();
 
-        [[nodiscard]] uint32_t Hash(const std::string &value) const;
+            [[nodiscard]] uint32_t Hash(const std::string &value) const;
 
-        uint32_t Hash(const char *value, size_t size) const;
+            uint32_t Hash(const char *value, size_t size) const;
 
-        [[nodiscard]] uint32_t BucketsNumber() const;
+            [[nodiscard]] uint32_t BucketsNumber() const;
 
-    private:
-        void *Phf; // sort of forward declaration
+        private:
+            void *Phf; // sort of forward declaration
     };
-
 } // NJamSpell
 
 #endif

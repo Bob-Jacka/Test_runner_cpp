@@ -5,28 +5,26 @@
 #include <string>
 
 namespace NJamSpell {
-
     class TBloomFilter {
-    public:
-        TBloomFilter();
+        public:
+            TBloomFilter();
 
-        TBloomFilter(uint64_t elements, double falsePositiveRate);
+            TBloomFilter(uint64_t elements, double falsePositiveRate);
 
-        ~TBloomFilter();
+            ~TBloomFilter();
 
-        void Insert(const std::string &element);
+            void Insert(const std::string &element) const;
 
-        [[nodiscard]] bool contains(const std::string &element) const;
+            [[nodiscard]] bool contains(const std::string &element) const;
 
-        void dump(std::ostream &out) const;
+            void Dump(std::ostream &out) const;
 
-        void load(std::istream &in);
+            void Load(std::istream &in);
 
-    private:
-        struct Impl;
-        std::unique_ptr<Impl> BloomFilter;
+        private:
+            struct Impl;
+            std::unique_ptr<Impl> BloomFilter;
     };
-
 } // NJamSpell
 
 #endif

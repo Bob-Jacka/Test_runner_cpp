@@ -1,8 +1,10 @@
+#include "spell_corrector.hpp"
 #include <algorithm>
 #include <fstream>
 
-#include "spell_corrector.hpp"
-
+/**
+ * Main namespace for inner neuro network
+ */
 namespace NJamSpell {
     static Wide_vec_t GetDeletes1(const std::wstring &w) {
         Wide_vec_t results;
@@ -56,7 +58,7 @@ namespace NJamSpell {
     }
 
     [[nodiscard]] TScoredWords
-    TSpellCorrector::get_raw_candidates_with_scores(const NJamSpell::TWords &sentence, size_t position) const {
+    TSpellCorrector::get_raw_candidates_with_scores(const TWords &sentence, const size_t position) const {
         TScoredWords scoredCandidates;
 
         if (position >= sentence.size()) {
@@ -79,7 +81,7 @@ namespace NJamSpell {
 
         //Candidate get word section
         {
-            TWord c = LangModel.GetWord(std::wstring(w.Ptr, w.Len));
+            TWord c = LangModel.Get_word(std::wstring(w.Ptr, w.Len));
             if (c.Ptr && c.Len) {
                 w = c;
                 candidates.push_back(c);
@@ -108,7 +110,7 @@ namespace NJamSpell {
             TScoredWord scored;
             scored.Word  = cand;
             scored.Score = LangModel.Score(candSentence);
-            if (!(scored.Word == w)) {
+            if (scored.Word != w) {
                 if (knownWord) {
                     if (firstLevel) {
                         scored.Score -= KnownWordsPenalty;
@@ -122,7 +124,7 @@ namespace NJamSpell {
             scoredCandidates.push_back(scored);
         }
 
-        std::sort(scoredCandidates.begin(), scoredCandidates.end(), [](TScoredWord w1, TScoredWord w2) {
+        std::sort(scoredCandidates.begin(), scoredCandidates.end(), [](const TScoredWord &w1, const TScoredWord &w2) {
             return w1.Score > w2.Score;
         });
         return scoredCandidates;
@@ -134,7 +136,7 @@ namespace NJamSpell {
      * @return bool result, true if model knows word
      */
     [[maybe_unused]] bool TSpellCorrector::is_word_known(Widestring_t &word) const {
-        TWord w = LangModel.GetWord(word);
+        TWord w = LangModel.Get_word(word);
         if (w.Ptr && w.Len) {
             return true;
         }
@@ -161,7 +163,7 @@ namespace NJamSpell {
         std::vector<TCountCand> candidateCounts;
         for (auto &&c: uniqueCandidates) {
             TCount cnt = LangModel.GetWordCount(LangModel.GetWordIdNoCreate(c));
-            candidateCounts.push_back(std::make_pair(cnt, c));
+            candidateCounts.emplace_back(cnt, c);
         }
         uniqueCandidates.clear();
         std::stable_sort(candidateCounts.begin(), candidateCounts.end(), [](const TCountCand &a, const TCountCand &b) {
@@ -177,13 +179,13 @@ namespace NJamSpell {
     [[maybe_unused]] std::vector<std::pair<std::wstring, double> > TSpellCorrector::get_candidates_with_scores(
         const Wide_vec_t &sentence, size_t position
     ) const {
-        TWords       words(sentence.begin(), sentence.end());
+        const TWords words(sentence.begin(), sentence.end());
         TScoredWords scoredCandidates = get_raw_candidates_with_scores(words, position);
 
         std::vector<std::pair<std::wstring, double> > results;
-        for (auto s: scoredCandidates) {
-            std::wstring word = std::wstring(s.Word.Ptr, s.Word.Len);
-            results.push_back(std::make_pair(word, s.Score));
+        for (auto [Word, Score]: scoredCandidates) {
+            auto word = std::wstring(Word.Ptr, Word.Len);
+            results.emplace_back(word, Score);
         }
         return results;
     }
@@ -192,12 +194,12 @@ namespace NJamSpell {
     TSpellCorrector::get_candidates(const Wide_vec_t &sentence, size_t position) const {
         TWords words;
         for (auto &&w: sentence) {
-            words.push_back(TWord(w));
+            words.emplace_back(w);
         }
         TWords     candidates = get_candidates_raw(words, position);
         Wide_vec_t results;
         for (auto &&c: candidates) {
-            results.push_back(std::wstring(c.Ptr, c.Len));
+            results.emplace_back(c.Ptr, c.Len);
         }
         return results;
     }
@@ -213,25 +215,25 @@ namespace NJamSpell {
             TWords        words     = sentences[i];
             const TWords &origWords = origSentences[i];
             for (size_t j = 0; j < words.size(); ++j) {
-                TWord  orig          = origWords[j];
-                TWord  lowered_tword = words[j];
-                TWords candidates    = get_candidates_raw(words, j);
-                if (candidates.size() > 0) {
+                const TWord orig          = origWords[j];
+                const TWord lowered_tword = words[j];
+                TWords      candidates    = get_candidates_raw(words, j);
+                if (!candidates.empty()) {
                     words[j] = candidates[0];
                 }
-                size_t currOrigPos = orig.Ptr - &text[0];
+                const size_t currOrigPos = orig.Ptr - &text[0];
                 while (origPos < currOrigPos) {
                     result.push_back(text[origPos]);
                     origPos += 1;
                 }
-                std::wstring newWord     = std::wstring(words[j].Ptr, words[j].Len);
-                std::wstring origWord    = std::wstring(orig.Ptr, orig.Len);
-                std::wstring origLowered = std::wstring(lowered_tword.Ptr, lowered_tword.Len);
+                auto newWord     = std::wstring(words[j].Ptr, words[j].Len);
+                auto origWord    = std::wstring(orig.Ptr, orig.Len);
+                auto origLowered = std::wstring(lowered_tword.Ptr, lowered_tword.Len);
                 if (newWord != origLowered) {
                     for (size_t k = 0; k < newWord.size(); ++k) {
-                        size_t  n        = k < origWord.size() ? k : origWord.size() - 1;
-                        wchar_t newChar  = newWord[k];
-                        wchar_t origChar = origWord[n];
+                        size_t        n        = k < origWord.size() ? k : origWord.size() - 1;
+                        const wchar_t newChar  = newWord[k];
+                        const wchar_t origChar = origWord[n];
                         result.push_back(MakeUpperIfRequired(newChar, origChar));
                     }
                 } else {
@@ -252,16 +254,15 @@ namespace NJamSpell {
         ToLower(lowered);
         TSentences   sentences = LangModel.Tokenize(lowered);
         std::wstring result;
-        for (size_t i = 0; i < sentences.size(); ++i) {
-            TWords words = sentences[i];
+        for (auto words: sentences) {
             for (size_t y = 0; y < words.size(); ++y) {
                 TWords candidates = get_candidates_raw(words, y);
-                if (candidates.size() > 0) {
+                if (!candidates.empty()) {
                     words[y] = candidates[0];
                 }
                 result += std::wstring(words[y].Ptr, words[y].Len) + L" ";
             }
-            if (words.size() > 0) {
+            if (!words.empty()) {
                 result.resize(result.size() - 1);
                 result += L". ";
             }
@@ -305,7 +306,7 @@ namespace NJamSpell {
 
         for (auto &&w1: cands) {
             for (auto &&w2: w1) {
-                TWord c = LangModel.GetWord(w2);
+                TWord c = LangModel.Get_word(w2);
                 if (c.Ptr && c.Len) {
                     result.push_back(c);
                 }
@@ -323,14 +324,14 @@ namespace NJamSpell {
     }
 
     [[maybe_unused]] TWords TSpellCorrector::Edits2(const TWord &word, bool lastLevel) const {
-        std::wstring w(word.Ptr, word.Len);
-        TWords       result;
+        const std::wstring w(word.Ptr, word.Len);
+        TWords             result;
 
         for (size_t i = 0; i < w.size() + 1; ++i) {
             // delete
             if (i < w.size()) {
                 std::wstring s = w.substr(0, i) + w.substr(i + 1);
-                TWord        c = LangModel.GetWord(s);
+                TWord        c = LangModel.Get_word(s);
                 if (c.Ptr && c.Len) {
                     result.push_back(c);
                 }
@@ -342,12 +343,12 @@ namespace NJamSpell {
             // transpose
             if (i + 1 < w.size()) {
                 std::wstring s = w.substr(0, i);
-                s += w.substr(i + 1, 1);
-                s += w.substr(i, 1);
+                s              += w.substr(i + 1, 1);
+                s              += w.substr(i, 1);
                 if (i + 2 < w.size()) {
                     s += w.substr(i + 2);
                 }
-                TWord c = LangModel.GetWord(s);
+                TWord c = LangModel.Get_word(s);
                 if (c.Ptr && c.Len) {
                     result.push_back(c);
                 }
@@ -360,7 +361,7 @@ namespace NJamSpell {
             if (i < w.size()) {
                 for (auto &&ch: LangModel.GetAlphabet()) {
                     std::wstring s = w.substr(0, i) + ch + w.substr(i + 1);
-                    TWord        c = LangModel.GetWord(s);
+                    TWord        c = LangModel.Get_word(s);
                     if (c.Ptr && c.Len) {
                         result.push_back(c);
                     }
@@ -374,7 +375,7 @@ namespace NJamSpell {
             {
                 for (auto &&ch: LangModel.GetAlphabet()) {
                     std::wstring s = w.substr(0, i) + ch + w.substr(i);
-                    TWord        c = LangModel.GetWord(s);
+                    TWord        c = LangModel.Get_word(s);
                     if (c.Ptr && c.Len) {
                         result.push_back(c);
                     }
@@ -392,7 +393,7 @@ namespace NJamSpell {
         for (size_t i = 0; i < w.size() + 1; ++i) {
             for (auto &&ch: LangModel.GetAlphabet()) {
                 std::wstring s = w.substr(0, i) + ch + w.substr(i);
-                TWord        c = LangModel.GetWord(s);
+                TWord        c = LangModel.Get_word(s);
                 if (c.Ptr && c.Len) {
                     result.push_back(c);
                 }
@@ -422,15 +423,15 @@ namespace NJamSpell {
                 break;
             }
         }
-        size_t avgWordLen         = std::max(int(double(s) / n) + 1, 1);
-        size_t avgWordLenMinusOne = std::max(size_t(1), avgWordLen - 1);
+        const size_t avgWordLen         = std::max(int(double(s) / n) + 1, 1);
+        const size_t avgWordLenMinusOne = std::max(size_t(1), avgWordLen - 1);
 
-        uint64_t deletes1size = wordToId.size() * avgWordLen;
-        uint64_t deletes2size = wordToId.size() * avgWordLen * avgWordLenMinusOne;
-        deletes1size          = std::max(uint64_t(1000), deletes1size);
-        deletes1size          = std::max(uint64_t(1000), deletes1size);
+        uint64_t       deletes1size = wordToId.size() * avgWordLen;
+        const uint64_t deletes2size = wordToId.size() * avgWordLen * avgWordLenMinusOne;
+        deletes1size                = std::max(uint64_t(1000), deletes1size);
+        deletes1size                = std::max(uint64_t(1000), deletes1size);
 
-        double falsePositiveProb = 0.001;
+        constexpr double falsePositiveProb = 0.001;
         Deletes1.reset(new TBloomFilter(deletes1size, falsePositiveProb));
         Deletes2.reset(new TBloomFilter(deletes2size, falsePositiveProb));
 
@@ -441,7 +442,7 @@ namespace NJamSpell {
             auto deletes = GetDeletes2(it.first);
             for (auto &&w1: deletes) {
                 Deletes1->Insert(WideToUTF8(w1.back()));
-                deletes1real += 1;
+                deletes1real       += 1;
                 const auto w1_size = w1.size();
                 for (size_t i = 0; i < w1_size - 1; ++i) {
                     Deletes2->Insert(WideToUTF8(w1[i]));
@@ -456,7 +457,7 @@ namespace NJamSpell {
 
     /**
      * Load cache into context
-     * @param cacheFile
+     * @param cacheFile file for cache
      * @return result bool value
      */
     [[maybe_unused]] bool TSpellCorrector::load_cache(const std::string &cacheFile) {
@@ -479,10 +480,10 @@ namespace NJamSpell {
         if (checkSum != LangModel.GetCheckSum()) {
             return false;
         }
-        std::unique_ptr<TBloomFilter> deletes1(new TBloomFilter());
-        std::unique_ptr<TBloomFilter> deletes2(new TBloomFilter());
-        deletes1->load(in);
-        deletes2->load(in);
+        std::unique_ptr<TBloomFilter> deletes1 = std::make_unique<TBloomFilter>();
+        std::unique_ptr<TBloomFilter> deletes2 = std::make_unique<TBloomFilter>();
+        deletes1->Load(in);
+        deletes2->Load(in);
         magicByte = 0;
         NHandyPack::Load(in, magicByte);
         if (magicByte != SPELL_CHECKER_CACHE_MAGIC_BYTE) {
@@ -509,15 +510,15 @@ namespace NJamSpell {
         NHandyPack::Dump(out, SPELL_CHECKER_CACHE_MAGIC_BYTE);
         NHandyPack::Dump(out, SPELL_CHECKER_CACHE_VERSION);
         NHandyPack::Dump(out, LangModel.GetCheckSum());
-        Deletes1->dump(out);
-        Deletes2->dump(out);
+        Deletes1->Dump(out);
+        Deletes2->Dump(out);
         NHandyPack::Dump(out, SPELL_CHECKER_CACHE_MAGIC_BYTE);
         return true;
     }
 
     /**
      * Get models list
-     * @return
+     * @return vector with models
      */
     std::vector<TLangModel> TSpellCorrector::get_models_list() const {
         //        auto models_list = std::filesystem::current;

@@ -1,12 +1,11 @@
-#include <contrib/handypack/handypack.hpp>
-#include <contrib/phf/phf.h>
+#include "../contrib/handypack/handypack.hpp"
+#include "../contrib/phf/phf.h"
 
 #include "perfect_hash.hpp"
 
 #include <cassert>
 
 namespace NJamSpell {
-
     void TPerfectHash::Dump(std::ostream &out) const {
         const phf &perfHash = *(const phf *) Phf;
         NHandyPack::Dump(out, perfHash.d_max,
@@ -20,7 +19,7 @@ namespace NJamSpell {
 
     void TPerfectHash::Load(std::istream &in) {
         Clear();
-        Phf = new phf();
+        Phf           = new phf();
         phf &perfHash = *(phf *) Phf;
         NHandyPack::Load(in, perfHash.d_max,
                          perfHash.g_op,
@@ -39,8 +38,8 @@ namespace NJamSpell {
             keysForPhf.push_back({&s[0], s.size()});
         }
 
-        phf *tempPhf = new phf();
-        phf_error_t res = PHF::init<phf_string_t, false>(tempPhf, &keysForPhf[0], keysForPhf.size(), 4, 80, 42);
+        phf *       tempPhf = new phf();
+        phf_error_t res     = PHF::init<phf_string_t, false>(tempPhf, &keysForPhf[0], keysForPhf.size(), 4, 80, 42);
         if (res != 0) {
             PHF::destroy(tempPhf);
             delete tempPhf;
@@ -76,11 +75,10 @@ namespace NJamSpell {
     }
 
     TPerfectHash::TPerfectHash()
-            : Phf(nullptr) {
+        : Phf(nullptr) {
     }
 
     TPerfectHash::~TPerfectHash() {
         Clear();
     }
-
 } // NJamSpell
