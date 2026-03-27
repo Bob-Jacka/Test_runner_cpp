@@ -16,7 +16,7 @@ namespace Check_runner {
                 virtual ~Strat() = default;
 
                 [[nodiscard]] virtual std::vector<TA::Test_case>
-                doAlgorithm(std::vector<TA::Test_case> &) const = 0;
+                doAlgorithm(std::vector<TA::Test_case> &&) const = 0;
         };
     }
 }

@@ -4,6 +4,7 @@
  * Increment interpreter position
  */
 #define INCR_POS ++this->parser_position;
+#define DECR_POS --this->parser_position;
 
 /**
  * Get current interpreter position
@@ -14,7 +15,6 @@
 
 Interpreter_ns::Directive_parser::Directive_parser() {
     this->parser_position         = 0; //start position in interpreter
-    this->output_vector           = new std::vector<std::string>();
     this->inner_vector_to_proceed = std::vector<std::string>();
     this->global_map              = new Global();
 }
@@ -82,7 +82,7 @@ bool Interpreter_ns::Directive_parser::jmp_to(const std::string &directive_to_ju
 }
 
 std::vector<std::string> Interpreter_ns::Directive_parser::get_output_vector() const {
-    return *this->output_vector;
+    return this->inner_vector_to_proceed;
 }
 
 /**
@@ -91,27 +91,27 @@ std::vector<std::string> Interpreter_ns::Directive_parser::get_output_vector() c
  * @throw LineInterpreterException if line not end with semicolon
 */
 void Interpreter_ns::Directive_parser::directive_group(const std::string &directive_args) {
-    using High_str = std::string;
+    auto copy_dir_args  = directive_args;
+    int  group_position = 0;
     if (directive_args.ends_with(group_indicator)) {
+        DECR_POS
+        inner_vector_to_proceed.erase(inner_vector_to_proceed.begin() + parser_position);
+
         //check for directive ending and process inner test cases in group if they exist
-        High_str hashed;
         while (true) {
-            auto inner_line = inner_vector_to_proceed[this->parser_position];
+            auto inner_line = inner_vector_to_proceed[this->parser_position]; //save line to proceed
             if (!inner_line.contains(suit_directive_end)) {
-                //add hash identifier to line and push it
-#ifdef DEBUG
-                auto cleared = libio::string::delete_whitespaces(inner_line);
-                auto hash    = Utility::hash<4>(directive_args);
-                hashed       = hash + cleared;
-#elifndef DEBUG
-                hashed = Utility::hash<4>(directive_args) + libio::string::delete_whitespaces(inner_line);
-#endif
-                output_vector->push_back(hashed);
-                ++this->parser_position;
+                if (parser_position < inner_vector_to_proceed.size()) {
+                    inner_vector_to_proceed.erase(inner_vector_to_proceed.begin() + parser_position);
+                }
+                std::string hashed = (Utility::hash<4>(directive_args)) + (libio::string::delete_whitespaces(inner_line));
+                inner_vector_to_proceed.push_back(hashed); //TODO Add extra string to vector
             } else {
+                inner_vector_to_proceed.erase(inner_vector_to_proceed.begin() + parser_position);
                 break;
             }
         }
+        INCR_POS
     } else {
         throw Check_exceptions::LineParserException(__LINE__,
                                                     ("Expected group ending in line with semicolon (:), but given " +
@@ -163,8 +163,8 @@ bool Interpreter_ns::Directive_parser::process_block_until_next() {
         const auto &line = inner_vector_to_proceed[parser_position];
 
         if (line.starts_with(directive_start_sym)) {
-            auto        split_line     = libio::string::split_by_first_delim(line, ' ');
-            std::string directive_name = split_line[0].substr(1);
+            auto  split_line                        = libio::string::split_by_first_delim(line, ' ');
+            auto &[directive_name, directive_value] = split_line;
 
             if (directive_name == if_directive) {
                 ++nesting_level;
@@ -233,25 +233,25 @@ Interpreter_ns::Directive_parser::exec(const std::vector<std::string> &input_vec
     include_cycle(); //first wave of execution
 
     //Second wave of execution, proceed other directives
-    while (parser_position != input_vector.size() - 1) {
+    while (parser_position != inner_vector_to_proceed.size() - 1) {
         const auto &line = inner_vector_to_proceed[parser_position++];
-        if (line.starts_with(directive_start_sym)) {
+        if (Utility::check_directive(line)) {
             const auto split_string_line = libio::string::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
-            const auto directive_name    = split_string_line[0].substr(1, split_string_line[0].length() - 1); //current directive name
-            const auto directive_value   = libio::string::delete_whitespaces(split_string_line[1]); //current directive value
+            auto &     [directive_name, directive_value] = split_string_line;
 
+            //TODO maybe delete this check due to unuseful error throwing
             if (directive_value.contains("\"")) {
                 throw Check_exceptions::LineParserException(__LINE__, "Value should not contain \" symbol",
                                                             __FILE_NAME__);
             }
 
-            if (directive_name == group_directive_start) [[likely]] {
+            if (directive_name.substr(1) == group_directive_start) [[likely]] {
                 //for groups
                 directive_group(directive_value);
-            } else if (directive_name == if_directive) [[likely]] {
+            } else if (directive_name.substr(1) == if_directive) [[likely]] {
                 //for branches
                 high_level_branch_wrapper(directive_value);
-            } else if (directive_name == parameters_directive) {
+            } else if (directive_name.substr(1) == parameters_directive) {
                 //for parameters
                 parse_parameters(directive_value);
             } else {
@@ -261,7 +261,7 @@ Interpreter_ns::Directive_parser::exec(const std::vector<std::string> &input_vec
             }
         }
     }
-    return *output_vector;
+    return inner_vector_to_proceed;
 }
 
 /**
@@ -281,7 +281,7 @@ Interpreter_ns::Directive_parser::delete_comments(std::vector<std::string> &inpu
     }
     input_vector.shrink_to_fit();
     add_to_output_vector(input_vector);
-    return *output_vector;
+    return inner_vector_to_proceed;
 }
 
 /**
@@ -290,7 +290,7 @@ Interpreter_ns::Directive_parser::delete_comments(std::vector<std::string> &inpu
  */
 void Interpreter_ns::Directive_parser::add_to_output_vector(const std::vector<std::string> &input_vector) const {
     for (auto &input_elem: input_vector) {
-        output_vector->push_back(input_elem);
+        inner_vector_to_proceed.push_back(input_elem);
     }
 }
 
@@ -305,12 +305,12 @@ void Interpreter_ns::Directive_parser::include_cycle() {
     while (parser_position < inner_vector_to_proceed.size()) {
         const auto &line = inner_vector_to_proceed[parser_position];
 
-        if (line.starts_with(directive_start_sym)) {
-            auto        split_line     = libio::string::split_by_first_delim(line, ' ');
-            std::string directive_name = split_line[0].substr(1); //delete #
+        if (Utility::check_directive(line)) {
+            auto  split_line                        = libio::string::split_by_first_delim(line, ' ');
+            auto &[directive_name, directive_value] = split_line;
 
             if (directive_name == import_directive) {
-                std::string file_path      = libio::string::delete_whitespaces(split_line[1]);
+                std::string file_path      = libio::string::delete_whitespaces(directive_value);
                 auto        imported_lines = Check_runner::File_controller::readlines(file_path);
                 for (const auto &imported: imported_lines) {
                     processed.push_back(imported);
@@ -319,7 +319,7 @@ void Interpreter_ns::Directive_parser::include_cycle() {
                 continue;
             }
         }
-        processed.push_back(line);
+        processed.push_back(line); //if no directive found than test case
         ++parser_position;
     }
 

@@ -4,12 +4,12 @@
 ////Uncomment above macros to turn on special features:
 // #define LIBIO_EXPERIMENTAL //to turn on lib experimental functionality
 // #define DEBUG //to turn on debug mode in utility
-// #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e. version 2.0
-#define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility
+// #define EXTENDED_FUNCTIONALITY //to turn on utility additional functionality, i.e. version 3.0
+#define EXTENDED_FUNCTIONALITY_GUI //to turn on graphical interface in utility, or you can disable it to smaller build size
 #define EXTENDED_FUNCTIONALITY_IF //turn on if directive in directive interpreter
 // #define TEST //turns on tests of the utility
 // #define GUI_LANG_CHECKER //turns on language checker functionality in utility
-#define NEW_FILE_FORMAT
+#define NEW_FILE_FORMAT //special file format to store test results
 
 #define DIRECTIVE constexpr auto ///special type for directives in utility
 #define JUST_CONSTANT constexpr auto ///special type for constants
@@ -27,11 +27,11 @@
 
 //File with utility constants / settings
 
-JUST_CONSTANT version                 = "2.4.0";           ///version of the app
+JUST_CONSTANT version                 = "2.5.0";           ///version of the app, do not forget to iterate
 JUST_CONSTANT comment_sym             = "*";               ///use for mark line in suit as a comment
 JUST_CONSTANT directive_start_sym     = "#";               ///use for mark line in suit as a utility directive
 JUST_CONSTANT test_case_separator_sym = "|";               ///symbol for separating modified string line to test case
-JUST_CONSTANT stop_word               = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
+JUST_CONSTANT STOP_WORD               = "fluggegecheimen"; ///creative stop word from "Eurotrip" film to exit from stop menu.
 JUST_CONSTANT EXIT_SYM                = "exit";            ///symbol for exit in test result input
 #ifdef RU_TRANSLATION //Define, which model to use
 #pragma message("Using Russian language model")

@@ -411,6 +411,36 @@ namespace Check_runner {
                         default:
                             continue;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     }
                 }
             }
@@ -434,6 +464,36 @@ namespace Check_runner {
                             break;
                         default:
                             continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     }
                 }
@@ -525,7 +585,7 @@ namespace Check_runner {
 
                 //result - forever loop, if user has not watched "eurotrip" film
                 REPEAT_FOREVER {
-                    if (result == stop_word) {
+                    if (result == STOP_WORD) {
                         Menu::stop_menu();
                         libio::output::println("After pause:");
                         goto Ask_again_label;
@@ -649,57 +709,60 @@ namespace Check_runner {
                 const Fl_Menu_Item menuItems[] =
                 {
                     {Translation::GUI::file, 0, nullptr, nullptr, FL_SUBMENU}, //file menu
-                    {"&New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
+                    {"New file", FL_COMMAND + 'n', reinterpret_cast<Fl_Callback *>(new_callback), window},
+                    {"Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback), window},
+                    {"Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback), window},
                     {
-                        "&Open file", FL_COMMAND + 'o', reinterpret_cast<Fl_Callback *>(open_callback),
-                        window
-                    },
-                    {
-                        "&Save file", FL_COMMAND + 's', reinterpret_cast<Fl_Callback *>(save_callback),
-                        window
-                    },
-                    {
-                        "&Save file as", FL_COMMAND + FL_SHIFT + 's',
-                        reinterpret_cast<Fl_Callback *>(save_as_сallback), window,
+                        "Save file as", FL_COMMAND + FL_SHIFT + 's', reinterpret_cast<Fl_Callback *>(save_as_сallback), window,
                         FL_MENU_DIVIDER
                     },
-                    {"&Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
+                    {"Exit", FL_COMMAND + 'q', reinterpret_cast<Fl_Callback *>(exit_сallback)},
 
                     {nullptr},
 
                     {Translation::GUI::edit, 0, nullptr, nullptr, FL_SUBMENU}, //edit menu
                     {
-                        "&Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window,
+                        "Undo", FL_COMMAND + 'z', reinterpret_cast<Fl_Callback *>(undo_сallback), window,
                         FL_MENU_DIVIDER
                     },
-                    {"&Cut", FL_COMMAND + 'x', cut_сallback, window},
-                    {"&Copy", FL_COMMAND + 'c', copy_сallback, window},
-                    {"&Paste", FL_COMMAND + 'v', paste_сallback, window},
-                    {"&Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
-                    {"Add TC (Test case)", FL_ALT + 'n', add_tc_callback, window, FL_MENU_DIVIDER}, //add empty tc to file
+                    {"Cut", FL_COMMAND + 'x', cut_сallback, window},
+                    {"Copy", FL_COMMAND + 'c', copy_сallback, window},
+                    {"Paste", FL_COMMAND + 'v', paste_сallback, window},
+                    {"Delete", 0, reinterpret_cast<Fl_Callback *>(delete_сallback)},
+
+                    {nullptr},
+
+                    {Translation::GUI::action, 0, nullptr, nullptr, FL_SUBMENU},   //edit menu
+                    {"Add TC (Test case)", FL_ALT + 'n', add_tc_callback, window}, //add empty tc to file
+                    {"Add TC group", FL_ALT + 'g', add_tc_group_callback, window},
+                    {"Add Parameters", FL_ALT + 'p', add_param_dir_callback, window},
+                    {"Add Branching directive", FL_ALT + 'b', add_condition_dir_callback, window},
+                    {"Add full Branching", FL_ALT + 'b' + 'f', add_full_condition_dir_callback, window, FL_MENU_DIVIDER},
+                    {"Ignore line", FL_ALT + 'i', add_ignore_line_dir_callback, window},
+                    {"Import line", 0, add_import_dir_callback, window},
 
                     {nullptr},
 
                     {Translation::GUI::search, 0, nullptr, nullptr, FL_SUBMENU}, //search menu
-                    {"&Find", FL_COMMAND + 'f', find_сallback, window},
-                    {"&Find again", FL_COMMAND + 'g', find_2_сallback, window},
-                    {"&Replace", FL_COMMAND + 'r', replace_сallback, window},
-                    {"&Replace again", FL_COMMAND + 't', replace_2_сallback, window},
+                    {"Find", FL_COMMAND + 'f', find_сallback, window},
+                    {"Find again", FL_COMMAND + 'g', find_2_сallback, window},
+                    {"Replace", FL_COMMAND + 'r', replace_сallback, window},
+                    {"Replace again", FL_COMMAND + 't', replace_2_сallback, window},
 
                     {nullptr},
 
                     {Translation::GUI::help, 0, nullptr, nullptr, FL_SUBMENU}, //help menu
-                    {"&About", FL_COMMAND + 'h', about_callback, window, FL_MENU_DIVIDER},
-                    {"&Increase font", FL_ALT + '+', increase_font_callback, window},
-                    {"&Decrease font", FL_ALT + '-', decrease_font_callback, window},
+                    {"About", FL_COMMAND + 'h', about_callback, window, FL_MENU_DIVIDER},
+                    {"Increase font", FL_ALT + '+', increase_font_callback, window},
+                    {"Decrease font", FL_ALT + '-', decrease_font_callback, window},
 
                     {nullptr},
 
                     {Translation::GUI::ai, 0, nullptr, nullptr, FL_SUBMENU}, //AI menu
-                    {"&Chat", 0, AI_chat_callback, window},
-                    {"&Agent", 0, AI_agent_callback, window, FL_MENU_DIVIDER},
+                    {"Chat", 0, AI_chat_callback, window},
+                    {"Agent", 0, AI_agent_callback, window, FL_MENU_DIVIDER},
 #ifdef GUI_LANG_CHECKER
-                    {"&Check grammar", FL_ALT + 'c', AI_check_grammar, window},
+                    {"Check grammar", FL_ALT + 'c', AI_check_grammar, window},
 #endif
                     {nullptr},
                     {nullptr}
@@ -718,7 +781,7 @@ namespace Check_runner {
         }
 
         /**
-         * Create main window
+         * Create main window with components
          * @return pointer to window
          */
         Fl_Window *create_view() noexcept {
@@ -784,7 +847,8 @@ Extended_begin_label:
 #endif
 
                 window->show();
-                return Fl::run();
+                const auto app_res = Fl::run();
+                Console::Low_level::exit_utility(app_res);
             }
 #endif
             Entities::parser = std::make_unique<Interpreter_ns::Directive_parser>();
@@ -804,12 +868,18 @@ Extended_begin_label:
             //Modified vector with ts, after all transformations:
             lines_from_file = Entities::parser->exec(lines_from_file); //2.5) parse directives in suit file
             if (global_strat_state and Entities::context->get_strat() == nullptr) {
-                Entities::vts = Entities::test_case_fabric->create_test_cases(lines_from_file);
+                Entities::vts = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
             } else if (not global_strat_state) {
                 try {
                     //3) Create test cases objects
-                    Entities::vts = Entities::context->get_strat()->doAlgorithm(
-                        Entities::test_case_fabric->create_test_cases(lines_from_file));
+#define DEBUG
+#ifdef DEBUG
+                    auto       tcs        = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
+                    const auto after_algo = Entities::context->get_strat()->doAlgorithm(std::move(tcs));
+                    Entities::vts         = after_algo;
+#else
+                    Entities::vts = Entities::context->get_strat()->doAlgorithm(TA::Test_artifact_fabric::create_test_cases(lines_from_file));
+#endif
                 } catch (...) {
                     throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
                 }
@@ -892,7 +962,3 @@ Extended_begin_label:
 #endif
     libio::output::println("Out utility, bye");
 }
-
-#ifndef EXTENDED_FUNCTIONALITY_GUI
-}
-#endif

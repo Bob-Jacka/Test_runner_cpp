@@ -2,7 +2,6 @@
 #define ELEMENTS_CALLBACKS_HPP
 
 #include <FL/Fl_Widget.H>
-#include <string>
 
 void find_сallback(Fl_Widget *widget, void *v);
 
@@ -32,7 +31,23 @@ void cut_сallback(Fl_Widget *widget, void *v);
 
 void delete_сallback(Fl_Widget *widget);
 
+//Check callbacks
+
 void add_tc_callback(Fl_Widget *widget, void *v);
+
+void add_tc_group_callback(Fl_Widget *widget, void *v);
+
+void add_param_dir_callback(Fl_Widget *widget, void *v);
+
+void add_condition_dir_callback(Fl_Widget *widget, void *v);
+
+void add_full_condition_dir_callback(Fl_Widget *widget, void *v);
+
+void add_ignore_line_dir_callback(Fl_Widget *widget, void *v);
+
+void add_import_dir_callback(Fl_Widget *widget, void *v);
+
+//
 
 void undo_сallback(Fl_Widget *widget);
 

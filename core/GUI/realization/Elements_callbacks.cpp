@@ -6,9 +6,9 @@
 #include "../declaration/Main_window.hpp"
 
 //Local flags:
-bool changed;
-bool loading;
-char filename[256];
+bool changed;       //is file changed
+bool loading;       //is loading
+char filename[256]; //max len char array for filename
 
 //Global parse data:
 const char *code_types[] = {
@@ -18,16 +18,19 @@ const char *code_types[] = {
 const char *code_keywords[] = {
     "Низкий",
     "Средний",
-    "Высокий"
+    "Высокий",
+
+    "High",
+    "Medium"
+    "Low"
 }; //For G color type
 
 /**
  * Injects buffer from top window text editor:
  * @param widget insert widget
  * @return text buffer
-
  */
-auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
+auto GET_TXT_BUFFER_FROM_WIDGET = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->buffer();
 };
 
@@ -36,7 +39,7 @@ auto GET_TXT_BUFFER_FROM = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
  * @param widget insert widget
  * @return style buffer object
  */
-auto GET_STYLE_BUFFER_FROM = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
+auto GET_STYLE_BUFFER_FROM_WIDGET = [](const Fl_Widget *widget) -> Fl_Text_Buffer * {
     return reinterpret_cast<Fl_Text_Editor *>(widget->top_window()->child(2))->style_buffer();
 };
 
@@ -66,9 +69,16 @@ auto SELF = [](const Fl_Widget *widget) -> auto {
 };
 
 /**
+ * Inject text editor in one line
+ */
+auto GET_TXT_EDITOR_FROM_VOID = [](void *mem) -> Fl_Text_Editor * {
+    const auto window = GET_SELF_FROM_VOID(mem);
+    const auto editor = window->m_editor;
+    return editor;
+};
+
+/**
  * Set window title
- * @param widget
- * @param new_title
  */
 void set_title(const Fl_Widget *widget, const char *new_title) {
     const auto  main_window = SELF(widget);
@@ -86,7 +96,7 @@ void set_title(const Fl_Widget *widget, const char *new_title) {
  * @param widget injected widget
  */
 void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     loading                = true;
     const bool insert      = ipos != -1;
     changed                = insert;
@@ -119,7 +129,7 @@ void load_file(char *newfile, const int ipos, Fl_Widget *widget) {
  * @param widget injected widget
  */
 void save_file(char *newfile, const Fl_Widget *widget) {
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     try {
         if (text_buffer->savefile(newfile)) {
             fl_alert("Error writing to file \'%s\':\n%s.", newfile, strerror(errno));
@@ -137,11 +147,11 @@ void save_file(char *newfile, const Fl_Widget *widget) {
 /**
  * Check is file changed
  * @param widget current window
- * @return 1 - true, 0 for false
+ * @return true, false
  */
-int check_save(Fl_Widget *widget) {
+bool check_save(Fl_Widget *widget) {
     if (!changed) {
-        return 1;
+        return true;
     }
 
     const int result = fl_choice("The current file has not been saved.\n"
@@ -153,12 +163,12 @@ int check_save(Fl_Widget *widget) {
         return !changed;
     }
 
-    return result == 2 ? 1 : 0;
+    return result == 2;
 }
 
 void find_2_сallback(Fl_Widget *widget, void *v) {
     const auto window      = GET_SELF_FROM_VOID(v);
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     if (window->search[0] == '\0') {
         find_сallback(widget, v);
         return;
@@ -227,7 +237,7 @@ extern "C" void style_parser(const char *text, char *style, int length) {
             } else if (*text == '\"') {
                 current = 'D';
             } else if (*text == '|') {
-                // Vertical bar - highlight as keyword
+                // Vertical bar - highlight as keyword for tc splitter
                 *style++ = 'G';
                 ++col;
                 last = 0;
@@ -237,11 +247,11 @@ extern "C" void style_parser(const char *text, char *style, int length) {
                 bool   found_keyword = false;
                 size_t keyword_len   = 0;
 
-                for (size_t i = 0; i < std::size(code_keywords); ++i) {
-                    keyword_len = strlen(code_keywords[i]);
-                    if (keyword_len > 0 && strncmp(text, code_keywords[i], keyword_len) == 0) {
+                for (auto &code_keyword: code_keywords) {
+                    keyword_len = strlen(code_keyword);
+                    if (keyword_len > 0 && strncmp(text, code_keyword, keyword_len) == 0) {
                         // Check that next char is separator or end
-                        char next = *(text + keyword_len);
+                        const char next = *(text + keyword_len);
                         if (next == '\0' || next == '|' || next == '\n' || next == ' ' || next == '\t') {
                             found_keyword = true;
                             break;
@@ -275,8 +285,8 @@ extern "C" void style_parser(const char *text, char *style, int length) {
                         *buf_p = '\0';
 
                         bool found_type = false;
-                        for (size_t i = 0; i < std::size(code_types); ++i) {
-                            if (strcmp(buf, code_types[i]) == 0) {
+                        for (auto &code_type: code_types) {
+                            if (strcmp(buf, code_type) == 0) {
                                 found_type = true;
                                 break;
                             }
@@ -297,8 +307,8 @@ extern "C" void style_parser(const char *text, char *style, int length) {
                         }
 
                         bool found_latin_keyword = false;
-                        for (size_t i = 0; i < std::size(code_keywords); ++i) {
-                            if (strcmp(buf, code_keywords[i]) == 0) {
+                        for (auto &code_keyword: code_keywords) {
+                            if (strcmp(buf, code_keyword) == 0) {
                                 found_latin_keyword = true;
                                 break;
                             }
@@ -369,6 +379,12 @@ extern "C" void style_parser(const char *text, char *style, int length) {
     }
 }
 
+/**
+ * Change text event
+ * @param nInserted
+ * @param nDeleted
+ * @param v
+ */
 void changed_сallback(int, const int nInserted, const int nDeleted, int, const char *, void *v) {
     if ((nInserted || nDeleted) && !loading) {
         changed = true;
@@ -392,8 +408,8 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
             *style, // Style data
             *text;  // Text data
 
-    const auto text_buffer  = GET_TXT_BUFFER_FROM(GET_WINDOW_FROM_VOID(v));   //inject text buffer
-    const auto style_buffer = GET_STYLE_BUFFER_FROM(GET_WINDOW_FROM_VOID(v)); //inject style buffer
+    const auto text_buffer  = GET_TXT_BUFFER_FROM_WIDGET(GET_WINDOW_FROM_VOID(v));   //inject text buffer
+    const auto style_buffer = GET_STYLE_BUFFER_FROM_WIDGET(GET_WINDOW_FROM_VOID(v)); //inject style buffer
 
     // If this is just a selection change, just unselect the style buffer...
     if (nInserted == 0 && nColorized == 0) {
@@ -404,7 +420,7 @@ extern "C" void colorize_callback(const int   pos,         // I - Position of up
     // Track changes in the text buffer...
     if (nInserted > 0) {
         // Insert characters into the style buffer...
-        style = new char[nInserted + 1];
+        style = new char[nInserted + 1]; //TODO replace dynamic allocating
         memset(style, 'A', nInserted);
         style[nInserted] = '\0';
 
@@ -459,7 +475,7 @@ void replace_сallback(Fl_Widget *widget, void *v) {
 
 void replace_2_сallback(Fl_Widget *widget, void *v) {
     const auto  window      = GET_SELF_FROM_VOID(v);
-    const auto  text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto  text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     const char *find        = window->m_replace_find->value();
     const char *replace     = window->m_replace_with->value();
 
@@ -494,7 +510,7 @@ void replace_2_сallback(Fl_Widget *widget, void *v) {
  */
 void repl_all_сallback(Fl_Widget *widget, void *v) {
     const auto  window      = GET_SELF_FROM_VOID(v);
-    const auto  text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto  text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     const char *find        = window->m_replace_find->value();
     const char *replace     = window->m_replace_with->value();
 
@@ -556,23 +572,74 @@ void cut_сallback(Fl_Widget *widget, void *v) {
 }
 
 void delete_сallback(Fl_Widget *widget) {
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     text_buffer->remove_selection();
 }
 
+//Check callbacks
+
 /**
  * Add empty test case into text editor
- * @param widget current widget
- * @param v view
  */
 void add_tc_callback(Fl_Widget *widget, void *v) {
-    const auto window = GET_SELF_FROM_VOID(v);
-    const auto editor = window->m_editor;
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v);
     editor->insert("<tc name>|<tc prior>|\n"); //insert default template tc
 }
 
+/**
+ * Add Group directive into file
+ */
+void add_tc_group_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v);
+    editor->insert("#Group_start <group_name>:\n"); //insert group directive
+    editor->insert("#Group_end\n");
+}
+
+/**
+ * Add Parameters directive into file at current cursor position
+ */
+void add_param_dir_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v);
+    editor->insert("#Parameters <param=value>:\n"); //insert default parameter directive
+}
+
+/**
+ * Add if / elif / else directive into file
+ */
+void add_condition_dir_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v); //TODO add logic to define if это elif
+    editor->insert("#If <condition>:\n");
+    editor->insert("#End_if\n");
+}
+
+/**
+ * Add full branching logic into file
+ */
+void add_full_condition_dir_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v);
+    editor->insert("#If <condition>:\n\t");
+    editor->insert("\n#Elif <condition>:\n\t");
+    editor->insert("\n#Else:\n\t");
+    editor->insert("\n#End_if\n");
+}
+
+/**
+ * Ignore ts line in file, by adding #Ignore directive to the beginning
+ */
+void add_ignore_line_dir_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v); //TODO change cursor position to the begin
+}
+
+/**
+ * Add import template into file
+ */
+void add_import_dir_callback(Fl_Widget *widget, void *v) {
+    const auto editor = GET_TXT_EDITOR_FROM_VOID(v);
+    editor->insert("#Import <file_to_include>");
+}
+
 void undo_сallback(Fl_Widget *widget) {
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     text_buffer->undo();
 }
 
@@ -603,7 +670,7 @@ void open_callback(Fl_Widget *widget) {
 }
 
 void new_callback(Fl_Widget *widget) {
-    const auto text_buffer = GET_TXT_BUFFER_FROM(widget);
+    const auto text_buffer = GET_TXT_BUFFER_FROM_WIDGET(widget);
     if (!check_save(widget)) {
         return;
     }
@@ -684,8 +751,6 @@ void AI_chat_callback(Fl_Widget *widget, void *v) {
 
 /**
  * Open window with agents
- * @param widget
- * @param v view
  */
 void AI_agent_callback(Fl_Widget *widget, void *v) {
     const auto agent_window = new Fl_Double_Window(600, 600, "AI agent menu");
@@ -697,14 +762,13 @@ void AI_agent_callback(Fl_Widget *widget, void *v) {
     agent_window->show();
 }
 
-#define GUI_LANG_CHECKER
 #ifdef GUI_LANG_CHECKER
 
 /**
  * Check grammar during utility stop when user asks for check
  */
 void AI_check_grammar(Fl_Widget *widget, void *v) {
-    const auto txt_buf = GET_TXT_BUFFER_FROM(widget);
+    const auto txt_buf = GET_TXT_BUFFER_FROM_WIDGET(widget);
 }
 #undef GUI_LANG_CHECKER
 #endif

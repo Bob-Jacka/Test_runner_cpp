@@ -8,6 +8,16 @@ Check_runner::TA::Test_case::Test_case(const Test_case &other) : Test_artifact(o
     this->priority = other.priority;
 }
 
+Check_runner::TA::Test_case::Test_case(Test_case &&other) noexcept {
+    this->name     = other.name;
+    this->severity = other.severity;
+    this->steps    = other.steps;
+    this->comment  = other.comment;
+    this->priority = other.priority;
+
+    other.name = "";
+}
+
 Check_runner::TA::Test_case::Test_case(const std::string &            name, const std::string &comment, const TA_helper_data::Priority given_prior,
                                        const TA_helper_data::Severity given_sev) {
     if (!name.empty()) {

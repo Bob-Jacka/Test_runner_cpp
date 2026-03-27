@@ -7,7 +7,7 @@ namespace Strategy {
     class Usual_strat final : public Check_runner::Strategy::Strat {
     public:
         [[nodiscard]] std::vector<Check_runner::TA::Test_case>
-        doAlgorithm(std::vector<Check_runner::TA::Test_case> &) const override;
+        doAlgorithm(std::vector<Check_runner::TA::Test_case> &&) const override;
     };
 }
 #endif

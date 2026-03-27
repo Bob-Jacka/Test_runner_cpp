@@ -54,9 +54,7 @@ namespace Interpreter_ns {
         private:
             int parser_position; ///position of parser in main suit of utility
 
-            std::vector<std::string> inner_vector_to_proceed; ///main vector with lines
-
-            std::vector<std::string> *output_vector; ///vector that will be output result of parse directives and further creating test cases
+            mutable std::vector<std::string> inner_vector_to_proceed; ///main vector with lines
 
             Global *global_map; ///global map for storing parameters and functions
 

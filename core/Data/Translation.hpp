@@ -27,35 +27,35 @@ namespace Translation {
 #pragma message("Using Ru translation")
         //Bugs:
         constexpr auto found_bugs = "Найденные баги:";
-        constexpr auto bug_name = "\tИмя бага: ";
-        constexpr auto bug_desc = "\tОписание бага: ";
-        constexpr auto bug_sev = "\tВажность бага: ";
-        constexpr auto no_bugs = "Багов нет";
+        constexpr auto bug_name   = "\tИмя бага: ";
+        constexpr auto bug_desc   = "\tОписание бага: ";
+        constexpr auto bug_sev    = "\tВажность бага: ";
+        constexpr auto no_bugs    = "Багов нет";
 
         //Bug severity:
-        constexpr auto low = "Низкий";
-        constexpr auto medium = "Средний";
-        constexpr auto high = "Высокий";
+        constexpr auto low      = "Низкий";
+        constexpr auto medium   = "Средний";
+        constexpr auto high     = "Высокий";
         constexpr auto critical = "Критический";
-        constexpr auto blocker = "Блокирующий";
+        constexpr auto blocker  = "Блокирующий";
 
         //Other "bug" words:
         constexpr auto enter_invite = "Введите аттрибуты бага:";
-        constexpr auto input_exit = "Для того чтобы выйти введите 'exit' слово";
+        constexpr auto input_exit   = "Для того чтобы выйти введите 'exit' слово";
 
         //user action:
-        constexpr auto accept = "да";
+        constexpr auto accept    = "да";
         constexpr auto disaccept = "нет";
-        constexpr auto skip = "пропустить";
+        constexpr auto skip      = "пропустить";
 
         //Test case:
-        constexpr auto ts_question = "Тест кейс пройден?";
+        constexpr auto ts_question     = "Тест кейс пройден?";
         constexpr auto available_input = "Введите да (д), нет (н) или пропуск для результата проверки";
 
         //strategies strings:
         constexpr auto high_prior_strat = "Blocker";
-        constexpr auto random_strat = "Blocker";
-        constexpr auto parallel_strat = "Blocker";
+        constexpr auto random_strat     = "Blocker";
+        constexpr auto parallel_strat   = "Blocker";
 
         //other strings:
         constexpr auto elapsed_sec = "Потраченное время на тест кейс: ";

@@ -407,8 +407,7 @@ namespace libio {
         std::vector<std::string> split(const std::string &s, const std::string &delim = " ") {
             std::vector<std::string>   result;
             const std::regex           del(delim);
-            std::sregex_token_iterator it(s.begin(),
-                                          s.end(), del, -1);
+            std::sregex_token_iterator it(s.begin(), s.end(), del, -1);
             const std::sregex_token_iterator end;
             while (it != end) {
                 result.push_back(*it);
@@ -468,23 +467,16 @@ namespace libio {
         }
 
         /**
-         * Split string into vector and return changed string.
+         * Split string into tuple by delimiter.
         * @param s source string to split
         * @param delim delimiter to split on
-        * @return vector if you want to assign to variable.
+        * @return tuple if you want to assign to variable.
         */
-        std::vector<std::string> split_by_first_delim(const std::string &s, const char delim = ' ') {
-            size_t pos = s.find(delim);
-            if (pos != std::string::npos) {
-                std::stringstream        ss(s);
-                std::string              item;
-                std::vector<std::string> elems;
-
-                const std::string firstPart  = s.substr(0, pos);
-                const std::string secondPart = s.substr(pos + 1);
-                elems.push_back(firstPart);
-                elems.push_back(secondPart);
-                return elems;
+        std::tuple<std::string, std::string> split_by_first_delim(const std::string &s, const char delim = ' ') {
+            if (const size_t pos = s.find(delim); pos != std::string::npos) {
+                const std::string first_part  = s.substr(0, pos);
+                const std::string second_part = s.substr(pos + 1);
+                return {first_part, second_part};
             }
             throw std::runtime_error("split_by_first_delim: delimiter not found");
         }
@@ -993,6 +985,7 @@ namespace libio {
                 result = result * 10 + (str[++i] - '0');
 
                 if (result *sign
+
                 >
                 std::numeric_limits<int>::max()
                 ) {

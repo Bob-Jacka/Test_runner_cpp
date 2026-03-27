@@ -26,4 +26,18 @@ namespace Utility {
     std::string hash(const std::string &group_id) {
         return std::string("#") + group_id.substr(0, (hash_len_mod % 2 == 0) ? hash_len_mod + 2 : hash_len_mod - 1) + std::string("-");
     }
+
+    export bool check_directive(const std::string &directive_string) {
+        if (directive_string.contains("|") and directive_string.contains(':')) {
+            return true;
+        }
+        return false;
+    }
+
+    export bool check_tc(const std::string &directive_string) {
+        if (directive_string.contains("|")) {
+            return true;
+        }
+        return false;
+    }
 }

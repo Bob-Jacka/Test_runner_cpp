@@ -5,16 +5,17 @@
 
 namespace Translation {
     /**
-     * Namespace for gui translation
+     * Namespace for gui translation in utility
      */
     namespace GUI {
         //Main menu
         ////Sub menu points:
-        constexpr auto file = "&File";
-        constexpr auto edit = "&Edit";
+        constexpr auto file   = "&File";
+        constexpr auto edit   = "&Edit";
+        constexpr auto action = "&Action";
         constexpr auto search = "&Search";
-        constexpr auto help = "&Help";
-        constexpr auto ai = "&AI";
+        constexpr auto help   = "&Help";
+        constexpr auto ai     = "&AI";
     }
 }
 

@@ -22,6 +22,8 @@ namespace Check_runner {
 
                 Test_case(const Test_case &);
 
+                Test_case( Test_case &&) noexcept;
+
                 Test_case(const std::string &, const std::string &, TA_helper_data::Priority,
                           TA_helper_data::Severity = TA_helper_data::Severity::Medium);
 

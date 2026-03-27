@@ -8,6 +8,7 @@
 #include "../Test_artifacts/declaration/Test_suit.hpp"
 
 import Libio;
+import UtilFuncs_mod;
 
 namespace Check_runner {
     /**
@@ -42,13 +43,11 @@ namespace Check_runner {
 
                 //Methods for creating test artifacts
 
-                [[nodiscard]] std::vector<Check_runner::TA::Test_case> &
-                create_test_cases(const std::vector<std::string> &) const;
+                [[nodiscard]] static std::vector<Test_case> create_test_cases(const std::vector<std::string> &);
 
-                [[nodiscard]] Bug *create_bug(const std::string &, const std::string &) const;
+                [[nodiscard]] static Bug *create_bug(const std::string &, const std::string &) ;
 
-                [[nodiscard]] Check_list *create_check_list(const std::string &, const std::string &,
-                                                            const std::vector<std::string> &) const;
+                [[nodiscard]] Check_list *create_check_list(const std::string &, const std::string &, const std::vector<std::string> &) const;
 
                 [[nodiscard]] Test_suit<Test_case> *create_test_suit(
                     const std::vector<std::string> &, const std::string &) const;

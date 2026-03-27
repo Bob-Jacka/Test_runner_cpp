@@ -1,6 +1,8 @@
 #ifndef LOAD_PARAMETERS_HPP
 #define LOAD_PARAMETERS_HPP
 
+// #define DEBUG_LP //uncomment to turn on debug functionality in load parameters
+
 #define BITSET_FLAGS_UPDATE //flag for turn on bit flags
 
 #ifdef BITSET_FLAGS_UPDATE
@@ -122,9 +124,14 @@ namespace Check_runner {
                 void set_parameters(const std::string &);
 
 #ifdef BITSET_FLAGS_UPDATE
-                [[nodiscard]] bool get_flag_value(int position);
+                [[nodiscard]] bool get_flag_value(int position) const;
 
                 void set_flag_value(int position);
+
+#ifdef DEBUG_LP
+#pragma message("Using debug in Load parameters")
+                void print_flags() const;
+#endif
 
 #elifndef BITSET_FLAGS_UPDATE
 
@@ -180,12 +187,51 @@ namespace Check_runner {
          * Get flag value from bitset, start position from left
          * @return bool value
          */
-        inline bool Load_parameters::get_flag_value(const int position) {
-            flags.flip();
+        inline bool Load_parameters::get_flag_value(const int position) const {
             const bool res = flags.test(position);
-            flags.flip();
             return res;
         }
+
+#ifdef DEBUG_LP
+        /**
+         * Print flags values into console
+         */
+        inline void Load_parameters::print_flags() const {
+            printf("0 bit (gui) - %s\n"
+                   "1 bit (is colored) - %s\n"
+                   "2 bit (comments) - %s\n"
+                   "3 bit (time record) - %s\n"
+                   "4 bit (file write) - %s\n"
+                   "5 bit (random strat) - %s\n"
+                   "6 bit (parallel strat) - %s\n"
+                   "7 bit (high prior strat) - %s\n"
+                   "8 bit (everything now strat) - %s\n"
+                   "9 bit (usual strat) - %s\n"
+                   "10 bit (choose strat) - %s\n"
+                   "11 bit (reserved) - %s\n"
+                   "12 bit (reserved) - %s\n"
+                   "13 bit (reserved) - %s\n"
+                   "14 bit (reserved) - %s\n"
+                   "15 bit (reserved) - %s\n",
+                   flags.test(0) ? "true" : "false",
+                   flags.test(1) ? "true" : "false",
+                   flags.test(2) ? "true" : "false",
+                   flags.test(3) ? "true" : "false",
+                   flags.test(4) ? "true" : "false",
+                   flags.test(5) ? "true" : "false",
+                   flags.test(6) ? "true" : "false",
+                   flags.test(7) ? "true" : "false",
+                   flags.test(8) ? "true" : "false",
+                   flags.test(9) ? "true" : "false",
+                   flags.test(10) ? "true" : "false",
+                   flags.test(11) ? "true" : "false",
+                   flags.test(12) ? "true" : "false",
+                   flags.test(13) ? "true" : "false",
+                   flags.test(14) ? "true" : "false",
+                   flags.test(15) ? "true" : "false"
+            );
+        }
+#endif
 
         /**
          * Set a bit at position to true, start position from left
@@ -194,9 +240,10 @@ namespace Check_runner {
          */
         inline void Load_parameters::set_flag_value(const int position) {
             if ((position <= 15) && (position >= 0)) {
-                flags.flip();
                 flags.set(position, true);
-                flags.flip();
+#ifdef DEBUG_LP
+                printf("Flag position set to %d\n", position);
+#endif
             } else {
                 throw std::out_of_range("Position value cannot be - " + std::to_string(position));
             }

@@ -12,24 +12,26 @@ Check_runner::TA::Test_artifact_fabric::~Test_artifact_fabric() = default;
  * @throw std::runtime_error in case of empty input vector
  * @return vector with test cases, instead of strings
  */
-std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric::create_test_cases(
-    const std::vector<std::string> &string_lines) const {
+std::vector<Check_runner::TA::Test_case> Check_runner::TA::Test_artifact_fabric::create_test_cases(
+    const std::vector<std::string> &string_lines) {
     if (!string_lines.empty()) {
-        const auto tmp_test_cases = new std::vector<Test_case>();
+        auto tmp_test_cases = std::vector<Test_case>();
         for (auto &test_case_line: string_lines) {
-            auto split_string = libio::string::split(test_case_line, test_case_separator_sym);
-            if (split_string.size() == 2) {
-                //in case of empty comment, just add empty string
-                split_string.emplace_back("");
+            if (Utility::check_tc(test_case_line)) {
+                auto split_string = libio::string::split(test_case_line, "|"); //TODO split string into characters
+                if (split_string.size() == 2) {
+                    //in case of empty comment, just add empty string
+                    split_string.emplace_back("");
+                }
+                const auto created_tc = Test_case(
+                    split_string[0],
+                    split_string[2],
+                    TA_helper_data::priority_to_object(split_string[1])
+                );
+                tmp_test_cases.push_back(created_tc);
             }
-            const auto created_tc = new Test_case(
-                split_string[0],
-                split_string[2],
-                TA_helper_data::priority_to_object(split_string[1])
-            );
-            tmp_test_cases->push_back(*created_tc);
         }
-        return *tmp_test_cases;
+        return tmp_test_cases;
     }
     throw std::runtime_error("Input vector with strings might not be empty");
 }
@@ -40,8 +42,7 @@ std::vector<Check_runner::TA::Test_case> &Check_runner::TA::Test_artifact_fabric
  * @param description description of the bug
  * @return constructed bug object.
  */
-Check_runner::TA::Bug *
-Check_runner::TA::Test_artifact_fabric::create_bug(const std::string &bug_name, const std::string &description) const {
+Check_runner::TA::Bug *Check_runner::TA::Test_artifact_fabric::create_bug(const std::string &bug_name, const std::string &description) {
     const auto bug = new Bug{bug_name, description};
     return bug;
 }
