@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.7
+ Version - 1.25.0
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -18,9 +18,9 @@ module;
 */
 
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <regex>
 
 /**
@@ -29,14 +29,15 @@ module;
 // #define LIBIO_EXPERIMENTAL //uncomment/comment this line to turn on/off LIBIO_EXPERIMENTAL library features
 // #define LIBIO_TEST //uncomment/comment this line to turn on/off library test
 // #define UNSTABLE //turns on unstable versions of very popular functions
-// #define LIBIO_WIDE_STRING //functionality to use wide strings
+#define LIBIO_WIDE_STRING //functionality to use wide strings
 // #define LIBIO_DEPRECATED //deprecated features in libio
+// #define LIBIO_ERROR //turn on errors in functions if defined and just write to std::cerr if not
 
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #pragma message("Using experimental features")
 
 #include <cmath>
-#include <vector>
+#incldue <vector>
 #include <iterator>
 #include <sstream>
 #endif
@@ -51,6 +52,8 @@ export module Libio;
     libio::output::print(">> "); \
     libio::input::user_input(val);\
     libio::output::println(); //just new line symbol
+
+#define REPEAT_FOREVER while(true)
 
 /**
  * Unified namespace for libio library for input/output.
@@ -132,6 +135,11 @@ namespace libio {
                 if (std::cout.good()) {
                     std::cout << color << object << Ansi_colors::_clear_color << separator;
                 }
+#ifdef LIBIO_ERROR
+                throw std::runtime_error("Colored print is failed");
+#else
+                std::cerr << "colored print is failed" << std::endl;
+#endif
             }
 
             template<typename T>
@@ -140,6 +148,11 @@ namespace libio {
                 if (std::cout.good()) {
                     std::cout << color << object << Ansi_colors::_clear_color << "\n";
                 }
+#ifdef LIBIO_ERROR
+                throw std::runtime_error("Colored println is failed");
+#else
+                std::cerr << "Colored println is failed" << std::endl;
+#endif
             }
         }
 
@@ -181,6 +194,11 @@ namespace libio {
             if (std::cout.good()) {
                 std::cout << str << std::endl;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Println is failed due to cout");
+#else
+            std::cerr << "Println is failed due to cout" << std::endl;
+#endif
         }
 
         /**
@@ -195,26 +213,17 @@ namespace libio {
             if (std::cout.good()) {
                 std::cout << str << separator;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Print is failed due to cout");
+#else
+            std::cerr << "Print is failed due to cout" << std::endl;
+#endif
         }
 
 #endif
 
-#define LIBIO_WIDE_STRING
 #ifdef LIBIO_WIDE_STRING
 #pragma message("Using libio wide string functionality")
-
-        /**
-         * Convert usual string object to wide string.
-         * @param str source std::string object
-         * @return wide string object
-         */
-        export std::wstring to_wstring(const std::string &str) {
-            std::vector<wchar_t> buf(str.size());
-            std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
-                                                                      str.data() + str.size(),
-                                                                      buf.data());
-            return std::wstring{buf.data(), buf.size()};
-        }
 
         /**
          * Print given wide string message in console with new line.
@@ -225,6 +234,11 @@ namespace libio {
             if (std::wcout.good()) {
                 std::wcout << str << std::endl;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Println_w is failed due to wcout");
+#else
+            std::cerr << "Println_w is failed due to wcout" << std::endl;
+#endif
         }
 
         /**
@@ -237,6 +251,11 @@ namespace libio {
             if (std::wcout.good()) {
                 std::wcout << str << separator;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Print_w is failed due to wcout");
+#else
+            std::cerr << "Print_w is failed due to wcout" << std::endl;
+#endif
         }
 #endif
 
@@ -407,12 +426,31 @@ namespace libio {
         std::vector<std::string> split(const std::string &s, const std::string &delim = " ") {
             std::vector<std::string>   result;
             const std::regex           del(delim);
-            std::sregex_token_iterator it(s.begin(), s.end(), del, -1);
+            std::sregex_token_iterator it(s.begin(),
+                                          s.end(), del, -1);
             const std::sregex_token_iterator end;
             while (it != end) {
                 result.push_back(*it);
                 ++it;
             }
+            return result;
+        }
+
+        /**
+         * Split method for char delimeter
+         * @param str source string
+         * @param delimiter
+         * @return
+         */
+        std::vector<std::string> split(const std::string &str, const char delimiter) {
+            std::vector<std::string> result;
+            std::istringstream       stream(str);
+            std::string              token;
+
+            while (std::getline(stream, token, delimiter)) {
+                result.push_back(token);
+            }
+
             return result;
         }
 
@@ -480,30 +518,33 @@ namespace libio {
             }
             throw std::runtime_error("split_by_first_delim: delimiter not found");
         }
-
-        /**
-         * Another unuseful function for string actions
-         * @param str source string to trim
-         * @return trimmed string
-         */
-        std::string trim(const std::string &str) {
-            const size_t first = str.find_first_not_of(" \t\n\r\f\v");
-            if (first == std::string::npos) {
-                return "";
-            }
-            const size_t last = str.find_last_not_of(" \t\n\r\f\v");
-            return str.substr(first, last - first + 1);
-        }
-
-#ifdef LIBIO_EXPERIMENTAL
-        /**
-         * Replace string with another string
-         */
-        inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
-            //
-        }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
 #endif
     }
+
+    /**
+     * Another unuseful function for string actions
+     * @param str source string to trim
+     * @return trimmed string
+     */
+    std::string trim(const std::string &str) {
+        const size_t first = str.find_first_not_of(" \t\n\r\f\v");
+        if (first == std::string::npos) {
+            return "";
+        }
+        const size_t last = str.find_last_not_of(" \t\n\r\f\v");
+        return str.substr(first, last - first + 1);
+    }
+
+#ifdef LIBIO_EXPERIMENTAL
+    /**
+     * Replace string with another string
+     */
+    inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
+        //
+    }
+#endif
 
     /**
      * Contains different input logic.
@@ -511,6 +552,7 @@ namespace libio {
     export namespace input {
 #ifdef LIBIO_DEPRECATED
 #warning "Using deprecated libio features"
+
         /**
          * Writes down int value into variable by address
          * @param variableAddress address of variable to output data to it.
@@ -519,6 +561,9 @@ namespace libio {
             if (std::cin.good()) {
                 std::cin >> variableAddress;
             }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
         }
 
         /**
@@ -529,6 +574,9 @@ namespace libio {
             if (std::cin.good()) {
                 std::cin >> variableAddress;
             }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
         }
 
         /**
@@ -539,6 +587,9 @@ namespace libio {
             if (std::cin.good()) {
                 std::cin >> variableAddress;
             }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
         }
 #endif
         /**
@@ -551,6 +602,11 @@ namespace libio {
             if (std::cin.good()) {
                 std::cin >> variableAddress;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("split_by_first_delim: delimiter not found");
+#else
+            std::cerr << "split_by_first_delim: delimiter not found" << std::endl;
+#endif
         }
 
         /**
@@ -564,10 +620,16 @@ namespace libio {
             if (std::cin.good()) {
                 std::cin >> variable;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("split_by_first_delim: delimiter not found");
+#else
+            std::cerr << "User input is failed" << std::endl;
+#endif
             return variable;
         }
 
         /**
+         * Input symbols (strings) in line
          * @param input_symbol symbol that appear in start of inputting
          * @return user string
          */
@@ -583,6 +645,19 @@ namespace libio {
      * Contains arrays actions
      */
     export namespace array {
+        template<typename T>
+        void fast_copy(T *dest, const T *src, size_t count) {
+            if constexpr (std::is_trivially_copyable<T>::value) {
+                std::cout << "Using fast memcpy for trivial type." << std::endl;
+                memcpy(dest, src, count * sizeof(T));
+            } else {
+                std::cout << "Using slow element-by-element copy." << std::endl;
+                for (size_t i = 0; i < count; ++i) {
+                    dest[i] = src[i];
+                }
+            }
+        }
+
         /**
          * Delete dynamically allocated array
          * @tparam T generic type.
@@ -701,11 +776,16 @@ namespace libio {
                 delete[] arr;
                 return {new_arr, logical_size, actual_size};
             }
-            std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
-            throw;
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("Cannot allocate memory for array");
+#else
+        std::cerr<< "Cannot allocate memory for array" << std::endl;
+#endif
+        throw;
         }
 #endif
     }
+
     /**
      * Contains file actions.
      * Ex. write or create.
@@ -756,7 +836,11 @@ namespace libio {
                 file.close();
                 return lines;
             }
-            std::cerr << "Error reading file " << fileName << std::endl;
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Error reading file: " + fileName);
+#else
+            std::cerr << "Error reading file: " << fileName << std::endl;
+#endif
             return {};
         }
 
@@ -841,6 +925,19 @@ namespace libio {
         }
 
 #endif
+
+        /**
+         * Platform independent filepath getter.
+         * @param optional_file_name
+         * @return string value of current path
+         */
+        std::string get_current_dir_name(const std::string &optional_file_name = "") {
+            auto res = std::filesystem::current_path().string();
+            if (optional_file_name != "") {
+                res += "/" + optional_file_name;
+            }
+            return res;
+        }
     }
 
     /**
@@ -858,24 +955,25 @@ namespace libio {
          * Methods of sql execution
          */
         struct Sql_methods {
-            static String SELECT;
-            static String DELETE;
-            static String UPDATE;
-            static String INSERT;
-            static String CREATE;
-            static String DROP;
+            static libio::String SELECT;
+            static libio::String DELETE;
+            static libio::String UPDATE;
+            static libio::String INSERT;
+            static libio::String CREATE;
+            static libio::String DROP;
         };
 
-        String Sql_methods::SELECT = "SELECT";
-        String Sql_methods::DELETE = "DELETE";
-        String Sql_methods::UPDATE = "UPDATE";
-        String Sql_methods::INSERT = "INSERT";
-        String Sql_methods::CREATE = "CREATE";
-        String Sql_methods::DROP   = "DROP";
+        libio::String Sql_methods::SELECT = "SELECT";
+        libio::String Sql_methods::DELETE = "DELETE";
+        libio::String Sql_methods::UPDATE = "UPDATE";
+        libio::String Sql_methods::INSERT = "INSERT";
+        libio::String Sql_methods::CREATE = "CREATE";
+        libio::String Sql_methods::DROP   = "DROP";
 
         enum DATABASE_TYPE {
             //
         };
+
 #ifdef LIBIO_EXPERIMENTAL
         void create_connection(const std::string &database_name) {
             //
@@ -941,19 +1039,26 @@ namespace libio {
         T convert_to_t(const std::string &source);
 
         template<>
-        int convert_to_t<int>(const std::string &source) {
+        int convert_to_t(const std::string &source) {
             try {
                 return std::stoi(source);
             } catch (const std::exception &e) {
+#ifdef LIBIO_ERROR
                 throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
+#else
+                std::cerr << "split_by_first_delim: delimiter not found" << std::endl;
+                return -1;
+#endif
             }
         }
 
         template<>
-        std::string convert_to_t<std::string>(const std::string &source) = delete;
+        std::string convert_to_t(const std::string &source) {
+            return source.empty() ? "0" : source;
+        }
 
         template<>
-        bool convert_to_t<bool>(const std::string &source) {
+        bool convert_to_t(const std::string &source) {
             if (source == "false" || source == "False") {
                 return false;
             }
@@ -965,7 +1070,7 @@ namespace libio {
 
 #ifdef LIBIO_EXPERIMENTAL
         template<>
-        int convert_to_t<int>(const std::string &str) {
+        int conver_to_t(const std::string &str) {
             if (!str) {
                 return 0;
             }
@@ -974,17 +1079,19 @@ namespace libio {
             int i    = 0;
 
             while (str[i] == ' ') {
-                ++i;
+                i++;
             }
 
             if (str[i] == '-' || str[i] == '+') {
-                sign = (str[++i] == '-') ? -1 : 1;
+                sign = (str[i++] == '-') ? -1 : 1;
             }
 
             while (str[i] >= '0' && str[i] <= '9') {
-                result = result * 10 + (str[++i] - '0');
+                result = result * 10 + (str[i++] - '0');
 
                 if (result *sign
+
+
 
                 >
                 std::numeric_limits<int>::max()
@@ -1000,5 +1107,18 @@ namespace libio {
         }
 
 #endif
+
+        /**
+        * Convert usual string object to wide string.
+        * @param str source std::string object
+        * @return wide string object
+        */
+        std::wstring to_wstring(const std::string &str) {
+            std::vector<wchar_t> buf(str.size());
+            std::use_facet<std::ctype<wchar_t> >(std::locale()).widen(str.data(),
+                                                                      str.data() + str.size(),
+                                                                      buf.data());
+            return std::wstring{buf.data(), buf.size()};
+        }
     }
 }

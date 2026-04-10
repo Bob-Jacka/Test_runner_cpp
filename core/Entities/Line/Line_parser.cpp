@@ -235,7 +235,7 @@ Interpreter_ns::Directive_parser::exec(const std::vector<std::string> &input_vec
     //Second wave of execution, proceed other directives
     while (parser_position != inner_vector_to_proceed.size() - 1) {
         const auto &line = inner_vector_to_proceed[parser_position++];
-        if (Utility::check_directive(line)) {
+        if (Utility::check_directive_line(line)) {
             const auto split_string_line = libio::string::split_by_first_delim(line, ' '); //split directive line, 0 - dir name, 1 - param
             auto &     [directive_name, directive_value] = split_string_line;
 
@@ -305,7 +305,7 @@ void Interpreter_ns::Directive_parser::include_cycle() {
     while (parser_position < inner_vector_to_proceed.size()) {
         const auto &line = inner_vector_to_proceed[parser_position];
 
-        if (Utility::check_directive(line)) {
+        if (Utility::check_directive_line(line)) {
             auto  split_line                        = libio::string::split_by_first_delim(line, ' ');
             auto &[directive_name, directive_value] = split_line;
 
@@ -331,8 +331,7 @@ void Interpreter_ns::Directive_parser::include_cycle() {
 void Interpreter_ns::Directive_parser::skip_to_next_branch() {
     int nesting = 1; // inside #If
     while (parser_position < inner_vector_to_proceed.size() && nesting > 0) {
-        const auto &line = inner_vector_to_proceed[parser_position];
-        if (line.contains(if_directive)) {
+        if (const auto &line = inner_vector_to_proceed[parser_position]; line.contains(if_directive)) {
             ++nesting;
         } else if (line.contains(endif_directive)) {
             --nesting;

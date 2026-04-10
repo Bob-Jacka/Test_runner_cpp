@@ -69,7 +69,9 @@ namespace Check_runner {
             }
 
 #ifdef NEW_FILE_FORMAT
-            static std::tuple<std::ifstream, bool> create_tf_file(const std::string &file_name); ///file for tests
+            static std::tuple<std::ifstream, bool> create_tf_file(const std::string &file_name);
+
+            ///file for tests
             static std::tuple<std::ifstream, bool> create_rsf_file(const std::string &file_name); ///file for test results
 #endif
             //Test result document file

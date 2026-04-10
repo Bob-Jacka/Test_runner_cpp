@@ -14,9 +14,7 @@ Vec_t<Check_runner::TA::Test_case> Check_runner::Entities::vts = {};
 #elifdef EXTENDED_FUNCTIONALITY
 
 #pragma message("Using TS group instead of vector with test cases")
-Vec_t<Check_runner::TS_group> Entities::vts                      = {};
-std::unique_ptr<IniParser>    Check_runner::Entities::ini_parser = nullptr;
-
+Vec_t<Check_runner::TS_group> Entities::vts = {};
 #endif
 
 #ifdef GUI_LANG_CHECKER

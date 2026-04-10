@@ -17,6 +17,7 @@
 #elifdef EXTENDED_FUNCTIONALITY_GUI
 #pragma message("Using graphical user interface mode")
 
+#include "core/GUI/Gui_translate.hpp"
 #include "core/GUI/declaration/Elements_callbacks.hpp"
 #include "core/GUI/declaration/Main_window.hpp"
 #include "FL/Fl_Window.H"
@@ -53,8 +54,7 @@ namespace Check_runner {
             * @throw FileControllerException if unknown bug severity
             */
             void write_test_results_2file(const Vec_t<TA::Test_result> &test_results) {
-                auto file_test_results = File_controller::create_test_result_file();
-                if (file_test_results.is_open()) {
+                if (auto file_test_results = File_controller::create_test_result_file(); file_test_results.is_open()) {
                     for (auto &test_result: test_results) {
                         file_test_results << test_result.get_name() << "\n";
                         file_test_results << test_result.get_device_name() << "\n";
@@ -92,10 +92,10 @@ namespace Check_runner {
 
             /**
              * Function for gracefully exit from utility.
-             * @param _Code exit code.
+             * @param code exit code.
              * @param system_msg optional message for message before exit (due to error in utility work)
              */
-            void exit_utility(const int _Code, const String &system_msg = "") {
+            void exit_utility(const int code, const String &system_msg = "") {
                 Entities::vtr.clear();
                 Entities::vts.clear();
 
@@ -104,7 +104,7 @@ namespace Check_runner {
                 } else {
                     libio::output::println("Bye");
                 }
-                std::exit(_Code);
+                std::exit(code);
             }
         }
 
@@ -137,9 +137,7 @@ namespace Check_runner {
 
                         //get entry point of utility working
                         if (flag_name == LP::Static_load_parameters_names::entry) {
-                            auto entry_point = flag_value;
-
-                            if (File_controller::check_file_existence(entry_point)) {
+                            if (auto entry_point = flag_value; File_controller::check_file_existence(entry_point)) {
                                 Entities::load_parameters->set_entry_point(entry_point);
                             } else {
                                 throw Check_exceptions::MainException(
@@ -236,9 +234,7 @@ namespace Check_runner {
 #ifdef USUALSTRAT_HPP
                 if (Entities::context == nullptr) {
                     Entities::context = std::make_unique<::Strategy::StratContext>();
-                    Entities::context->set_strategy(
-                        std::make_unique<::Strategy::Usual_strat>()
-                    );
+                    Entities::context->set_strategy(std::make_unique<::Strategy::Usual_strat>());
                 }
 #elifndef USUALSTRAT_HPP
 #error "Usual strategy should be defined in utility context"
@@ -411,36 +407,6 @@ namespace Check_runner {
                         default:
                             continue;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     }
                 }
             }
@@ -450,7 +416,7 @@ namespace Check_runner {
              */
             [[noreturn]] void ai_menu() {
                 int user_action;
-                REPEAT_FOREVER{
+                REPEAT_FOREVER {
                     libio::output::println("1. Train model");
                     libio::output::println("2. List models");
                     libio::output::println("3. Close menu");
@@ -464,37 +430,6 @@ namespace Check_runner {
                             break;
                         default:
                             continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     }
                 }
             }
@@ -560,10 +495,10 @@ namespace Check_runner {
             start_util_work = steady_clock::now();
             for (const auto &tс: vtc) {
                 //proceed test case one by one:
-                libio::output::println_w(L"Name: " + libio::output::to_wstring(tс.get_name()));
+                libio::output::println_w(L"Name: " + libio::convert::to_wstring(tс.get_name()));
                 if (is_comment) {
                     libio::output::println_w(
-                        L"Comment: " + libio::output::to_wstring(tс.get_comment())); //output comments to console
+                        L"Comment: " + libio::convert::to_wstring(tс.get_comment())); //output comments to console
                 }
                 if (is_time) {
                     start = steady_clock::now(); //get start time of the test case execution:
@@ -658,8 +593,7 @@ namespace Check_runner {
 
                                 const auto bug = TA::Bug(bug_name, bug_description, severity);
                                 test_res.add_bug(bug);
-                                test_res.set_device_name(
-                                    device); //set device name, if not provided - write single_device_mode constant
+                                test_res.set_device_name(device); //set device name, if not provided - write single_device_mode constant
                                 break;
                             }
                             vtr.push_back(test_res);
@@ -695,8 +629,6 @@ namespace Check_runner {
             {FL_MAGENTA, FL_COURIER_BOLD, FONT_SIZE},                    // F - Types, !disable strings with default color
             {FL_RED, FL_COURIER_BOLD, FONT_SIZE}                         // G - Keywords
         };
-
-#include "core/GUI/Gui_translate.hpp"
 
         /**
          * Build window menu with callbacks
@@ -854,46 +786,47 @@ Extended_begin_label:
             Entities::parser = std::make_unique<Interpreter_ns::Directive_parser>();
         }
 
-        //Pre strategy actions block
-        {
-            const bool global_strat_state = Entities::load_parameters->GET_EVERYTHING_NOW_STRAT();
-            //global state of everything_now strategy to not use load_parameters
-            //1) Get data from entry point file
-            auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
-            lines_from_file      = Entities::parser->delete_comments(lines_from_file); //2) Delete comments from file
-            if (not Entities::load_parameters->get_parameters().empty()) {
-                //2.25 Parse given in console parameters
-                Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
-            }
-            //Modified vector with ts, after all transformations:
-            lines_from_file = Entities::parser->exec(lines_from_file); //2.5) parse directives in suit file
-            if (global_strat_state and Entities::context->get_strat() == nullptr) {
-                Entities::vts = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
-            } else if (not global_strat_state) {
-                try {
-                    //3) Create test cases objects
-#define DEBUG
-#ifdef DEBUG
-                    auto       tcs        = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
-                    const auto after_algo = Entities::context->get_strat()->doAlgorithm(std::move(tcs));
-                    Entities::vts         = after_algo;
-#else
-                    Entities::vts = Entities::context->get_strat()->doAlgorithm(TA::Test_artifact_fabric::create_test_cases(lines_from_file));
-#endif
-                } catch (...) {
-                    throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
+        if (!Entities::load_parameters->get_entry_point().empty()) {
+            bool global_strat_state;
+            //Pre strategy actions block
+            {
+                global_strat_state = Entities::load_parameters->GET_EVERYTHING_NOW_STRAT();
+                //global state of everything_now strategy to not use load_parameters
+                //1) Get data from entry point file
+                auto lines_from_file = File_controller::readlines(Entities::load_parameters->get_entry_point());
+                lines_from_file      = Entities::parser->delete_comments(lines_from_file); //2) Delete comments from file
+                if (not Entities::load_parameters->get_parameters().empty()) {
+                    //2.25 Parse given in console parameters
+                    Entities::parser->parse_parameters(Entities::load_parameters->get_parameters());
                 }
-            } else {
-                //exit utility with strategy error
-                Console::Low_level::exit_utility(EXIT_FAILURE, &"Error in strategy execution at line: "[__LINE__]);
+                //Modified vector with ts, after all transformations:
+                lines_from_file = Entities::parser->exec(lines_from_file); //2.5) parse directives in suit file
+                if (global_strat_state and Entities::context->get_strat() == nullptr) {
+                    Entities::vts = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
+                } else if (not global_strat_state) {
+                    try {
+                        //3) Create test cases objects
+#ifdef DEBUG
+                        auto       tcs        = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
+                        const auto after_algo = Entities::context->get_strat()->doAlgorithm(std::move(tcs));
+                        Entities::vts         = after_algo;
+#else
+                        Entities::vts = Entities::context->get_strat()->doAlgorithm(TA::Test_artifact_fabric::create_test_cases(lines_from_file));
+#endif
+                    } catch (...) {
+                        throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
+                    }
+                } else {
+                    //exit utility with strategy error
+                    Console::Low_level::exit_utility(EXIT_FAILURE, &"Error in strategy execution at line: "[__LINE__]);
+                }
+                Entities::vtr = Vec_t<TA::Test_result>();
             }
-            Entities::vtr = Vec_t<TA::Test_result>();
             //Strategy block
             {
                 if (not global_strat_state) {
                     //Execute main cycle of the utility
-                    auto devices_file_name = Entities::load_parameters->get_devices_entry_point();
-                    if (not devices_file_name.empty()) {
+                    if (auto devices_file_name = Entities::load_parameters->get_devices_entry_point(); not devices_file_name.empty()) {
                         if (File_controller::check_file_existence(devices_file_name)) {
                             for (const auto &device: File_controller::readlines(
                                      Entities::load_parameters->get_devices_entry_point())) {
@@ -901,8 +834,7 @@ Extended_begin_label:
                                 libio::output::colored::colored_print(
                                     Translation::Console_translation::device_name + device, "\n",
                                     libio::output::colored::Ansi_colors::YELLOW);
-                                Console::main_utility_cycle(Entities::vts, Entities::vtr,
-                                                            device); //one utility cycle for one device
+                                Console::main_utility_cycle(Entities::vts, Entities::vtr, device); //one utility cycle for one device
                             }
                         } else {
                             throw Check_exceptions::MainException(__LINE__,
@@ -919,7 +851,7 @@ Extended_begin_label:
                     }
                 }
 #ifdef EXTENDED_FUNCTIONALITY
-                else {
+                    else {
                     Utility::println("Using 'everything_now strategy' of execution");
                     for (const auto &elem: Entities::vts) {
                         libio::output::println(elem);
@@ -927,7 +859,6 @@ Extended_begin_label:
                 }
 #endif
             }
-
             //After strategy block
             {
                 //proceed vector with test results at the end of cycle
@@ -939,26 +870,11 @@ Extended_begin_label:
                 }
             }
         }
+        libio::output::println("No suit provided");
     } else if (const String conv_arg = *argv; Console::arg_count == 2 and conv_arg.contains(LP::Static_load_parameters_names::help)) {
         //print help to user if user wants help to be printed
         Console::Print::print_help();
         Console::Low_level::exit_utility(EXIT_SUCCESS);
     }
-#ifdef EXTENDED_FUNCTIONALITY
-    //Config read branch
-    else {
-        if (File_controller::check_file_existence(config_file_name)) {
-            auto       config_lines = File_controller::readlines(config_file_name);
-            const auto ini_parser   = std::make_unique<Interpreter_ns::Ini_parser>(config_lines);
-            //increment arguments count and return back
-            argc = ini_parser->get_section_count();
-            argv = ini_parser->convert_to_char_array();
-            goto Extended_begin_label;
-        }
-        //anyway, print help to user
-        Print::print_help();
-        Low_level::exit_utility(EXIT_SUCCESS);
-    }
-#endif
     libio::output::println("Out utility, bye");
 }

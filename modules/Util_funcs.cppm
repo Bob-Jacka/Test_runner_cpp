@@ -1,5 +1,5 @@
 /*
- Header file with some useful functions in check runner utility
+ Header file with some useless functions in check runner utility
  */
 module;
 
@@ -27,14 +27,24 @@ namespace Utility {
         return std::string("#") + group_id.substr(0, (hash_len_mod % 2 == 0) ? hash_len_mod + 2 : hash_len_mod - 1) + std::string("-");
     }
 
-    export bool check_directive(const std::string &directive_string) {
-        if (directive_string.contains("|") and directive_string.contains(':')) {
+    /**
+     * Check for directive line
+     * @param directive_string
+     * @return bool value
+     */
+    export bool check_directive_line(const std::string &directive_string) {
+        if (not directive_string.contains("|") and directive_string.contains(':')) {
             return true;
         }
         return false;
     }
 
-    export bool check_tc(const std::string &directive_string) {
+    /**
+     *
+     * @param directive_string
+     * @return
+     */
+    export bool check_tc_line(const std::string &directive_string) {
         if (directive_string.contains("|")) {
             return true;
         }

@@ -27,7 +27,7 @@
 
 //File with utility constants / settings
 
-JUST_CONSTANT version                 = "2.5.0";           ///version of the app, do not forget to iterate
+JUST_CONSTANT version                 = "2.6.0";           ///version of the app, do not forget to iterate
 JUST_CONSTANT comment_sym             = "*";               ///use for mark line in suit as a comment
 JUST_CONSTANT directive_start_sym     = "#";               ///use for mark line in suit as a utility directive
 JUST_CONSTANT test_case_separator_sym = "|";               ///symbol for separating modified string line to test case

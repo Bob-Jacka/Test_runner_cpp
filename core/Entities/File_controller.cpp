@@ -19,6 +19,7 @@ std::tuple<std::ifstream, bool> Check_runner::File_controller::create_rsf_file(c
     throw Check_exceptions::FileControllerException(__LINE__, "Cannot create rsf file", __FILE_NAME__);
 }
 #elifndef NEW_FILE_FORMAT
+
 /**
  * Function for creating test result file.
  * @param results_file_name string value for file name.
@@ -188,9 +189,9 @@ bool Check_runner::File_controller::check_file_existence(std::string &file_name)
  * Map file with usage of system call.
  * @return array with strings
  */
-char* map_file(ifstream &fd) {
+char *map_file(ifstream &fd) {
     size_t length = 100; // Length to map
-    char *mapped = (char *)mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
+    char * mapped = (char *) mmap(nullptr, length, PROT_READ, MAP_PRIVATE, fd, 0);
     if (mapped == MAP_FAILED) {
         perror("mmap");
         close(fd);

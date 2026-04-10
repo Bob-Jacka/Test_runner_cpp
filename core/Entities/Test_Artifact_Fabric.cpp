@@ -17,10 +17,10 @@ std::vector<Check_runner::TA::Test_case> Check_runner::TA::Test_artifact_fabric:
     if (!string_lines.empty()) {
         auto tmp_test_cases = std::vector<Test_case>();
         for (auto &test_case_line: string_lines) {
-            if (Utility::check_tc(test_case_line)) {
-                auto split_string = libio::string::split(test_case_line, "|"); //TODO split string into characters
+            if (Utility::check_tc_line(test_case_line)) {
+                auto split_string = libio::string::split(test_case_line, '|');
                 if (split_string.size() == 2) {
-                    //in case of empty comment, just add empty string
+                    //in case of empty comment, just add empty string to not throw error
                     split_string.emplace_back("");
                 }
                 const auto created_tc = Test_case(
@@ -65,6 +65,7 @@ Check_runner::TA::Test_suit<Check_runner::TA::Test_case> *
 Check_runner::TA::Test_artifact_fabric::create_test_suit(const std::vector<std::string> &,
                                                          const std::string &) const {
     //
+    return nullptr;
 }
 
 /**

@@ -7,10 +7,6 @@
 #include "core/Entities/Test_Artifact_Fabric.hpp"
 #include "core/Entities/Line/Line_parser.hpp"
 
-#ifdef EXTENDED_FUNCTIONALITY
-#include "core/Entities/Ini_parser.hpp"
-#endif
-
 #ifdef GUI_LANG_CHECKER
 #include "core/GUI/jamspell/spell_corrector.hpp"
 #endif
@@ -33,10 +29,6 @@ namespace Check_runner {
         static std::unique_ptr<TA::Test_artifact_fabric>         test_case_fabric; ///test artifacts fabric entity
         static std::unique_ptr<::Strategy::StratContext>         context;          ///context for determining utility strategy
         static std::unique_ptr<Interpreter_ns::Directive_parser> parser;           ///entity for text parsing in suit
-
-#ifdef EXTENDED_FUNCTIONALITY
-        static std::unique_ptr<Interpreter_ns::IniParser> ini_parser; ///entity for text parsing ini file with parameters
-#endif
 
 #ifdef GUI_LANG_CHECKER
 #pragma message("Using corrector entity")

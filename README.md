@@ -8,7 +8,7 @@ Has become harder to understand what is going on in your test suits.
 
 ## Utility flags:
 
-Utility can take various flags, that modify program behaviour
+Utility can take various flags, that modify program behavior
 Example of utility with flags usage: ./Check_runner --suit="some-test-suit.txt" --colored=true --comments=true
 
 ### Available utility flags:
@@ -69,7 +69,7 @@ These symbols are using in simple text file (just .txt),
 
 ```
 #Group_start Общие проверки:
-   Наличие версии игры на главном экране|Высокий|
+   Наличие версии игры на главном экране|High|
 #Group_end
 ```
 
@@ -83,9 +83,9 @@ These symbols are using in simple text file (just .txt),
 #Parameters: a=1, b=2
 
 #If a < b:
-   test1||
-   test2||
-   test3||
+   test1|High|
+   test2|Medium|
+   test3|Low|
 #End_if
 ```
 
@@ -97,13 +97,13 @@ These symbols are using in simple text file (just .txt),
 #Parameters: a=1, b=2
 
 #If a > b:
-   test1||
-   test2||
-   test3||
+   test1|Low|
+   test2|Medium|
+   test3|High|
 #Elif a < b:
-   test4||
-   test5||
-   test6||
+   test4|High|
+   test5|Medium|
+   test6|Low|
 #End_if
 ```
 
@@ -137,35 +137,6 @@ _#Ignore_ - will not add test to suit,
 _#Parameters_ - add variables to suit,
 _#Import_ - add suit to another suit
 
-## Config file in utility:
-
-### What is it?
-
-Utility allowed to have settings in .ini files, it means that you can not provide arguments in command line interface,
-but provide by .ini file. Parameter might not be provided in .ini file, ex. comments might not be provided and utility
-starts without comments displaying.
-
-### Example of usage:
-
-Here is example of usage .ini file in setting utility parameters.
-**It is important to use same names in your .ini config file that in "Available utility flags" section of README.** You
-can not provide any of these parameters.
-
-```
-[LoadParameters]
-colored=true
-comments=true
-time_record=true ; or it can be false if you do not want to record time
-
-[FilePointers] ; files names, might be with .txt or not
-suit=one-time-test.txt
-devices=devices.txt
-
-[Strategy]
-interface=true ; runs graphical user interface or console - runs console app
-strategy=usual
-```
-
 ### Test file style:
 
 This section is about writing test file style and some recommendations about writing;
@@ -191,9 +162,11 @@ This section is about writing test file style and some recommendations about wri
     #If mode == single:
     
         #Group_start Singleplayer:
-            Some test||
+            Some test|Low|
         #Group_end
     
     #Elif mode == multiplayer:
         ...
+   
+    #End_if
     ```
