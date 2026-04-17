@@ -47,7 +47,7 @@ namespace NJamSpell {
             > {
     };
 
-    class TRobinHash final : public tsl::robin_map<std::wstring, TWordId> {
+    class TRobinHash : public tsl::robin_map<std::wstring, TWordId> {
         public:
             inline virtual void Dump(std::ostream &out) const {
                 TRobinSerializer::Dump(out, *this);

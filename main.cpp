@@ -406,7 +406,6 @@ namespace Check_runner {
                             break;
                         default:
                             continue;
-
                     }
                 }
             }
@@ -416,7 +415,7 @@ namespace Check_runner {
              */
             [[noreturn]] void ai_menu() {
                 int user_action;
-                REPEAT_FOREVER {
+                REPEAT_FOREVER{
                     libio::output::println("1. Train model");
                     libio::output::println("2. List models");
                     libio::output::println("3. Close menu");
@@ -750,7 +749,7 @@ namespace Check_runner {
  * @param argv given arguments to utility
  * @throw MainException if necessary files not found
  */
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     using namespace Check_runner;
 
 Extended_begin_label:
@@ -770,9 +769,9 @@ Extended_begin_label:
                 std::future<void> result = std::async(std::launch::async, [] {
                     auto load_res = Entities::corrector->load_lang_model(model_name);
                     if (load_res) {
-                        libio::output::println("Failed to load language model from file"); //debug output print
+                        libio::output::DEBUG_PRINTLN("Failed to load language model from file"); //debug output print
                     } else {
-                        libio::output::println("Model loaded successfully"); //debug output print
+                        libio::output::DEBUG_PRINTLN("Model loaded successfully"); //debug output print
                     }
                 });
                 result.get();
@@ -806,13 +805,7 @@ Extended_begin_label:
                 } else if (not global_strat_state) {
                     try {
                         //3) Create test cases objects
-#ifdef DEBUG
-                        auto       tcs        = TA::Test_artifact_fabric::create_test_cases(lines_from_file);
-                        const auto after_algo = Entities::context->get_strat()->doAlgorithm(std::move(tcs));
-                        Entities::vts         = after_algo;
-#else
                         Entities::vts = Entities::context->get_strat()->doAlgorithm(TA::Test_artifact_fabric::create_test_cases(lines_from_file));
-#endif
                     } catch (...) {
                         throw Check_exceptions::MainException(__LINE__, "Strategy execution error", __FILE_NAME__);
                     }

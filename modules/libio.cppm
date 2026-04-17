@@ -122,6 +122,12 @@ namespace libio {
             const std::string Ansi_colors::MAGENTA      = "\033[35m";
             const std::string Ansi_colors::CYAN         = "\033[36m";
 
+            void DEBUG_PRINTLN(const std::string &str) {
+#ifdef DEBUG
+                std::cout << str << "\n";
+#endif
+            }
+
             /**
              * Print generic object in color to console.
              * @tparam T generic type
@@ -138,7 +144,6 @@ namespace libio {
 #ifdef LIBIO_ERROR
                 throw std::runtime_error("Colored print is failed");
 #else
-                std::cerr << "colored print is failed" << std::endl;
 #endif
             }
 
@@ -151,7 +156,6 @@ namespace libio {
 #ifdef LIBIO_ERROR
                 throw std::runtime_error("Colored println is failed");
 #else
-                std::cerr << "Colored println is failed" << std::endl;
 #endif
             }
         }
@@ -216,7 +220,6 @@ namespace libio {
 #ifdef LIBIO_ERROR
             throw std::runtime_error("Print is failed due to cout");
 #else
-            std::cerr << "Print is failed due to cout" << std::endl;
 #endif
         }
 
@@ -237,7 +240,6 @@ namespace libio {
 #ifdef LIBIO_ERROR
             throw std::runtime_error("Println_w is failed due to wcout");
 #else
-            std::cerr << "Println_w is failed due to wcout" << std::endl;
 #endif
         }
 

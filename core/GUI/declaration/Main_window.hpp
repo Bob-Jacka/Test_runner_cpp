@@ -15,6 +15,9 @@
 import Libio;
 
 namespace Check_runner::GUI {
+
+    class
+
     class Main_window final : public Fl_Window {
         void window_init();
 
@@ -28,6 +31,8 @@ namespace Check_runner::GUI {
             Main_window(int x, int y, int w, int h, const char *window_name);
 
             ~Main_window() override;
+
+            void add_lang_model();
 
         public:
             //Buffers:

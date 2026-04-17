@@ -19,14 +19,14 @@ namespace NJamSpell {
         public:
             MemStream() = delete;
 
-            MemStream(char *buff, long maxSize) : Buff(buff), MaxSize(maxSize), Pos(0) {
+            MemStream(char *buff, const long maxSize) : Buff(buff), MaxSize(maxSize), Pos(0) {
             }
 
-            std::streamsize xsputn(const char *s, std::streamsize n) override {
+            std::streamsize xsputn(const char *s, const std::streamsize n) override {
                 if (n <= 0) {
                     return n;
                 }
-                long toCopy = std::min<long>(n, MaxSize - Pos);
+                const long toCopy = std::min<long>(n, MaxSize - Pos);
                 memcpy(Buff + Pos, s, toCopy);
                 Pos += toCopy;
                 return n;
@@ -36,7 +36,7 @@ namespace NJamSpell {
                 Pos = 0;
             }
 
-            long Size() const {
+            [[nodiscard]] long Size() const {
                 return Pos;
             }
 
@@ -64,7 +64,7 @@ namespace NJamSpell {
     static constexpr uint32_t MAX_REAL_NUM      = 268435456;
     static constexpr uint32_t MAX_AVAILABLE_NUM = 65536;
 
-    uint16_t PackInt32(uint32_t num) {
+    uint16_t PackInt32(const uint32_t num) {
         double r = double(num) / double(MAX_REAL_NUM);
         assert(r >= 0.0 && r <= 1.0);
         r = pow(r, 0.2);
@@ -82,8 +82,8 @@ namespace NJamSpell {
     template<typename T>
     void InitializeBuckets(const T &grams, TPerfectHash &ph, std::vector<std::pair<uint16_t, uint16_t> > &buckets) {
         for (auto &&it: grams) {
-            std::string key    = DumpKey(it.first);
-            uint32_t    bucket = ph.Hash(key);
+            std::string    key    = DumpKey(it.first);
+            const uint32_t bucket = ph.Hash(key);
             if (bucket >= buckets.size()) {
                 std::cerr << bucket << " " << buckets.size() << "\n";
             }
@@ -149,8 +149,7 @@ namespace NJamSpell {
                 TGram3Key key(words[j], words[j + 1], words[j + 2]);
                 grams3[key] += 1;
             }
-            uint64_t currTime = GetCurrentTimeMs();
-            if (currTime - lastTime > 4000) {
+            if (uint64_t currTime = GetCurrentTimeMs(); currTime - lastTime > 4000) {
                 std::cerr << "[info] processed " << (100.0 * float(i) / float(total)) << "%" << std::endl;
                 lastTime = currTime;
             }
@@ -313,9 +312,8 @@ namespace NJamSpell {
     }
 
     TWordId TLangModel::GetWordIdNoCreate(const TWord &word) const {
-        std::wstring w(word.Ptr, word.Len);
-        auto         it = WordToId.find(w);
-        if (it != WordToId.end()) {
+        const std::wstring w(word.Ptr, word.Len);
+        if (const auto it = WordToId.find(w); it != WordToId.end()) {
             return it->second;
         }
         return UnknownWordId;
@@ -337,7 +335,7 @@ namespace NJamSpell {
     }
 
     TWord TLangModel::Get_word(const std::wstring &word) const {
-        auto it = WordToId.find(word);
+        const auto it = WordToId.find(word);
         if (it != WordToId.end()) {
             return TWord(&it->first[0], it->first.size());
         }
@@ -352,13 +350,13 @@ namespace NJamSpell {
         return Tokenizer.Process(text);
     }
 
-    double TLangModel::GetGram1Prob(TWordId word) const {
+    double TLangModel::GetGram1Prob(const TWordId word) const {
         double countsGram1 = GetGram1HashCount(word);
         countsGram1        += K;
         return countsGram1 / (TotalWords + VocabSize);
     }
 
-    double TLangModel::GetGram2Prob(TWordId word1, TWordId word2) const {
+    double TLangModel::GetGram2Prob(const TWordId word1, const TWordId word2) const {
         double countsGram1 = GetGram1HashCount(word1);
         double countsGram2 = GetGram2HashCount(word1, word2);
         if (countsGram2 > countsGram1) {
@@ -393,23 +391,23 @@ namespace NJamSpell {
 
         NHandyPack::Dump(out, key);
 
-        uint32_t bucket = ph.Hash(tmpBuff, tmpBuffStream.Size());
+        const uint32_t bucket = ph.Hash(tmpBuff, tmpBuffStream.Size());
 
         assert(bucket < ph.BucketsNumber());
-        const std::pair<uint16_t, uint16_t> &data = buckets[bucket];
+        const auto &[fst, snd] = buckets[bucket];
 
         TCount res = TCount();
-        if (data.first == CityHash16(tmpBuff, tmpBuffStream.Size())) {
-            res = UnpackInt32(data.second);
+        if (fst == CityHash16(tmpBuff, tmpBuffStream.Size())) {
+            res = UnpackInt32(snd);
         }
         return res;
     }
 
-    TCount TLangModel::GetGram1HashCount(TWordId word) const {
+    TCount TLangModel::GetGram1HashCount(const TWordId word) const {
         if (word == UnknownWordId) {
             return TCount();
         }
-        TGram1Key key = word;
+        const TGram1Key key = word;
         return GetGramHashCount(key, PerfectHash, buckets);
     }
 
@@ -417,7 +415,7 @@ namespace NJamSpell {
         if (word1 == UnknownWordId || word2 == UnknownWordId) {
             return TCount();
         }
-        TGram2Key key({word1, word2});
+        const TGram2Key key({word1, word2});
         return GetGramHashCount(key, PerfectHash, buckets);
     }
 
@@ -425,7 +423,7 @@ namespace NJamSpell {
         if (word1 == UnknownWordId || word2 == UnknownWordId || word3 == UnknownWordId) {
             return TCount();
         }
-        TGram3Key key(word1, word2, word3);
+        const TGram3Key key(word1, word2, word3);
         return GetGramHashCount(key, PerfectHash, buckets);
     }
 
